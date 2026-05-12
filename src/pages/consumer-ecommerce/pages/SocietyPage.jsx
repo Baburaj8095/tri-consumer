@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineArrowLeft } from 'react-icons/hi2';
+import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
 const initiatives = [
@@ -48,7 +49,7 @@ export default function SocietyPage() {
         </div>
       </header>
 
-      <main className="ce-container" style={{ paddingTop: '80px' }}>
+      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '104px' }}>
         <div className="ce-society-header-banner">
           <h2>Together We Can Build a Better World</h2>
           <p>Explore initiatives happening around you and join hands to create a positive social impact.</p>
@@ -74,6 +75,7 @@ export default function SocietyPage() {
           ))}
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

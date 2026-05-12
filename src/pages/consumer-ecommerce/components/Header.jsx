@@ -1,17 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import {
-  HiOutlineBars3BottomLeft,
-  HiOutlineBell,
-  HiOutlineChatBubbleLeftRight,
-  HiOutlineIdentification,
-  HiOutlineMapPin,
-  HiOutlinePhone,
-  HiOutlineBuildingStorefront,
-  HiOutlineUser,
-  HiOutlineWallet,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
+  LuBell,
+  LuMapPin,
+  LuMenu,
+  LuMessageCircle,
+  LuPhone,
+  LuShoppingBag,
+  LuUser,
+  LuWallet,
+  LuX,
+} from 'react-icons/lu';
 import { consumerProfile } from '../services/mockData.js';
 
 export default function Header() {
@@ -26,27 +25,31 @@ export default function Header() {
             onClick={() => setIsMenuOpen(true)} 
             aria-label="Open profile menu"
           >
-            <HiOutlineBars3BottomLeft />
+            <LuMenu />
           </button>
-          <h1 className="ce-title">Consumer Dashboard</h1>
+          <div className="ce-title-wrap">
+            <span className="ce-title-kicker">Trikonekt</span>
+            <h1 className="ce-title">Consumer</h1>
+          </div>
           <div className="ce-header-actions">
-            <Link
-              to="/consumer-ecommerce/nearby-stores"
-              className="ce-icon-btn ce-icon-btn-sm ce-tooltip-wrap"
-              aria-label="Nearby Stores"
-            >
-              <HiOutlineBuildingStorefront />
-              <span className="ce-tooltip">Nearby Stores</span>
+            <button className="ce-icon-btn ce-icon-btn-sm" aria-label="Wallet">
+              <LuWallet />
+            </button>
+            <button className="ce-icon-btn ce-icon-btn-sm ce-icon-with-badge" aria-label="Notifications">
+              <LuBell />
+              <span>3</span>
+            </button>
+            <button className="ce-icon-btn ce-icon-btn-sm ce-icon-with-badge" aria-label="Chat">
+              <LuMessageCircle />
+              <span>2</span>
+            </button>
+            <Link to="/consumer-ecommerce/cart" className="ce-icon-btn ce-icon-btn-sm ce-icon-with-badge" aria-label="Cart">
+              <LuShoppingBag />
+              <span>3</span>
             </Link>
-            <button className="ce-icon-btn ce-icon-btn-sm" aria-label="Notifications">
-              <HiOutlineBell />
-            </button>
-            <button className="ce-icon-btn ce-icon-btn-sm" aria-label="Messages">
-              <HiOutlineChatBubbleLeftRight />
-            </button>
-            <button className="ce-icon-btn ce-icon-btn-sm ce-icon-btn-primary" aria-label="Location">
-              <HiOutlineMapPin />
-            </button>
+            <Link to="/consumer-ecommerce/nearby-stores" className="ce-icon-btn ce-icon-btn-sm" aria-label="Nearby">
+              <LuMapPin />
+            </Link>
           </div>
         </div>
       </header>
@@ -56,10 +59,10 @@ export default function Header() {
           <aside className="ce-profile-menu" role="dialog" aria-label="User profile" onClick={(event) => event.stopPropagation()}>
             <div className="ce-profile-menu-head">
               <div className="ce-profile-avatar">
-                <HiOutlineUser />
+                <LuUser />
               </div>
               <button className="ce-icon-btn ce-icon-btn-sm" onClick={() => setIsMenuOpen(false)} aria-label="Close profile menu">
-                <HiOutlineXMark />
+                <LuX />
               </button>
             </div>
 
@@ -71,12 +74,12 @@ export default function Header() {
 
             <div className="ce-profile-detail-grid">
               <div className="ce-profile-detail">
-                <HiOutlineIdentification className="ce-primary-text" />
+                <LuShoppingBag className="ce-primary-text" />
                 <span>ID Number</span>
                 <strong>{consumerProfile.idNumber}</strong>
               </div>
               <div className="ce-profile-detail">
-                <HiOutlineMapPin className="ce-primary-text" />
+                <LuMapPin className="ce-primary-text" />
                 <span>Pin Code</span>
                 <strong>{consumerProfile.pinCode}</strong>
               </div>
@@ -84,21 +87,21 @@ export default function Header() {
 
             <div className="ce-profile-list">
               <div className="ce-profile-list-row">
-                <HiOutlinePhone className="ce-primary-text" />
+                <LuPhone className="ce-primary-text" />
                 <div>
                   <span>Phone</span>
                   <strong>{consumerProfile.phone}</strong>
                 </div>
               </div>
               <div className="ce-profile-list-row">
-                <HiOutlineMapPin className="ce-primary-text" />
+                <LuMapPin className="ce-primary-text" />
                 <div>
                   <span>Location</span>
                   <strong>{consumerProfile.city}</strong>
                 </div>
               </div>
               <div className="ce-profile-list-row">
-                <HiOutlineWallet className="ce-primary-text" />
+                <LuWallet className="ce-primary-text" />
                 <div>
                   <span>Wallet Balance</span>
                   <strong>{consumerProfile.walletBalance}</strong>

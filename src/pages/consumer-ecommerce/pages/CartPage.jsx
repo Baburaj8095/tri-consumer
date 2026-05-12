@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaLocationDot } from 'react-icons/fa6';
+import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
 const initialCartItems = [
@@ -48,6 +49,7 @@ export default function CartPage() {
             Browse Restaurants
           </Link>
         </main>
+        <BottomNav />
       </div>
     );
   }
@@ -123,6 +125,7 @@ export default function CartPage() {
           Proceed to Pay
         </button>
       </div>
+      <BottomNav />
     </div>
   );
 }

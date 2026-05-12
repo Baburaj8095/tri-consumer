@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa6';
+import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
 export default function BusinessRegistrationPage() {
@@ -74,7 +75,7 @@ export default function BusinessRegistrationPage() {
         </div>
       </header>
 
-      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '40px' }}>
+      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '112px' }}>
         <form onSubmit={handleSubmit} className="ce-form-card">
           <div className="ce-form-header">
             <h2>Business Details</h2>
@@ -175,6 +176,7 @@ export default function BusinessRegistrationPage() {
           </button>
         </form>
       </main>
+      <BottomNav />
     </div>
   );
 }

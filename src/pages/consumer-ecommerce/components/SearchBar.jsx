@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { HiOutlineMapPin, HiOutlineChevronDown } from 'react-icons/hi2';
+import { LuChevronDown, LuMapPin, LuSearch } from 'react-icons/lu';
 import { consumerProfile } from '../services/mockData.js';
 
 export default function SearchBar({ onSearch }) {
@@ -7,14 +7,15 @@ export default function SearchBar({ onSearch }) {
   const pincode = consumerProfile?.pinCode || '560091';
 
   return (
-    <div className="ce-search-button" style={{ background: '#eef6ff', border: 'none', boxShadow: 'none' }}>
-      <button type="button" onClick={onSearch} className="ce-search-main" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#1f2937' }}>
-        <HiOutlineMapPin style={{ fontSize: '18px', color: '#4b5563' }} />
-        <span className="ce-search-placeholder" style={{ fontWeight: '600', fontSize: '15px' }}>Deliver to {pincode}</span>
-        <HiOutlineChevronDown style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }} />
+    <div className="ce-search-button">
+      <button type="button" onClick={onSearch} className="ce-search-main">
+        <span className="ce-location-dot"><LuMapPin /></span>
+        <span className="ce-search-placeholder">Deliver to {pincode}</span>
+        <LuChevronDown className="ce-search-chevron" />
       </button>
       <Link to="/consumer-ecommerce/join-prime" className="ce-prime-pill">
-        Join Prime
+        <LuSearch />
+        Search
       </Link>
     </div>
   );

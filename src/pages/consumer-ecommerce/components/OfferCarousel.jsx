@@ -1,12 +1,11 @@
-import { useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { offerBanners } from '../services/mockData.js';
 import { 
-  HiOutlineWallet, 
-  HiOutlineShoppingBag, 
-  HiOutlineTruck, 
-  HiOutlineMapPin 
-} from 'react-icons/hi2';
+  LuMapPin,
+  LuShoppingBag,
+  LuTruck,
+  LuWalletCards,
+} from 'react-icons/lu';
 
 export default function OfferCarousel() {
   const filteredOffers = offerBanners.filter(offer =>
@@ -25,37 +24,31 @@ export default function OfferCarousel() {
 
   const getServiceIcon = (title) => {
     switch (title) {
-      case 'Tripay': return <HiOutlineWallet size={26} />;
-      case 'Tri Eat': return <HiOutlineShoppingBag size={26} />;
-      case 'Tri Drop': return <HiOutlineTruck size={26} />;
-      case 'Tri Trip': return <HiOutlineMapPin size={26} />;
-      default: return <HiOutlineWallet size={26} />;
+      case 'Tripay': return <LuWalletCards size={24} />;
+      case 'Tri Eat': return <LuShoppingBag size={24} />;
+      case 'Tri Drop': return <LuTruck size={24} />;
+      case 'Tri Trip': return <LuMapPin size={24} />;
+      default: return <LuWalletCards size={24} />;
     }
   };
 
-  const serviceStyles = {
-    Tripay: { bg: '#dbeafe', accent: '#2563eb' },
-    'Tri Eat': { bg: '#ffedd5', accent: '#ea580c' },
-    'Tri Drop': { bg: '#d1fae5', accent: '#059669' },
-    'Tri Trip': { bg: '#bfdbfe', accent: '#0284c7' },
-  };
-
   return (
-    <section className="ce-offer-carousel" aria-label="Tri Services">
+    <section className="ce-content-section ce-offer-carousel" aria-label="Tri Services">
+      <div className="ce-section-heading-row">
+        <div>
+          <h2 className="ce-section-title">Secondary categories</h2>
+          <p className="ce-section-subtitle">Everything else, one tap away</p>
+        </div>
+      </div>
       <div className="offer-service-scroll">
         {filteredOffers.map((offer) => {
-          const style = serviceStyles[offer.title] || { bg: '#f8fafc', accent: '#0f172a' };
           return (
             <Link
               key={offer.id}
               to={getServiceRoute(offer.title)}
               className="offer-service-card"
-              style={{
-                background: `linear-gradient(180deg, ${style.bg}, ${style.bg} 100%)`,
-                color: style.accent,
-              }}
             >
-              <div className="offer-service-icon" style={{ color: style.accent }}>
+              <div className="offer-service-icon">
                 {getServiceIcon(offer.title)}
               </div>
               <span className="offer-service-name">{offer.title}</span>

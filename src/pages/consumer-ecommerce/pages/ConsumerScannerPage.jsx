@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { alpha } from "@mui/material/styles";
 import { Box, Button, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
+import BottomNav from "../components/BottomNav.jsx";
 import {
   HiOutlineArrowLeft,
   HiOutlineQrCode,
@@ -105,7 +106,7 @@ function ConsumerScannerPage() {
   }, []);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: UI.bg, color: UI.onPrimary }}>
+    <Box className="ce-app ce-scanner-shell" sx={{ minHeight: "100vh", bgcolor: UI.bg, color: UI.onPrimary, pb: "92px" }}>
       <Box
         sx={{
           position: "sticky",
@@ -282,6 +283,7 @@ function ConsumerScannerPage() {
           </Card>
         </Stack>
       </Box>
+      <BottomNav />
     </Box>
   );
 }

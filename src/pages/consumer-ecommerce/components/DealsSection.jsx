@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FaFire, FaTag } from 'react-icons/fa6';
+import { LuFlame } from 'react-icons/lu';
 
 const mockProducts = [
   { id: 1, name: 'Wireless Earbuds', price: '₹999', originalPrice: '₹2,999', discount: '67%', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80' },
@@ -53,7 +53,7 @@ export default function DealsSection() {
           <div className="ce-promo-banner-content">
             <div className="ce-promo-text-wrap">
               <div className="ce-promo-badge">
-                <FaFire className="ce-promo-icon" />
+                <LuFlame className="ce-promo-icon" />
                 <span>Limited Time</span>
               </div>
               <h2 className="ce-promo-title">Min. 60% Off</h2>

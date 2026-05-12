@@ -10,6 +10,7 @@ import {
   HiOutlinePlus,
   HiOutlineClock
 } from 'react-icons/hi2';
+import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
 const stats = [
@@ -46,7 +47,7 @@ export default function TriInventoryBillingPage() {
         </div>
       </header>
 
-      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '30px' }}>
+      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '112px' }}>
         {/* Stats Row */}
         <section className="ce-section-stack" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '20px' }}>
           {stats.map(stat => (
@@ -126,6 +127,7 @@ export default function TriInventoryBillingPage() {
           </div>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

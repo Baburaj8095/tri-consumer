@@ -18,8 +18,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* <Route path="/" element={<Navigate to="/consumer-ecommerce" replace />} /> */}
-        <Route path="/" element={<ConsumerEcommerceDashboard />} />
+        <Route path="/" element={<Navigate to="/consumer-ecommerce" replace />} />
+        <Route path="/consumer-ecommerce" element={<ConsumerEcommerceDashboard />} />
         <Route path="/consumer-ecommerce/delivery" element={<ConsumerEcommerceDelivery />} />
         <Route path="/consumer-ecommerce/nearby-stores" element={<ConsumerNearbyStores />} />
         <Route path="/consumer-ecommerce/near-me" element={<ConsumerNearMe />} />

@@ -12,6 +12,7 @@ import TriPayPage from "./pages/consumer-ecommerce/pages/TriPayPage";
 import TriEatPage from "./pages/consumer-ecommerce/pages/TriEatPage";
 import TriTripPage from "./pages/consumer-ecommerce/pages/TriTripPage";
 import TriPickDropPage from "./pages/consumer-ecommerce/pages/TriPickDropPage";
+import TriZonePage from "./pages/consumer-ecommerce/pages/TriZonePage";
 import TriInventoryBillingPage from "./pages/consumer-ecommerce/pages/TriInventoryBillingPage";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Route path="/consumer-ecommerce/scanner" element={<ConsumerScannerPage />} />
         <Route path="/consumer-ecommerce/cart" element={<CartPage />} />
         <Route path="/consumer-ecommerce/tripay" element={<TriPayPage />} />
+        <Route path="/consumer-ecommerce/tri-zone" element={<TriZonePage />} />
         <Route path="/consumer-ecommerce/trieat" element={<TriEatPage />} />
         <Route path="/consumer-ecommerce/tritrip" element={<TriTripPage />} />
         <Route path="/consumer-ecommerce/tripickdrop" element={<TriPickDropPage />} />

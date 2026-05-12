@@ -1,42 +1,67 @@
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaLocationCrosshairs, FaMagnifyingGlass, FaStore } from 'react-icons/fa6';
+import {
+  LuApple,
+  LuBaby,
+  LuChevronLeft,
+  LuHeartPulse,
+  LuHouse,
+  LuSearch,
+  LuShirt,
+  LuShoppingCart,
+  LuSofa,
+  LuStore,
+  LuZap,
+} from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
 import { nearbyStores } from '../services/mockData.js';
 import '../consumerEcommerce.css';
 
+const nearbyCats = [
+  ['All Stores', LuHouse],
+  ['Grocery', LuShoppingCart],
+  ['Fruits & Vegetables', LuApple],
+  ['Fashion & Beauty', LuShirt],
+  ['Electronics', LuZap],
+  ['Furniture', LuSofa],
+  ['Pharmacy', LuHeartPulse],
+  ['Pet Supplies', LuBaby],
+  ['Daily Needs', LuStore],
+];
+
 export default function NearbyStoresPage() {
   return (
-    <div className="ce-app">
-      <header className="ce-header">
-        <div className="ce-header-inner ce-page-header-inner">
-          <Link to="/consumer-ecommerce" className="ce-icon-btn" aria-label="Back to dashboard">
-            <FaArrowLeft />
-          </Link>
-          <div className="ce-page-title-wrap">
-            <h1 className="ce-delivery-title">Nearby Stores</h1>
-            <p className="ce-delivery-location">
-              <FaLocationCrosshairs className="ce-primary-text" />
-              Stores around Indiranagar
-            </p>
-          </div>
-          <span className="ce-icon-btn ce-icon-btn-primary" aria-hidden="true">
-            <FaStore />
-          </span>
+    <div className="ce-app ce-nearby-page">
+      <header className="ce-compact-page-header">
+        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
+        <div>
+          <h1>Nearby Stores</h1>
+          <p>Stores around Indiranagar</p>
         </div>
+        <span><LuStore /></span>
       </header>
 
-      <main className="ce-container">
-        <label className="ce-delivery-search">
-          <FaMagnifyingGlass className="ce-primary-text" />
-          <input className="ce-input" placeholder="Search nearby stores" />
-        </label>
+      <main className="ce-nearby-shell">
+        <aside className="ce-nearby-rail">
+          {nearbyCats.map(([label, Icon], index) => (
+            <button key={label} className={index === 0 ? 'active' : ''}>
+              <Icon />
+              <span>{label}</span>
+            </button>
+          ))}
+        </aside>
 
-        <section className="ce-delivery-section">
-          <div className="ce-section-heading-row">
-            <h2 className="ce-section-title">Stores near you</h2>
-            <span className="ce-store-count">{nearbyStores.length} found</span>
+        <section className="ce-nearby-content">
+          <label className="ce-nearby-search">
+            <LuSearch />
+            <input placeholder="Search nearby stores" />
+          </label>
+
+          <div className="ce-nearby-heading">
+            <h2>Stores near you</h2>
+            <span>{nearbyStores.length} found</span>
           </div>
+
           <div className="ce-nearby-store-list">
             {nearbyStores.map((store) => (
               <NearbyStoreCard key={store.id} store={store} />

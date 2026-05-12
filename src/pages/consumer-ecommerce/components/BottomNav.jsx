@@ -1,17 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import {
-  LuGrid2X2,
   LuHouse,
   LuScanLine,
   LuShoppingBag,
   LuStore,
+  LuBoxes,
 } from 'react-icons/lu';
 
 const tabs = [
   { label: 'Home', icon: LuHouse, to: '/consumer-ecommerce' },
-  { label: 'Menu', icon: LuGrid2X2, to: '/consumer-ecommerce/delivery' },
+  { label: 'Tri Zone', icon: LuBoxes, to: '/consumer-ecommerce/tri-zone' },
   { label: 'Scanner', icon: LuScanLine, to: '/consumer-ecommerce/scanner', center: true },
-  { label: 'Shop', icon: LuShoppingBag, to: '/consumer-ecommerce/delivery' },
+  { label: 'Online', icon: LuShoppingBag, to: '/consumer-ecommerce/delivery' },
   { label: 'Nearby', icon: LuStore, to: '/consumer-ecommerce/nearby-stores' },
 ];
 

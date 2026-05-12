@@ -1,69 +1,156 @@
 import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaLocationCrosshairs, FaMagnifyingGlass, FaSliders, FaCartShopping } from 'react-icons/fa6';
+import {
+  LuBaby,
+  LuCamera,
+  LuChevronLeft,
+  LuChevronRight,
+  LuHeartHandshake,
+  LuHouse,
+  LuList,
+  LuMic,
+  LuPackageCheck,
+  LuReceiptText,
+  LuRotateCcw,
+  LuSearch,
+  LuShirt,
+  LuShoppingBag,
+  LuSmartphone,
+  LuSofa,
+  LuSparkles,
+  LuTruck,
+  LuUser,
+} from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
-import DeliveryCard from '../components/DeliveryCard.jsx';
-import { stores } from '../services/mockData.js';
+import { products } from '../services/mockData.js';
 import '../consumerEcommerce.css';
-import { useState } from 'react';
 
-const filters = ['All', 'Food', 'Grocery', 'Pharmacy', 'Fashion'];
+const rail = [
+  ['Orders', LuReceiptText],
+  ['Buy Again', LuRotateCcw],
+  ['Account', LuUser],
+  ['Lists', LuList],
+  ['Tri Pay', LuPackageCheck],
+  ['Tri Zone', LuHeartHandshake],
+  ['Online Shop', LuShoppingBag],
+  ['Near Store', LuHouse],
+];
+
+const topCats = [
+  ['Top Picks', LuShoppingBag],
+  ['Gold & Silver', LuSparkles],
+  ['Electronics', LuSmartphone],
+  ['Daily Needs', LuShoppingBag],
+  ['Kids & Toys', LuBaby],
+  ['Fashion & Beauty', LuShirt],
+  ['Sports', LuSparkles],
+  ['Furniture', LuSofa],
+  ['More', LuList],
+];
+
+function ProductMini({ product }) {
+  return (
+    <Link to={`/consumer-ecommerce/product/${product.id}`} className="ce-online-product">
+      <img src={product.image} alt={product.name} />
+      <h3>{product.name}</h3>
+      <strong>{product.newPrice}</strong>
+      <span>{product.discount}</span>
+    </Link>
+  );
+}
 
 export default function DeliveryPage() {
-  const [activeFilter, setActiveFilter] = useState('All');
-
   return (
-    <div className="ce-app">
-      <header className="ce-header ce-delivery-header">
-        <div className="ce-header-inner ce-delivery-header-inner">
-          <Link to="/consumer-ecommerce" className="ce-icon-btn ce-delivery-back-btn" aria-label="Back to dashboard">
-            <FaArrowLeft />
-          </Link>
-          <div className="ce-delivery-header-title-wrap">
-            <h1 className="ce-delivery-title">Tri Sarathi Delivery</h1>
-            <p className="ce-delivery-location">
-              <FaLocationCrosshairs style={{ color: '#f59e0b', fontSize: '11px' }} />
-              Indiranagar, Bengaluru
-            </p>
-          </div>
-          <Link to="/consumer-ecommerce/cart" className="ce-icon-btn ce-cart-btn" aria-label="View Cart">
-            <FaCartShopping />
-            <span className="ce-cart-badge">2</span>
-          </Link>
+    <div className="ce-app ce-online-page">
+      <header className="ce-compact-page-header">
+        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
+        <div>
+          <h1>Online Shop</h1>
+          <p>Products, brands and daily deals</p>
         </div>
+        <span><LuShoppingBag /></span>
       </header>
-
-      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
-        <div className="ce-premium-search-container">
-          <label className="ce-premium-search">
-            <FaMagnifyingGlass className="ce-search-icon" />
-            <input className="ce-search-input" placeholder="Search restaurants, stores, dishes" />
-            <div className="ce-search-divider"></div>
-            <FaSliders className="ce-search-filter-icon" />
-          </label>
-        </div>
-
-        <div className="ce-premium-filter-row">
-          {filters.map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`ce-pill-filter ${activeFilter === filter ? 'ce-pill-filter-active' : ''}`}
-            >
-              {filter}
-            </button>
+      <main className="ce-online-shell">
+        <aside className="ce-online-rail">
+          {rail.map(([label, Icon]) => (
+            <Link key={label} to={label === 'Tri Zone' ? '/consumer-ecommerce/tri-zone' : '/consumer-ecommerce/delivery'} className={label === 'Online Shop' ? 'active' : ''}>
+              <Icon />
+              <span>{label}</span>
+            </Link>
           ))}
-        </div>
+        </aside>
 
-        <section className="ce-delivery-section">
-          <div className="ce-delivery-section-header">
-            <h2 className="ce-premium-section-title">Fast delivery near you</h2>
-            <p className="ce-premium-section-copy">Restaurants and stores ready for quick dispatch.</p>
-          </div>
-          <div className="ce-premium-delivery-list">
-            {stores.map((store) => (
-              <DeliveryCard key={store.id} store={store} />
+        <section className="ce-online-content">
+          <label className="ce-online-search">
+            <LuSearch />
+            <input placeholder="Search for products, brands and more..." />
+            <LuCamera />
+            <LuMic />
+          </label>
+
+          <div className="ce-online-top-cats">
+            {topCats.map(([label, Icon]) => (
+              <button key={label}>
+                <Icon />
+                <span>{label}</span>
+              </button>
             ))}
           </div>
+
+          <section className="ce-online-sale-banner">
+            <div>
+              <h2>Mega Sale</h2>
+              <p>Up to 70% Off On Bestsellers</p>
+              <button>Shop Now <LuChevronRight /></button>
+            </div>
+            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=280&q=80" alt="" />
+          </section>
+
+          <div className="ce-online-perks">
+            {[
+              ['Free Delivery', LuTruck],
+              ['Easy Returns', LuRotateCcw],
+              ['Pay on Delivery', LuPackageCheck],
+              ['Top Brands', LuSparkles],
+            ].map(([label, Icon]) => (
+              <span key={label}><Icon />{label}</span>
+            ))}
+          </div>
+
+          <section className="ce-online-section">
+            <div className="ce-online-section-head">
+              <h2>Shop by Category</h2>
+              <Link to="/consumer-ecommerce/delivery">View all</Link>
+            </div>
+            <div className="ce-online-category-row">
+              {topCats.slice(1, 7).map(([label, Icon]) => (
+                <button key={label}><Icon /><span>{label}</span></button>
+              ))}
+            </div>
+          </section>
+
+          <section className="ce-online-section">
+            <div className="ce-online-section-head">
+              <h2>Best Selling Products</h2>
+              <Link to="/consumer-ecommerce/delivery">View all</Link>
+            </div>
+            <div className="ce-online-product-grid">
+              {products.slice(0, 3).map((product) => (
+                <ProductMini key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+
+          <section className="ce-online-section">
+            <div className="ce-online-section-head">
+              <h2>Deals of the Day</h2>
+              <Link to="/consumer-ecommerce/delivery">View all</Link>
+            </div>
+            <div className="ce-online-product-grid compact">
+              {products.map((product) => (
+                <ProductMini key={`deal-${product.id}`} product={product} />
+              ))}
+            </div>
+          </section>
         </section>
       </main>
       <BottomNav />

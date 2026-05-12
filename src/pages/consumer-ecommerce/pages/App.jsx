@@ -135,11 +135,16 @@ export default function App() {
             <LuMic />
           </Link>
 
-          <button type="button" className="ce-commerce-location" onClick={cityModal.open}>
-            <LuMapPin />
-            <span>Deliver to Baburaj - {consumerProfile.city} {consumerProfile.pinCode}</span>
-            <LuChevronDown />
-          </button>
+          <div className="ce-commerce-location">
+            <button type="button" onClick={cityModal.open}>
+              <LuMapPin />
+              <span>Deliver to Baburaj - {consumerProfile.city} {consumerProfile.pinCode}</span>
+              <LuChevronDown />
+            </button>
+            <Link to="/consumer-ecommerce/join-prime">
+              Join Tri Prime
+            </Link>
+          </div>
 
           <Link to="/consumer-ecommerce/near-me" className="ce-commerce-explore">
             <span><LuGrid2X2 /></span>

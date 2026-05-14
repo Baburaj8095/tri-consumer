@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LuArrowRight,
@@ -67,6 +68,211 @@ const adzTiles = [
   'Sneaker Adz',
 ];
 
+const promoDeals = [
+  {
+    title: 'Mega Mobile Rush',
+    urgency: 'Ends in 02:18:44',
+    label: 'Up to 65% off',
+    discount: 'Extra Rs. 1,500 off',
+    cashback: '10% Tri Pay cashback',
+    bank: 'SBI card instant saving',
+    prime: 'Tri Prime fast delivery',
+    cta: 'Swipe deal',
+    tone: 'orange',
+    ambient: {
+      soft: 'rgba(251, 146, 60, 0.22)',
+      glow: 'rgba(250, 204, 21, 0.22)',
+      header: 'rgba(251, 191, 36, 0.32)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1600087626014-e652e18bbff2?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Fashion Flash Drop',
+    urgency: 'Trending near you',
+    label: 'Min 50% off',
+    discount: 'Buy 2 save more',
+    cashback: 'Rs. 200 wallet rewards',
+    bank: 'Axis bank bonus',
+    prime: 'Prime fitting exchange',
+    cta: 'Grab now',
+    tone: 'pink',
+    ambient: {
+      soft: 'rgba(216, 180, 254, 0.28)',
+      glow: 'rgba(244, 114, 182, 0.22)',
+      header: 'rgba(236, 72, 153, 0.3)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Home Upgrade Fest',
+    urgency: 'Prime early access',
+    label: '40-70% off',
+    discount: 'Combo price crash',
+    cashback: '5% cashback unlocked',
+    bank: 'HDFC no-cost EMI',
+    prime: 'Prime doorstep setup',
+    cta: 'Shop sets',
+    tone: 'green',
+    ambient: {
+      soft: 'rgba(45, 212, 191, 0.24)',
+      glow: 'rgba(250, 204, 21, 0.18)',
+      header: 'rgba(20, 184, 166, 0.28)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Grocery Super Saver',
+    urgency: 'Fresh slots closing',
+    label: 'Daily deals',
+    discount: 'Flat 30% essentials',
+    cashback: 'Rs. 99 Tri Coins back',
+    bank: 'UPI bonus offer',
+    prime: 'Prime 20-min slots',
+    cta: 'Fill basket',
+    tone: 'blue',
+    ambient: {
+      soft: 'rgba(125, 211, 252, 0.26)',
+      glow: 'rgba(52, 211, 153, 0.18)',
+      header: 'rgba(56, 189, 248, 0.28)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+];
+
+function PromoDealCarousel({ onActiveChange }) {
+  const carouselRef = useRef(null);
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+
+    if (!carousel) {
+      return undefined;
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      const firstCard = carousel.querySelector('.ce-promo-deal-card');
+      const step = firstCard ? firstCard.getBoundingClientRect().width + 12 : carousel.clientWidth * 0.84;
+      const atEnd = carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - step;
+
+      carousel.scrollTo({
+        left: atEnd ? 0 : carousel.scrollLeft + step,
+        behavior: 'smooth',
+      });
+    }, 4300);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => () => {
+    if (frameRef.current) {
+      window.cancelAnimationFrame(frameRef.current);
+    }
+  }, []);
+
+  const updateActiveBanner = () => {
+    const carousel = carouselRef.current;
+
+    if (!carousel) {
+      return;
+    }
+
+    if (frameRef.current) {
+      window.cancelAnimationFrame(frameRef.current);
+    }
+
+    frameRef.current = window.requestAnimationFrame(() => {
+      const cards = Array.from(carousel.querySelectorAll('.ce-promo-deal-card'));
+      const carouselCenter = carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
+      let closestIndex = 0;
+      let closestDistance = Number.POSITIVE_INFINITY;
+
+      cards.forEach((card, index) => {
+        const rect = card.getBoundingClientRect();
+        const distance = Math.abs(rect.left + rect.width / 2 - carouselCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      onActiveChange(closestIndex);
+    });
+  };
+
+  return (
+    <section className="ce-promo-deals" aria-label="Live promotional deals">
+      <div className="ce-promo-deals-head">
+        <div>
+          <strong>Live deals for you</strong>
+          <span>Fresh drops, bank offers and Prime perks</span>
+        </div>
+        <Link to="/consumer-ecommerce/delivery">View all</Link>
+      </div>
+
+      <div className="ce-promo-deal-carousel" ref={carouselRef} onScroll={updateActiveBanner}>
+        {promoDeals.map((deal, index) => (
+          <Link
+            key={deal.title}
+            to="/consumer-ecommerce/delivery"
+            className={`ce-promo-deal-card ce-promo-deal-card-${deal.tone}`}
+            onFocus={() => onActiveChange(index)}
+            onMouseEnter={() => onActiveChange(index)}
+          >
+            <span className="ce-promo-shimmer" aria-hidden="true" />
+            <div className="ce-promo-deal-top">
+              <div className="ce-promo-live-row">
+                <span>Live now</span>
+                <small>{deal.urgency}</small>
+              </div>
+              <h3>{deal.title}</h3>
+              <div>
+                <b>{deal.label}</b>
+                <em>{deal.discount}</em>
+              </div>
+            </div>
+
+            <div className="ce-promo-product-stage" aria-hidden="true">
+              {deal.images.map((image, imageIndex) => (
+                <img key={image} src={image} alt="" className={`ce-promo-product-${imageIndex + 1}`} />
+              ))}
+              <span>Hot</span>
+            </div>
+
+            <div className="ce-promo-deal-bottom">
+              <small>{deal.cashback}</small>
+              <small>{deal.bank}</small>
+              <small>{deal.prime}</small>
+              <b>{deal.cta}</b>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ProductDealCard({ product, index }) {
   const ratings = ['4.4 (1.2K)', '4.3 (987)', '4.6 (567)', '4.2 (1.1K)'];
 
@@ -112,9 +318,18 @@ function ProductHorizontalCard({ product, index }) {
 
 export default function App() {
   const cityModal = useModal();
+  const [activePromoIndex, setActivePromoIndex] = useState(0);
+  const activePromo = promoDeals[activePromoIndex] || promoDeals[0];
 
   return (
-    <div className="ce-app ce-commerce-home">
+    <div
+      className="ce-app ce-commerce-home"
+      style={{
+        '--ce-active-promo-soft': activePromo.ambient.soft,
+        '--ce-active-promo-glow': activePromo.ambient.glow,
+        '--ce-active-promo-header': activePromo.ambient.header,
+      }}
+    >
       <Header />
       <main className="ce-commerce-main">
         <section className="ce-service-strip" aria-label="Quick services">
@@ -154,6 +369,8 @@ export default function App() {
             </div>
             <LuArrowRight />
           </Link>
+
+          <PromoDealCarousel onActiveChange={setActivePromoIndex} />
         </section>
 
         <section className="ce-commerce-full-stack">

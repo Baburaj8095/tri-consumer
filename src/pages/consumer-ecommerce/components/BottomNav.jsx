@@ -15,7 +15,7 @@ const tabs = [
   { label: 'Nearby', icon: LuStore, to: '/consumer-ecommerce/nearby-stores' },
 ];
 
-export default function BottomNav() {
+export default function BottomNav({ activeLabel }) {
   return (
     <nav className="ce-bottom-nav">
       <div className="ce-bottom-inner">
@@ -25,7 +25,7 @@ export default function BottomNav() {
             to={to}
             end={to === '/consumer-ecommerce'}
             className={({ isActive }) =>
-              `ce-bottom-tab ${center ? 'ce-bottom-tab-center' : ''} ${isActive ? 'ce-bottom-tab-active' : ''}`
+              `ce-bottom-tab ${center ? 'ce-bottom-tab-center' : ''} ${(activeLabel ? activeLabel === label : isActive) ? 'ce-bottom-tab-active' : ''}`
             }
           >
             <span className="ce-bottom-icon-wrap">

@@ -29,7 +29,7 @@ export default function Header() {
           </button>
           <div className="ce-title-wrap">
             <span className="ce-title-kicker">Trikonekt</span>
-            <h1 className="ce-title">Consumer</h1>
+            <h1 className="ce-title">Shop</h1>
           </div>
           <div className="ce-header-actions">
             <button className="ce-icon-btn ce-icon-btn-sm" aria-label="Wallet">

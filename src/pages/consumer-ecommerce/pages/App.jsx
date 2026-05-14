@@ -365,7 +365,7 @@ export default function App() {
             <span><LuGrid2X2 /></span>
             <div>
               <strong>Explore Nearby</strong>
-              <small>Find services & hotels around you</small>
+              <small>Find services around you</small>
             </div>
             <LuArrowRight />
           </Link>

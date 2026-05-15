@@ -30,10 +30,10 @@ export const categories = [
 ];
 
 export const consumerProfile = {
-  name: 'Raghavendra Shenoy',
+  name: 'Trikonekt',
   idNumber: 'TRK-2026-1048',
   pinCode: '560038',
-  phone: '+91 98765 43210',
+  phone: '+91 9999999999',
   city: 'Indiranagar, Bengaluru',
   membership: 'Prime Consumer Member',
   walletBalance: 'Rs. 2,450',

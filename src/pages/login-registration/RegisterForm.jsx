@@ -3,6 +3,8 @@ import { AiOutlineCheckCircle, AiOutlineLeft } from 'react-icons/ai';
 import { FaEye, FaEyeSlash, FaArrowRight, FaShieldAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './loginRegistration.css';
+import SMSService from '../../services/smsService';
+import { generateOtp } from '../../services/otpGenerator';
 
 const sponsorLookup = {
   TRI001: 'Trikonekt Partner',
@@ -47,6 +49,9 @@ function RegisterForm() {
   const [isMobileVerified, setIsMobileVerified] = useState(false);
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [msgId, setMsgId] = useState('');
+  const [isOtpLoading, setIsOtpLoading] = useState(false);
   
   // Lock body scroll for premium mobile experience
   useEffect(() => {
@@ -208,15 +213,41 @@ function RegisterForm() {
     }, 1100);
   };
 
-  const handleSendOtp = () => {
-    if (!formData.mobileNumber || formData.mobileNumber.length < 10) {
+  const handleSendOtp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setOtpError('');
+    const mobile = formData.mobileNumber.trim();
+    if (!mobile || mobile.length < 10) {
       setErrors((prev) => ({ ...prev, mobileNumber: 'Enter a valid mobile number first' }));
       return;
     }
-    setShowOtpField(true);
-    setOtpError('');
-    setMobileOtp(['', '', '', '', '', '']);
-    setResendTimer(30);
+    const mobilePattern = /^[+]?[0-9]{10,15}$/;
+    if (!mobilePattern.test(mobile)) {
+      setErrors((prev) => ({ ...prev, mobileNumber: 'Invalid mobile number format' }));
+      return;
+    }
+    setIsOtpLoading(true);
+    const smsService = new SMSService();
+    const otpCode = generateOtp();
+    try {
+      const result = await smsService.sendOtp(`${formData.countryCode || '+91'}${mobile}`, otpCode, 5);
+      setGeneratedOtp(otpCode);
+      setMsgId(result.msgid);
+      setShowOtpField(true);
+      setResendTimer(30);
+      setMobileOtp(['', '', '', '', '', '']);
+    } catch (err) {
+      console.warn('AquaSMS API call failed. Using local development fallback mode.', err);
+      setGeneratedOtp(otpCode);
+      setMsgId('MOCK-MSG-ID');
+      setShowOtpField(true);
+      setResendTimer(30);
+      setMobileOtp(['', '', '', '', '', '']);
+      const msg = err.code ? SMSService.mapErrorCode(err.code) : err.message;
+      setOtpError(`SMS Gateway error (${msg}). Mock OTP: ${otpCode} (logged to console)`);
+    } finally {
+      setIsOtpLoading(false);
+    }
   };
 
   const handleVerifyOtp = () => {
@@ -225,8 +256,8 @@ function RegisterForm() {
       setOtpError('Enter a 6-digit OTP');
       return;
     }
-    if (code !== '123456') {
-      setOtpError('Invalid OTP. Use 123456 for testing.');
+    if (code !== generatedOtp) {
+      setOtpError('Invalid OTP');
       return;
     }
     setIsMobileVerified(true);
@@ -358,8 +389,9 @@ function RegisterForm() {
                           type="button" 
                           onClick={handleSendOtp}
                           className="link-button"
+                          disabled={isOtpLoading}
                         >
-                          Verify Mobile Number
+                          {isOtpLoading ? 'Sending...' : 'Verify Mobile Number'}
                         </button>
                       </div>
                     )}
@@ -389,7 +421,9 @@ function RegisterForm() {
                         <div className="otp-actions-row">
                           <span className="timer-text">
                             {resendTimer > 0 ? `Resend OTP in 00:${resendTimer < 10 ? '0'+resendTimer : resendTimer}` : (
-                              <button type="button" onClick={handleSendOtp} className="link-button">Resend OTP</button>
+                              <button type="button" onClick={handleSendOtp} className="link-button" disabled={isOtpLoading}>
+                                {isOtpLoading ? 'Sending...' : 'Resend OTP'}
+                              </button>
                             )}
                           </span>
                         </div>

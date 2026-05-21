@@ -3,6 +3,8 @@ import { AiOutlineCheckCircle, AiOutlineLeft, AiOutlineUser, AiOutlineLock, AiOu
 import { FaEye, FaEyeSlash, FaArrowRight, FaShieldAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import './loginRegistration.css';
+import SMSService from '../../services/smsService';
+import { generateOtp } from '../../services/otpGenerator';
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -17,9 +19,13 @@ function LoginForm() {
   const [otpError, setOtpError] = useState('');
 
   const [forgotPasswordData, setForgotPasswordData] = useState({ identifier: '' });
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [msgId, setMsgId] = useState('');
   const [loginOtpData, setLoginOtpData] = useState({ mobile: '' });
   const [newPasswordData, setNewPasswordData] = useState({ password: '', confirmPassword: '' });
   const [generalError, setGeneralError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [countryCode, setCountryCode] = useState('+91');
 
   // Lock body scroll for premium mobile experience
   useEffect(() => {
@@ -28,6 +34,17 @@ function LoginForm() {
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  // OTP Timer Logic
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleLoginChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -61,29 +78,31 @@ function LoginForm() {
   };
 
   const handleOtpSubmit = () => {
-    const code = otp.join('');
-    if (code.length < 6) {
-      setOtpError('Please enter a 6-digit OTP');
+  const code = otp.join('');
+  if (code.length < 6) {
+    setOtpError('Please enter a 6-digit OTP');
+    return;
+  }
+  setIsLoading(true);
+  setTimeout(() => {
+    if (code !== generatedOtp) {
+      setOtpError('Invalid OTP');
+      setIsLoading(false);
       return;
     }
-    
-    setIsLoading(true);
-    setTimeout(() => {
-      if (code !== '123456') {
-        setOtpError('Invalid OTP (use 123456)');
-        setIsLoading(false);
-        return;
-      }
-
-      if (view === 'forgot-password-otp') {
-        setView('reset-password');
-      } else {
-        alert('Logged in successfully!');
-        navigate('/'); // Redirect to home/dashboard
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
+    // OTP correct, proceed
+    if (view === 'forgot-password-otp') {
+      setView('reset-password');
+    } else {
+      alert('Logged in successfully!');
+      navigate('/');
+    }
+    // Reset OTP state after success
+    setGeneratedOtp('');
+    setOtp(['', '', '', '', '', '']);
+    setIsLoading(false);
+  }, 500);
+};
 
   const handleOtpChange = (index, value) => {
     const numValue = value.replace(/[^0-9]/g, '');
@@ -101,6 +120,53 @@ function LoginForm() {
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Handle mobile input change for OTP request
+  const handleLoginOtpChange = (e) => {
+    setLoginOtpData({ mobile: e.target.value });
+    if (loginError) setLoginError('');
+  };
+
+  const smsService = new SMSService();
+
+  // Send OTP via AquaSMS
+  const handleSendOtp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setLoginError('');
+    setOtpError('');
+    const mobile = loginOtpData.mobile.trim();
+    if (!mobile) {
+      setLoginError('Please enter mobile number');
+      return;
+    }
+    const mobilePattern = /^[0-9]{10,15}$/;
+    if (!mobilePattern.test(mobile)) {
+      setLoginError('Invalid mobile number format');
+      return;
+    }
+    setIsLoading(true);
+    const otpCode = generateOtp();
+    try {
+      const fullMobile = `${countryCode}${mobile}`;
+      const result = await smsService.sendOtp(fullMobile, otpCode, 5);
+      setGeneratedOtp(otpCode);
+      setMsgId(result.msgid);
+      setView('otp');
+      setResendTimer(30);
+      setOtp(['', '', '', '', '', '']);
+    } catch (err) {
+      console.warn('AquaSMS API call failed. Using local development fallback mode.', err);
+      setGeneratedOtp(otpCode);
+      setMsgId('MOCK-MSG-ID');
+      setView('otp');
+      setResendTimer(30);
+      setOtp(['', '', '', '', '', '']);
+      const msg = err.code ? SMSService.mapErrorCode(err.code) : err.message;
+      setOtpError(`SMS Gateway error (${msg}). Mock OTP: ${otpCode} (logged to console)`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -229,7 +295,9 @@ function LoginForm() {
                     <AiOutlineCheckCircle size={48} color="#ff6b17" />
                   </div>
                   <h2 className="otp-title-v2">Enter Verification Code</h2>
-                  <p className="otp-subtitle-v2">We've sent a 6-digit code to your registered device.</p>
+                  <p className="otp-subtitle-v2">
+                    We've sent a 6-digit code to <strong style={{ color: '#2d3748' }}>{countryCode} {loginOtpData.mobile}</strong>.
+                  </p>
 
                   <div className="otp-row-v2">
                     {otp.map((digit, i) => (
@@ -248,12 +316,28 @@ function LoginForm() {
                   </div>
                   {otpError && <div className="ce-error-text" style={{ textAlign: 'center', marginTop: '12px' }}>{otpError}</div>}
                   
+                  <div className="otp-actions-row" style={{ textAlign: 'center', marginTop: '16px' }}>
+                    <span className="timer-text">
+                      {resendTimer > 0 ? `Resend OTP in 00:${resendTimer < 10 ? '0' + resendTimer : resendTimer}` : (
+                        <button 
+                          type="button" 
+                          onClick={handleSendOtp} 
+                          className="bold-orange" 
+                          disabled={isLoading}
+                          style={{ fontSize: '13px', textDecoration: 'underline' }}
+                        >
+                          {isLoading ? 'Sending...' : 'Resend OTP'}
+                        </button>
+                      )}
+                    </span>
+                  </div>
+
                   <button className="primary-button cta-btn" onClick={handleOtpSubmit} disabled={isLoading} style={{ marginTop: '24px' }}>
                     {isLoading ? 'Verifying...' : 'Verify & Continue'}
                   </button>
                   
                   <div style={{ textAlign: 'center', marginTop: '16px' }}>
-                    <button className="text-button" onClick={() => setView('login')}>Back to Login</button>
+                    <button className="text-button" onClick={() => setView('login-otp-request')}>Change Phone Number</button>
                   </div>
                 </div>
               </div>
@@ -261,20 +345,35 @@ function LoginForm() {
 
             {view === 'login-otp-request' && (
               <div className="animate-slide-up">
-                <form className="registration-form" onSubmit={(e) => { e.preventDefault(); setView('otp'); }}>
+                <form className="registration-form" onSubmit={handleSendOtp}>
                   <div className="form-group">
                     <label className="field-label">Mobile Number</label>
-                    <div className="field-with-icon">
-                      <AiOutlineUser className="input-icon" />
+                    <div className="field-with-code">
+                      <select
+                        name="countryCode"
+                        className="text-field code-select"
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        style={{ maxWidth: '90px' }}
+                      >
+                        <option value="+91">+91</option>
+                        <option value="+1">+1</option>
+                        <option value="+44">+44</option>
+                      </select>
                       <input
                         type="tel"
-                        className="text-field has-icon"
+                        className={`text-field ${loginError ? 'ce-input-error' : ''}`}
                         placeholder="Enter mobile number"
                         maxLength={10}
+                        value={loginOtpData.mobile}
+                        onChange={handleLoginOtpChange}
                       />
                     </div>
                   </div>
-                  <button className="primary-button cta-btn" type="submit">Send OTP Code</button>
+                  {loginError && <div className="ce-error-text" style={{ textAlign: 'center', margin: '8px 0 16px 0' }}>{loginError}</div>}
+                  <button className="primary-button cta-btn" type="submit" disabled={isLoading}>
+                    {isLoading ? 'Sending...' : 'Send OTP Code'}
+                  </button>
                   <div className="secondary-link" style={{ textAlign: 'center', marginTop: '16px' }}>
                     <button type="button" onClick={() => setView('login')}>Back to Login</button>
                   </div>

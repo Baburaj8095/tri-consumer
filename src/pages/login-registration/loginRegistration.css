@@ -935,7 +935,7 @@
    ========================================= */
 
 .login-bg {
-  background: radial-gradient(circle at top left, #fff3ea 0%, #ffd4be 50%, #ffa474 100%);
+  background: linear-gradient(135deg, #fff6f0 0%, #ffe3d5 50%, #ffbda2 100%);
   position: relative;
   overflow: hidden;
 }

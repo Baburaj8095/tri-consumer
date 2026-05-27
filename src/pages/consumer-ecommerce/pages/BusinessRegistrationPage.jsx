@@ -1,354 +1,253 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaArrowLeft, FaEye, FaEyeSlash, FaCheckCircle, FaShield, FaSpinner } from 'react-icons/fa';
-import BottomNav from '../components/BottomNav.jsx';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  LuChevronLeft,
+  LuLoader,
+  LuBadgeCheck,
+  LuUser,
+  LuMapPin,
+  LuStore,
+  LuShieldCheck
+} from 'react-icons/lu';
 import '../consumerEcommerce.css';
-
-const sponsorLookup = {
-  TRI001: 'Trikonekt Partner',
-  VIP100: 'Luxe Sponsor',
-  GROW20: 'Growth Circle',
-};
-
-const pincodeLookup = {
-  '560001': { village: 'Bengaluru GPO', taluk: 'Bengaluru South', district: 'Bengaluru', state: 'Karnataka', country: 'India' },
-  '110001': { village: 'Connaught Place', taluk: 'New Delhi', district: 'Central Delhi', state: 'Delhi', country: 'India' },
-  '400001': { village: 'Fort', taluk: 'South Mumbai', district: 'Mumbai', state: 'Maharashtra', country: 'India' },
-};
+import BottomNav from '../components/BottomNav.jsx';
 
 export default function BusinessRegistrationPage() {
-  const [formData, setFormData] = useState({
-    sponsorId: '',
-    sponsorName: '',
-    fullName: '',
-    countryCode: '+91',
-    mobileNumber: '',
-    email: '',
-    gender: 'female',
-    pinCode: '',
-    village: '',
-    taluk: '',
-    district: '',
-    state: '',
-    country: '',
-    password: '',
-    termsAccepted: false,
-  });
+  const navigate = useNavigate();
+  
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [autoDetails, setAutoDetails] = useState(null);
+
+  const [businessCategory, setBusinessCategory] = useState('');
+
   const [errors, setErrors] = useState({});
-  const [sponsorStatus, setSponsorStatus] = useState('');
-  const [sponsorLoading, setSponsorLoading] = useState(false);
-  const [pinLoading, setPinLoading] = useState(false);
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  useEffect(() => {
-    if (!formData.pinCode || formData.pinCode.length !== 6) {
-      setFormData((prev) => ({ ...prev, village: '', taluk: '', district: '', state: '', country: '' }));
-    }
-  }, [formData.pinCode]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    let fieldValue = value;
-
-    if (name === 'mobileNumber') {
-      fieldValue = value.replace(/[^0-9]/g, '');
-    }
-
-    if (name === 'pinCode') {
-      fieldValue = value.replace(/[^0-9]/g, '').slice(0, 6);
-    }
-
-    if (name === 'sponsorId') {
-      setSponsorStatus('');
-      setFormData((prev) => ({ ...prev, sponsorName: '' }));
-    }
-
-    setFormData((prev) => ({ ...prev, [name]: fieldValue }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
-  };
-
-  const fetchSponsor = () => {
-    const sponsorId = formData.sponsorId.trim().toUpperCase();
-    if (!sponsorId) return;
-    setSponsorLoading(true);
-    setSponsorStatus('');
-    setTimeout(() => {
-      const sponsorName = sponsorLookup[sponsorId];
-      if (sponsorName) {
-        setFormData((prev) => ({ ...prev, sponsorName }));
-        setSponsorStatus('verified');
+  const handleMobileChange = e => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    if (val.length <= 10) {
+      setMobileNumber(val);
+      if (val.length === 10) {
+        // Set autodetected details immediately
+        setAutoDetails({
+          name: 'Baburaj',
+          pinCode: '560103',
+          city: 'Bangalore'
+        });
+        setErrors(prev => ({ ...prev, mobileNumber: null }));
       } else {
-        setFormData((prev) => ({ ...prev, sponsorName: '' }));
-        setSponsorStatus('invalid');
+        setAutoDetails(null);
       }
-      setSponsorLoading(false);
-    }, 900);
-  };
-
-  const fetchAddress = () => {
-    const pinCode = formData.pinCode.trim();
-    if (pinCode.length !== 6) return;
-    setPinLoading(true);
-    setTimeout(() => {
-      const address = pincodeLookup[pinCode];
-      if (address) {
-        setFormData((prev) => ({ ...prev, ...address }));
-      } else {
-        setFormData((prev) => ({ ...prev, village: '', taluk: '', district: '', state: '', country: '' }));
-      }
-      setPinLoading(false);
-    }, 900);
-  };
-
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.sponsorId.trim()) newErrors.sponsorId = 'Sponsor ID is required';
-    if (sponsorStatus === 'invalid') newErrors.sponsorId = 'Invalid Sponsor ID';
-    if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
-    if (!formData.mobileNumber.trim()) {
-      newErrors.mobileNumber = 'Mobile Number is required';
-    } else if (formData.mobileNumber.length < 10) {
-      newErrors.mobileNumber = 'Enter a valid 10-digit mobile number';
     }
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Enter a valid email address';
-    }
-    if (!formData.pinCode.trim()) newErrors.pinCode = 'Pincode is required';
-    if (formData.pinCode.trim().length !== 6) newErrors.pinCode = 'Enter a valid 6-digit pincode';
-    if (!formData.password.trim()) newErrors.password = 'Password is required';
-    if (formData.password.trim().length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.termsAccepted) newErrors.termsAccepted = 'You must accept terms to continue';
-    return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+    const newErrors = {};
+    if (mobileNumber.length < 10) {
+      newErrors.mobileNumber = 'Please enter a valid 10-digit mobile number';
+    }
+    if (!businessCategory.trim()) {
+      newErrors.category = 'Please specify your business category';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      alert('Registration submitted successfully');
-    }, 1200);
+    setLoading(true);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      setSuccess(true);
+    } catch (err) {
+      setErrors({ api: 'Something went wrong. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="ce-app" style={{ background: '#f8fafc' }}>
-      <header className="ce-header">
-        <div className="ce-header-inner">
-          <Link to="/consumer-ecommerce" className="ce-icon-btn" aria-label="Back to dashboard">
-            <FaArrowLeft />
-          </Link>
-          <div className="ce-header-title-container">
-            <h1 className="ce-header-title">Register for Shopping</h1>
-            <span className="ce-header-subtitle">Smart onboarding for secure and faster checkout.</span>
-          </div>
-          <div style={{ width: '42px' }} />
+    <div className="ce-app ce-commerce-home ce-biz-reg-layout">
+      {/* Sticky Top Header */}
+      <header className="ce-compact-page-header">
+        <Link to="/consumer-ecommerce" aria-label="Back">
+          <LuChevronLeft />
+        </Link>
+        <div>
+          <h1>List Your Business</h1>
+          <p>Onboarding Dashboard</p>
         </div>
+        <span><LuStore /></span>
       </header>
 
-      <main className="ce-container" style={{ paddingTop: '80px', paddingBottom: '132px' }}>
-        <form onSubmit={handleSubmit} className="ce-form-card registration-form-card">
-          <div className="registration-top-row">
-            <div>
-              <p className="registration-step">Step 1 of 1</p>
-              <h2 className="registration-title">Create your account</h2>
-              <p className="registration-copy">Complete your details once and enjoy premium shopping benefits.</p>
+      {/* Scrollable container */}
+      <main className="ce-biz-reg-container">
+        {success ? (
+          <div className="ce-biz-reg-success-card">
+            <div className="success-icon-container">
+              <LuBadgeCheck />
             </div>
-            <Link to="/auth" className="registration-login-link">Already have an account? Login</Link>
-          </div>
-
-          <div className="trust-banner">
-            <FaShieldAlt className="trust-icon" />
-            <div>
-              <strong>Secure registration</strong> with mobile verification and data-safe onboarding.
-            </div>
-          </div>
-
-          <div className="ce-form-group">
-            <label className="ce-label" htmlFor="sponsorId">Sponsor ID *</label>
-            <div className="field-with-action">
-              <input
-                id="sponsorId"
-                name="sponsorId"
-                type="text"
-                className={`ce-input ${errors.sponsorId ? 'ce-input-error' : ''}`}
-                placeholder="Enter Sponsor ID"
-                value={formData.sponsorId}
-                onChange={handleChange}
-                onBlur={fetchSponsor}
-              />
-              <div className="field-action-icon">
-                {sponsorLoading ? <FaSpinner className="loader-icon" /> : sponsorStatus === 'verified' ? <FaCheckCircle className="success-icon" /> : null}
+            <h2>Registration Successful!</h2>
+            <p className="success-description">
+              Congratulations! Your business registration request has been successfully submitted to our team.
+            </p>
+            <div className="success-details-box">
+              <div className="detail-row">
+                <span>Owner Name:</span>
+                <strong>{autoDetails?.name || 'Baburaj'}</strong>
+              </div>
+              <div className="detail-row">
+                <span>Mobile Number:</span>
+                <strong>+91 {mobileNumber}</strong>
+              </div>
+              <div className="detail-row">
+                <span>Business Type:</span>
+                <strong>{businessCategory}</strong>
+              </div>
+              <div className="detail-row">
+                <span>Service City:</span>
+                <strong>{autoDetails?.city} ({autoDetails?.pinCode})</strong>
               </div>
             </div>
-            {sponsorStatus === 'verified' && <p className="helper-text verified-text">Verified sponsor: {formData.sponsorName}</p>}
-            {sponsorStatus === 'invalid' && <span className="ce-error-text">Sponsor ID not recognized</span>}
-            {errors.sponsorId && <span className="ce-error-text">{errors.sponsorId}</span>}
-          </div>
-
-          <div className="ce-form-group">
-            <label className="ce-label">Sponsor Name</label>
-            <input
-              type="text"
-              className="ce-input ce-input-disabled"
-              value={formData.sponsorName}
-              disabled
-              placeholder="Sponsor name will appear here"
-            />
-          </div>
-
-          <div className="field-grid two-col-grid">
-            <div className="ce-form-group">
-              <label className="ce-label" htmlFor="fullName">Full Name *</label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                className={`ce-input ${errors.fullName ? 'ce-input-error' : ''}`}
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={handleChange}
-              />
-              {errors.fullName && <span className="ce-error-text">{errors.fullName}</span>}
-            </div>
-            <div className="ce-form-group">
-              <label className="ce-label" htmlFor="email">Email ID (Optional)</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                className={`ce-input ${errors.email ? 'ce-input-error' : ''}`}
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {errors.email && <span className="ce-error-text">{errors.email}</span>}
-            </div>
-          </div>
-
-          <div className="field-grid two-col-grid">
-            <div className="ce-form-group">
-              <label className="ce-label" htmlFor="mobileNumber">Mobile Number *</label>
-              <div className="field-with-code">
-                <select
-                  name="countryCode"
-                  className="ce-input code-select"
-                  value={formData.countryCode}
-                  onChange={handleChange}
-                >
-                  <option value="+91">+91</option>
-                  <option value="+1">+1</option>
-                  <option value="+44">+44</option>
-                </select>
-                <input
-                  id="mobileNumber"
-                  name="mobileNumber"
-                  type="tel"
-                  className={`ce-input ${errors.mobileNumber ? 'ce-input-error' : ''}`}
-                  placeholder="10-digit mobile number"
-                  value={formData.mobileNumber}
-                  onChange={handleChange}
-                />
-              </div>
-              {errors.mobileNumber && <span className="ce-error-text">{errors.mobileNumber}</span>}
-            </div>
-            <div className="ce-form-group">
-              <label className="ce-label">Gender</label>
-              <div className="gender-row">
-                {['male', 'female', 'other'].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={`gender-chip ${formData.gender === option ? 'active' : ''}`}
-                    onClick={() => setFormData((prev) => ({ ...prev, gender: option }))}
-                  >
-                    {option[0].toUpperCase() + option.slice(1)}
-                  </button>
-                ))}
+            <div className="success-next-steps">
+              <LuShieldCheck className="next-steps-icon" />
+              <div>
+                <strong>What's Next?</strong>
+                <p>An Admin will call you on your verified mobile number to complete document verification and activate your online storefront.</p>
               </div>
             </div>
+            <button className="ce-biz-reg-submit-btn" style={{ boxShadow: 'none' }} onClick={() => navigate('/consumer-ecommerce')}>
+              Done
+            </button>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="ce-biz-reg-form">
+            {/* Onboarding graphic section */}
+            <div className="ce-biz-reg-hero">
+              <div className="ce-biz-reg-hero-svg-wrap">
+                <svg viewBox="0 0 200 120" className="ce-biz-hero-svg">
+                  <path d="M10 100 h180" stroke="#E2E8F0" strokeWidth="3" strokeLinecap="round" />
+                  <rect x="45" y="45" width="110" height="55" rx="8" fill="#FFFFFF" stroke="#F97316" strokeWidth="2.5" />
+                  <rect x="55" y="65" width="30" height="35" rx="3" fill="#FFE5D9" />
+                  <rect x="95" y="60" width="50" height="25" rx="4" fill="#F8FAFC" stroke="#E2E8F0" strokeWidth="1.5" />
+                  <path d="M40 45 l15 -15 h100 l15 15 Z" fill="#F97316" />
+                  <path d="M55 30 l10 15 M75 30 l10 15 M95 30 l10 15 M115 30 l10 15 M135 30 l10 15" stroke="#FFFFFF" strokeWidth="3" />
+                  <text x="120" y="76" fill="#EA580C" fontSize="9" fontWeight="bold" textAnchor="middle">OPEN</text>
+                  <g transform="translate(140, 20)">
+                    <circle cx="10" cy="10" r="10" fill="#FFEDD5" />
+                    <path d="M10 4 c-2.5 0 -4.5 2 -4.5 4.5 c0 3.5 4.5 7.5 4.5 7.5 s4.5 -4 4.5 -7.5 c0 -2.5 -2 -4.5 -4.5 -4.5 Z" fill="#EA580C" />
+                    <circle cx="10" cy="8.5" r="1.5" fill="#FFFFFF" />
+                  </g>
+                  <g transform="translate(25, 25)" fill="#FBBF24">
+                    <path d="M10 2 l2 5 h5 l-4 3 l2 5 l-5 -4 l-5 4 l2 -5 l-4 -3 h5 Z" transform="scale(0.8)" />
+                  </g>
+                  <g transform="translate(38, 15)" fill="#FBBF24">
+                    <path d="M10 2 l2 5 h5 l-4 3 l2 5 l-5 -4 l-5 4 l2 -5 l-4 -3 h5 Z" transform="scale(0.6)" />
+                  </g>
+                  <g transform="translate(165, 55)" fill="#FB923C">
+                    <circle cx="5" cy="5" r="2" />
+                    <circle cx="12" cy="10" r="3" />
+                  </g>
+                </svg>
+              </div>
+              <h2>List Your Business</h2>
+              <p>Reach nearby customers and grow your business with Trikonekt platform</p>
+            </div>
 
-          <div className="field-grid two-col-grid">
-            <div className="ce-form-group">
-              <label className="ce-label" htmlFor="pinCode">Pincode *</label>
-              <div className="field-with-action">
-                <input
-                  id="pinCode"
-                  name="pinCode"
-                  type="text"
-                  className={`ce-input ${errors.pinCode ? 'ce-input-error' : ''}`}
-                  placeholder="Enter pincode"
-                  value={formData.pinCode}
-                  onChange={handleChange}
-                  onBlur={fetchAddress}
-                />
-                <div className="field-action-icon">
-                  {pinLoading ? <FaSpinner className="loader-icon" /> : formData.village ? <FaCheckCircle className="success-icon" /> : null}
+            {/* Input fields stack */}
+            <div className="ce-biz-reg-card">
+              <h3>1. Contact Verification</h3>
+              <div className="form-field-group">
+                <label htmlFor="reg-mobile">Enter Mobile Number</label>
+                <div className={`input-field-wrapper ${errors.mobileNumber ? 'has-error' : ''}`}>
+                  <span className="country-prefix">+91</span>
+                  <input
+                    id="reg-mobile"
+                    type="tel"
+                    maxLength={10}
+                    value={mobileNumber}
+                    onChange={handleMobileChange}
+                    placeholder="9886178729"
+                  />
+                </div>
+                {errors.mobileNumber && (
+                  <span className="field-error-message">{errors.mobileNumber}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Auto-filled profile section (displays once number is verified) */}
+            {autoDetails && (
+              <div className="ce-biz-reg-card auto-profile-card">
+                <div className="card-header-badge">
+                  <span className="badge-tag">Auto Detected</span>
+                </div>
+                <h3>2. Business Owner Profile</h3>
+                <div className="form-field-group">
+                  <label>Full Name</label>
+                  <div className="input-field-wrapper disabled-field">
+                    <span className="field-icon"><LuUser /></span>
+                    <input type="text" value={autoDetails.name} readOnly />
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="form-field-group">
+                    <label>PIN Code</label>
+                    <div className="input-field-wrapper disabled-field">
+                      <span className="field-icon"><LuMapPin /></span>
+                      <input type="text" value={autoDetails.pinCode} readOnly />
+                    </div>
+                  </div>
+                  <div className="form-field-group">
+                    <label>Location/City</label>
+                    <div className="input-field-wrapper disabled-field">
+                      <span className="field-icon"><LuStore /></span>
+                      <input type="text" value={autoDetails.city} readOnly />
+                    </div>
+                  </div>
                 </div>
               </div>
-              {errors.pinCode && <span className="ce-error-text">{errors.pinCode}</span>}
-            </div>
-            <div className="ce-form-group">
-              <label className="ce-label" htmlFor="password">Password *</label>
-              <div className="field-with-action">
-                <input
-                  id="password"
-                  name="password"
-                  type={passwordVisible ? 'text' : 'password'}
-                  className={`ce-input ${errors.password ? 'ce-input-error' : ''}`}
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button type="button" className="password-toggle" onClick={() => setPasswordVisible((prev) => !prev)}>
-                  {passwordVisible ? <FaEyeSlash /> : <FaEye />}
-                </button>
+            )}
+
+            {/* Business Type / Category */}
+            <div className="ce-biz-reg-card">
+              <h3>3. Business Category</h3>
+              <div className="form-field-group">
+                <label htmlFor="reg-category">Type Your Business</label>
+                <div className={`input-field-wrapper ${errors.category ? 'has-error' : ''}`}>
+                  <span className="field-icon"><LuStore /></span>
+                  <input
+                    id="reg-category"
+                    type="text"
+                    value={businessCategory}
+                    onChange={e => {
+                      setBusinessCategory(e.target.value);
+                      setErrors(prev => ({ ...prev, category: null }));
+                    }}
+                    placeholder="e.g. Plumber, Grocery, Restaurant"
+                  />
+                </div>
+                {errors.category && (
+                  <span className="field-error-message">{errors.category}</span>
+                )}
               </div>
-              {errors.password && <span className="ce-error-text">{errors.password}</span>}
             </div>
-          </div>
 
-          <div className="address-grid">
-            {['village', 'taluk', 'district', 'state', 'country'].map((field) => (
-              <div key={field} className="address-item">
-                <label className="ce-label">{field.charAt(0).toUpperCase() + field.slice(1)}</label>
-                <input
-                  type="text"
-                  className="ce-input ce-input-disabled"
-                  value={formData[field]}
-                  disabled
-                  placeholder={formData[field] ? formData[field] : 'Auto-filled from pincode'}
-                />
-              </div>
-            ))}
-          </div>
-
-          <label className="terms-row">
-            <input
-              type="checkbox"
-              checked={formData.termsAccepted}
-              onChange={(e) => {
-                setFormData((prev) => ({ ...prev, termsAccepted: e.target.checked }));
-                if (errors.termsAccepted) setErrors((prev) => ({ ...prev, termsAccepted: null }));
-              }}
-            />
-            <span>
-              I agree to the <a href="#" className="link-text">Terms & Conditions</a> and <a href="#" className="link-text">Privacy Policy</a>.
-            </span>
-          </label>
-          {errors.termsAccepted && <span className="ce-error-text">{errors.termsAccepted}</span>}
-
-          <button type="submit" className="ce-submit-btn sticky-submit" disabled={isSubmitted}>
-            {isSubmitted ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
+            {/* Action Button Container */}
+            <div className="ce-biz-reg-cta-container">
+              <button
+                type="submit"
+                className="ce-biz-reg-submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Submitting Application...' : 'Submit'}
+              </button>
+            </div>
+          </form>
+        )}
       </main>
+
       <BottomNav />
     </div>
   );

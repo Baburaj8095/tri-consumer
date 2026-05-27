@@ -18,7 +18,47 @@ import {
 import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
-const rail = ['Home', 'Categories', 'Bag', 'Orders', 'Buy Again', 'Account', 'Tri Pay', 'Online Shop', 'Near Store'];
+const rail = [
+  'Home',
+  'Categories',
+  'Bag',
+  'Orders',
+  'Buy Again',
+  'Account',
+  'Tri Pay',
+  'Online Shop',
+  'Near Store',
+  'Grocery',
+  'Pharmacy',
+  'Pet Care',
+  'Mobile Recharge',
+  'Bill Payments',
+  'Travel Booking',
+  'Flight Tickets',
+  'Hotels',
+  'Insurance',
+  'Healthcare',
+  'Fresh Vegetables',
+  'Home Appliances',
+  'Gaming Zone',
+  'Subscription Services',
+  'Event Booking',
+  'Fitness & Gym',
+  'Education',
+  'Digital Services',
+  'Gift Store',
+  'Furniture Deals',
+  'Auto Accessories',
+  'Beauty Products',
+  'Baby Care',
+  'Organic Products',
+  'Stationery',
+  'Books & Media',
+  'Local Services',
+  'Electronics Repair',
+  'Laundry Services',
+  'Courier Services',
+];
 
 const top = [
   ['Top Picks', LuShoppingBag],

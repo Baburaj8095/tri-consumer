@@ -29,6 +29,7 @@ import GiftCardsSection from '../components/GiftCardsSection.jsx';
 import AdsCarousel from '../components/AdsCarousel.jsx';
 import ActionGrid from '../components/ActionGrid.jsx';
 import BottomNav from '../components/BottomNav.jsx';
+import AdzOnlySection from '../components/AdzOnlySection.jsx';
 import { useModal } from '../hooks/useModal.js';
 import { consumerProfile, products } from '../services/mockData.js';
 import '../consumerEcommerce.css';
@@ -404,17 +405,7 @@ export default function App() {
             </div>
           </section>
 
-          <section className="ce-adz-strip" aria-label="Adz only">
-            <strong>Adz Only</strong>
-            <div>
-              {adzTiles.map((label) => (
-                <Link key={label} to="/consumer-ecommerce/ads" className="ce-adz-chip">
-                  <LuTag />
-                  <span>{label}<small>Buy Now</small></span>
-                </Link>
-              ))}
-            </div>
-          </section>
+          <AdzOnlySection />
 
           <section className="ce-premium-action-banners">
             <Link to="/consumer-ecommerce/society" className="ce-action-banner">

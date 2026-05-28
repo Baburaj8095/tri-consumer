@@ -1,0 +1,10 @@
+{
+  "name": "tri-consumer-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm start --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "backend": "powershell -File backend/run-dev.ps1"
+  }
+}

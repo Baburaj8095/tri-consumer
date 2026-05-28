@@ -6,3 +6,5 @@ target/
 .env.*
 !.env.example
 *.log
+.maven/
+backend/data/

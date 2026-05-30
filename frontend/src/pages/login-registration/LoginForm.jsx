@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash, FaArrowRight, FaShieldAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './loginRegistration.css';
+import logo from './logo.png';
 import SMSService from '../../services/smsService';
 import { generateOtp } from '../../services/otpGenerator';
 
@@ -209,9 +210,18 @@ function LoginForm() {
           <div className="form-scroll mobile-scroll">
             <div className="login-welcome-section">
               <div className="brand-logo-container">
-                <div className="brand-logo-circle">
-                  <AiOutlineUser size={40} color="white" />
-                </div>
+                <img
+                  src={logo}
+                  alt="Trikonekt Logo"
+                  className="brand-logo-circle"
+                  style={{
+                    transform: 'none',
+                    background: 'transparent',
+                    boxShadow: 'none',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                  }}
+                />
               </div>
               <h1 className="welcome-title">Welcome Back</h1>
               <p className="welcome-subtitle">Login to continue shopping</p>

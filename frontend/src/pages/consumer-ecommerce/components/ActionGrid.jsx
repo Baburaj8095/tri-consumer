@@ -9,14 +9,14 @@ import {
 const actions = [
   {
     id: 1,
-    title: 'Free Zone Shopping',
+    title: 'Trizone Shopping',
     subtitle: 'Member-only finds',
     icon: LuBadgePercent,
     link: '/consumer-ecommerce',
   },
   {
     id: 2,
-    title: 'Free Delivery Track',
+    title: 'Delivery Tracking',
     subtitle: 'Follow your order',
     icon: LuTruck,
     link: '/consumer-ecommerce/delivery',
@@ -30,7 +30,7 @@ const actions = [
   },
   {
     id: 4,
-    title: 'Private Delivery',
+    title: 'Private Delivery Tracking',
     subtitle: 'Secure tracking',
     icon: LuPackageCheck,
     link: '/consumer-ecommerce/delivery',

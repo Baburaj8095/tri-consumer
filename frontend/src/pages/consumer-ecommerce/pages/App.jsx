@@ -21,16 +21,18 @@ import {
   LuTag,
   LuTruck,
   LuUtensils,
+  LuSparkles,
 } from 'react-icons/lu';
 import Header from '../components/Header.jsx';
 import LocationSelectorModal from '../components/LocationSelectorModal.jsx';
 import DealsSection from '../components/DealsSection.jsx';
 import GiftCardsSection from '../components/GiftCardsSection.jsx';
 import AdsCarousel from '../components/AdsCarousel.jsx';
+import CashbackAds from '../components/CashbackAds.jsx';
 import ActionGrid from '../components/ActionGrid.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import { useModal } from '../hooks/useModal.js';
-import { consumerProfile, products } from '../services/mockData.js';
+import { consumerProfile, products, personalizedProducts } from '../services/mockData.js';
 import '../consumerEcommerce.css';
 
 const quickServices = [
@@ -470,21 +472,17 @@ export default function App() {
         </section>
 
         <section className="ce-commerce-full-stack">
-          <DealsSection />
           <GiftCardsSection />
-
-          <section className="ce-commerce-tracking-row" aria-label="Tracking utilities">
-            {trackingTiles.map(({ title, copy, icon: Icon, to }) => (
-              <Link key={title} to={to} className="ce-commerce-track-tile">
-                <Icon />
-                <span>
-                  <strong>{title}</strong>
-                  <small>{copy}</small>
-                </span>
-              </Link>
-            ))}
-          </section>
-
+          <PromoDealCarousel
+            title="TriAdz Arena"
+            subtitle="Fresh ads, brand deals and sponsored offers"
+            deals={adDeals}
+            onActiveChange={(index) => {
+              setActiveAdIndex(index);
+              setAmbientColors(adDeals[index].ambient);
+            }}
+          />
+          <ActionGrid />
           <section className="ce-commerce-card-section">
             <div className="ce-commerce-section-head">
               <h2>All Categories</h2>
@@ -499,17 +497,7 @@ export default function App() {
               ))}
             </div>
           </section>
-
-          <PromoDealCarousel
-            title="TriAdz Arena"
-            subtitle="Fresh ads, brand deals and sponsored offers"
-            deals={adDeals}
-            onActiveChange={(index) => {
-              setActiveAdIndex(index);
-              setAmbientColors(adDeals[index].ambient);
-            }}
-          />
-
+          <CashbackAds />
           <section className="ce-premium-action-banners">
             <Link to="/consumer-ecommerce/society" className="ce-action-banner">
               <div className="ce-action-banner-main">
@@ -537,8 +525,8 @@ export default function App() {
           <section className="ce-content-section">
             <div className="ce-section-heading-row">
               <div>
-                <h2 className="ce-section-title">Weekly offers mela</h2>
-                <p className="ce-section-subtitle">50% to 70% offer Product</p>
+                <h2 className="ce-section-title">Most visited products</h2>
+                <p className="ce-section-subtitle">Trending choices based on daily visits</p>
               </div>
               <Link to="/consumer-ecommerce/delivery" className="ce-section-link">View all</Link>
             </div>
@@ -548,6 +536,21 @@ export default function App() {
               ))}
             </div>
           </section>
+          {/* <DealsSection /> */}
+
+          {/*
+          <section className="ce-commerce-tracking-row" aria-label="Tracking utilities">
+            {trackingTiles.map(({ title, copy, icon: Icon, to }) => (
+              <Link key={title} to={to} className="ce-commerce-track-tile">
+                <Icon />
+                <span>
+                  <strong>{title}</strong>
+                  <small>{copy}</small>
+                </span>
+              </Link>
+            ))}
+          </section>
+          */}
 
           <section className="ce-content-section">
             <div className="ce-section-heading-row">
@@ -563,8 +566,36 @@ export default function App() {
             </div>
           </section>
 
-          <ActionGrid />
-          <AdsCarousel />
+          <section className="ce-content-section ce-personalized-section">
+            <div className="ce-section-heading-row">
+              <div>
+                <h2 className="ce-section-title">Personalized Deals for You</h2>
+              </div>
+            </div>
+            <div className="ce-personalized-row">
+              {personalizedProducts.map((product) => (
+                <div key={product.id} className="ce-personalized-card">
+                  <div className="ce-personalized-img-wrap">
+                    <img src={product.image} alt={product.name} />
+                    <span className="ce-personalized-ai-badge">
+                      <LuSparkles /> {product.matchScore}
+                    </span>
+                    <span className="ce-personalized-discount">{product.discount}</span>
+                  </div>
+                  <div className="ce-personalized-body">
+                    <h3>{product.name}</h3>
+                    <div className="ce-personalized-price-row">
+                      <strong>{product.newPrice}</strong>
+                      <span className="ce-personalized-old">{product.oldPrice}</span>
+                    </div>
+                    <span className="ce-personalized-buy-btn">Get Deal</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* <AdsCarousel /> */}
         </section>
       </main>
       <LocationSelectorModal isOpen={cityModal.isOpen} onClose={cityModal.close} />

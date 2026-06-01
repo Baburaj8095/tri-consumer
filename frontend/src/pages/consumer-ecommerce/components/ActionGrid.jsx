@@ -40,12 +40,6 @@ const actions = [
 export default function ActionGrid() {
   return (
     <section className="ce-content-section">
-      <div className="ce-section-heading-row">
-        <div>
-          <h2 className="ce-section-title">Helpful shortcuts</h2>
-          <p className="ce-section-subtitle">Fast actions for everyday shopping</p>
-        </div>
-      </div>
       <div className="ce-action-grid">
         {actions.map((action) => {
           const Icon = action.icon;

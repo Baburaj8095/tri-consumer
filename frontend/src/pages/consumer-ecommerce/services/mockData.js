@@ -231,3 +231,42 @@ export const cashbackAds = [
     discount: '10% CB'
   }
 ];
+
+export const personalizedProducts = [
+  {
+    id: 101,
+    name: 'Noise Cancelling Headphones',
+    oldPrice: 'Rs. 9,999',
+    newPrice: 'Rs. 5,999',
+    discount: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80',
+    matchScore: '98% Match',
+  },
+  {
+    id: 102,
+    name: 'Mechanical Gaming Keyboard',
+    oldPrice: 'Rs. 6,499',
+    newPrice: 'Rs. 3,899',
+    discount: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&w=400&q=80',
+    matchScore: '95% Match',
+  },
+  {
+    id: 103,
+    name: 'Ergonomic Wireless Mouse',
+    oldPrice: 'Rs. 2,999',
+    newPrice: 'Rs. 1,799',
+    discount: '40% OFF',
+    image: 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=400&q=80',
+    matchScore: '92% Match',
+  },
+  {
+    id: 104,
+    name: 'Smart Fitness Tracker',
+    oldPrice: 'Rs. 3,999',
+    newPrice: 'Rs. 1,999',
+    discount: '50% OFF',
+    image: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=400&q=80',
+    matchScore: '90% Match',
+  },
+];

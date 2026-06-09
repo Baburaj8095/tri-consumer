@@ -9,14 +9,14 @@ import {
 const actions = [
   {
     id: 1,
-    title: 'Free Zone Shopping',
+    title: 'Trizone Shopping',
     subtitle: 'Member-only finds',
     icon: LuBadgePercent,
     link: '/consumer-ecommerce',
   },
   {
     id: 2,
-    title: 'Free Delivery Track',
+    title: 'Delivery Tracking',
     subtitle: 'Follow your order',
     icon: LuTruck,
     link: '/consumer-ecommerce/delivery',
@@ -30,7 +30,7 @@ const actions = [
   },
   {
     id: 4,
-    title: 'Private Delivery',
+    title: 'Private Delivery Tracking',
     subtitle: 'Secure tracking',
     icon: LuPackageCheck,
     link: '/consumer-ecommerce/delivery',
@@ -40,12 +40,6 @@ const actions = [
 export default function ActionGrid() {
   return (
     <section className="ce-content-section">
-      <div className="ce-section-heading-row">
-        <div>
-          <h2 className="ce-section-title">Helpful shortcuts</h2>
-          <p className="ce-section-subtitle">Fast actions for everyday shopping</p>
-        </div>
-      </div>
       <div className="ce-action-grid">
         {actions.map((action) => {
           const Icon = action.icon;

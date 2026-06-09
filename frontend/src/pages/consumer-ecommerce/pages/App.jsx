@@ -21,16 +21,18 @@ import {
   LuTag,
   LuTruck,
   LuUtensils,
+  LuSparkles,
 } from 'react-icons/lu';
 import Header from '../components/Header.jsx';
 import LocationSelectorModal from '../components/LocationSelectorModal.jsx';
 import DealsSection from '../components/DealsSection.jsx';
 import GiftCardsSection from '../components/GiftCardsSection.jsx';
 import AdsCarousel from '../components/AdsCarousel.jsx';
+import CashbackAds from '../components/CashbackAds.jsx';
 import ActionGrid from '../components/ActionGrid.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import { useModal } from '../hooks/useModal.js';
-import { consumerProfile, products } from '../services/mockData.js';
+import { consumerProfile, products, personalizedProducts } from '../services/mockData.js';
 import '../consumerEcommerce.css';
 
 const quickServices = [
@@ -155,7 +157,94 @@ const promoDeals = [
   },
 ];
 
-function PromoDealCarousel({ onActiveChange }) {
+const adDeals = [
+  {
+    title: 'Cashback Adz Mela',
+    urgency: 'Sponsored Deal',
+    label: 'Up to 50% off',
+    discount: 'Extra wallet cashback',
+    cashback: '15% Tri Pay reward',
+    bank: 'All UPI transactions',
+    prime: 'Tri Prime early access',
+    cta: 'Explore Ad',
+    tone: 'orange',
+    ambient: {
+      soft: 'rgba(251, 146, 60, 0.22)',
+      glow: 'rgba(250, 204, 21, 0.22)',
+      header: 'rgba(251, 191, 36, 0.32)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1608686207856-001b95cf60ca?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Brand Gift Adz',
+    urgency: 'Hot Brand Offer',
+    label: 'Flat 40% off',
+    discount: 'Free gift vouchers',
+    cashback: 'Rs. 500 flat cashback',
+    bank: 'ICICI bank instant saving',
+    prime: 'Free delivery with Prime',
+    cta: 'Redeem Gift',
+    tone: 'pink',
+    ambient: {
+      soft: 'rgba(216, 180, 254, 0.28)',
+      glow: 'rgba(244, 114, 182, 0.22)',
+      header: 'rgba(236, 72, 153, 0.3)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Weekly Shopping Adz',
+    urgency: 'Trending Sponsor',
+    label: 'Min 60% off',
+    discount: 'Combo coupons inside',
+    cashback: 'Double Tri Coins active',
+    bank: 'SBI credit card discount',
+    prime: 'Doorstep exchange available',
+    cta: 'Shop Now',
+    tone: 'green',
+    ambient: {
+      soft: 'rgba(45, 212, 191, 0.24)',
+      glow: 'rgba(250, 204, 21, 0.18)',
+      header: 'rgba(20, 184, 166, 0.28)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1501045661006-fcebe0257c3f?auto=format&fit=crop&w=360&q=80',
+    ],
+  },
+  {
+    title: 'Premium Audio Adz',
+    urgency: 'Featured Product',
+    label: 'Up to 75% off',
+    discount: 'No cost EMI options',
+    cashback: 'Flat Rs. 1,000 back',
+    bank: 'HDFC card instant discount',
+    prime: 'Prime early access open',
+    cta: 'Buy Audio',
+    tone: 'blue',
+    ambient: {
+      soft: 'rgba(125, 211, 252, 0.26)',
+      glow: 'rgba(52, 211, 153, 0.18)',
+      header: 'rgba(56, 189, 248, 0.28)',
+    },
+    images: [
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+      'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=360&q=80',
+    ],
+  }
+];
+
+function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
   const carouselRef = useRef(null);
   const frameRef = useRef(null);
 
@@ -222,17 +311,17 @@ function PromoDealCarousel({ onActiveChange }) {
   };
 
   return (
-    <section className="ce-promo-deals" aria-label="Live promotional deals">
+    <section className="ce-promo-deals" aria-label={title}>
       <div className="ce-promo-deals-head">
         <div>
-          <strong>Live deals for you</strong>
-          <span>Fresh drops, bank offers and Prime perks</span>
+          <strong>{title}</strong>
+          <span>{subtitle}</span>
         </div>
         <Link to="/consumer-ecommerce/delivery">View all</Link>
       </div>
 
       <div className="ce-promo-deal-carousel" ref={carouselRef} onScroll={updateActiveBanner}>
-        {promoDeals.map((deal, index) => (
+        {deals.map((deal, index) => (
           <Link
             key={deal.title}
             to="/consumer-ecommerce/delivery"
@@ -319,15 +408,16 @@ function ProductHorizontalCard({ product, index }) {
 export default function App() {
   const cityModal = useModal();
   const [activePromoIndex, setActivePromoIndex] = useState(0);
-  const activePromo = promoDeals[activePromoIndex] || promoDeals[0];
+  const [activeAdIndex, setActiveAdIndex] = useState(0);
+  const [ambientColors, setAmbientColors] = useState(promoDeals[0].ambient);
 
   return (
     <div
       className="ce-app ce-commerce-home"
       style={{
-        '--ce-active-promo-soft': activePromo.ambient.soft,
-        '--ce-active-promo-glow': activePromo.ambient.glow,
-        '--ce-active-promo-header': activePromo.ambient.header,
+        '--ce-active-promo-soft': ambientColors.soft,
+        '--ce-active-promo-glow': ambientColors.glow,
+        '--ce-active-promo-header': ambientColors.header,
       }}
     >
       <Header />
@@ -370,25 +460,29 @@ export default function App() {
             <LuArrowRight />
           </Link>
 
-          <PromoDealCarousel onActiveChange={setActivePromoIndex} />
+          <PromoDealCarousel
+            title="Live deals for you"
+            subtitle="Fresh drops, bank offers and Prime perks"
+            deals={promoDeals}
+            onActiveChange={(index) => {
+              setActivePromoIndex(index);
+              setAmbientColors(promoDeals[index].ambient);
+            }}
+          />
         </section>
 
         <section className="ce-commerce-full-stack">
-          <DealsSection />
           <GiftCardsSection />
-
-          <section className="ce-commerce-tracking-row" aria-label="Tracking utilities">
-            {trackingTiles.map(({ title, copy, icon: Icon, to }) => (
-              <Link key={title} to={to} className="ce-commerce-track-tile">
-                <Icon />
-                <span>
-                  <strong>{title}</strong>
-                  <small>{copy}</small>
-                </span>
-              </Link>
-            ))}
-          </section>
-
+          <PromoDealCarousel
+            title="TriAdz Arena"
+            subtitle="Fresh ads, brand deals and sponsored offers"
+            deals={adDeals}
+            onActiveChange={(index) => {
+              setActiveAdIndex(index);
+              setAmbientColors(adDeals[index].ambient);
+            }}
+          />
+          <ActionGrid />
           <section className="ce-commerce-card-section">
             <div className="ce-commerce-section-head">
               <h2>All Categories</h2>
@@ -403,19 +497,7 @@ export default function App() {
               ))}
             </div>
           </section>
-
-          <section className="ce-adz-strip" aria-label="Adz only">
-            <strong>Adz Only</strong>
-            <div>
-              {adzTiles.map((label) => (
-                <Link key={label} to="/consumer-ecommerce/ads" className="ce-adz-chip">
-                  <LuTag />
-                  <span>{label}<small>Buy Now</small></span>
-                </Link>
-              ))}
-            </div>
-          </section>
-
+          <CashbackAds />
           <section className="ce-premium-action-banners">
             <Link to="/consumer-ecommerce/society" className="ce-action-banner">
               <div className="ce-action-banner-main">
@@ -443,8 +525,8 @@ export default function App() {
           <section className="ce-content-section">
             <div className="ce-section-heading-row">
               <div>
-                <h2 className="ce-section-title">Weekly offers mela</h2>
-                <p className="ce-section-subtitle">50% to 70% offer Product</p>
+                <h2 className="ce-section-title">Most visited products</h2>
+                <p className="ce-section-subtitle">Trending choices based on daily visits</p>
               </div>
               <Link to="/consumer-ecommerce/delivery" className="ce-section-link">View all</Link>
             </div>
@@ -454,6 +536,21 @@ export default function App() {
               ))}
             </div>
           </section>
+          {/* <DealsSection /> */}
+
+          {/*
+          <section className="ce-commerce-tracking-row" aria-label="Tracking utilities">
+            {trackingTiles.map(({ title, copy, icon: Icon, to }) => (
+              <Link key={title} to={to} className="ce-commerce-track-tile">
+                <Icon />
+                <span>
+                  <strong>{title}</strong>
+                  <small>{copy}</small>
+                </span>
+              </Link>
+            ))}
+          </section>
+          */}
 
           <section className="ce-content-section">
             <div className="ce-section-heading-row">
@@ -469,8 +566,36 @@ export default function App() {
             </div>
           </section>
 
-          <ActionGrid />
-          <AdsCarousel />
+          <section className="ce-content-section ce-personalized-section">
+            <div className="ce-section-heading-row">
+              <div>
+                <h2 className="ce-section-title">Personalized Deals for You</h2>
+              </div>
+            </div>
+            <div className="ce-personalized-row">
+              {personalizedProducts.map((product) => (
+                <div key={product.id} className="ce-personalized-card">
+                  <div className="ce-personalized-img-wrap">
+                    <img src={product.image} alt={product.name} />
+                    <span className="ce-personalized-ai-badge">
+                      <LuSparkles /> {product.matchScore}
+                    </span>
+                    <span className="ce-personalized-discount">{product.discount}</span>
+                  </div>
+                  <div className="ce-personalized-body">
+                    <h3>{product.name}</h3>
+                    <div className="ce-personalized-price-row">
+                      <strong>{product.newPrice}</strong>
+                      <span className="ce-personalized-old">{product.oldPrice}</span>
+                    </div>
+                    <span className="ce-personalized-buy-btn">Get Deal</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* <AdsCarousel /> */}
         </section>
       </main>
       <LocationSelectorModal isOpen={cityModal.isOpen} onClose={cityModal.close} />

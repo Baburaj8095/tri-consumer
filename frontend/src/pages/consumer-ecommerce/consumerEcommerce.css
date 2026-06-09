@@ -182,6 +182,7 @@ body,
   background: rgba(15, 23, 42, 0.45);
   display: flex;
   justify-content: flex-start;
+  touch-action: none; /* Prevents scrolling background via overlay clicks/drags */
 }
 
 .ce-profile-menu {
@@ -192,6 +193,8 @@ body,
   padding: 16px;
   box-shadow: 20px 0 48px rgba(15, 23, 42, 0.24);
   animation: ceMenuSlideIn 180ms ease-out;
+  touch-action: pan-y; /* Allows vertical scrolling inside drawer */
+  overscroll-behavior: contain; /* Prevents scroll chaining to the background */
 }
 
 @keyframes ceMenuSlideIn {
@@ -4652,6 +4655,18 @@ body,
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.ce-section-link:hover {
+  background: var(--ce-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.16);
+}
+
+.ce-section-link:active {
+  transform: translateY(0);
 }
 
 .ce-deals-carousel,
@@ -4869,9 +4884,37 @@ body,
 .ce-ad-copy {
   position: absolute;
   left: 16px;
-  right: 16px;
+  right: 68px;
   bottom: 16px;
   color: #FFFFFF;
+}
+
+.ce-ad-buy-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 999px;
+  background: var(--ce-primary, #2563EB);
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease-in-out;
+  z-index: 10;
+}
+
+.ce-ad-card:hover .ce-ad-buy-btn,
+.ce-cashback-card:hover .ce-ad-buy-btn {
+  background: var(--ce-icon-active, #1d4ed8);
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+.ce-ad-buy-btn:active {
+  transform: scale(0.98);
 }
 
 .ce-cashback-copy h3,
@@ -5054,7 +5097,7 @@ body,
 }
 
 .ce-action-grid-btn {
-  min-height: 128px;
+  min-height: 114px;
   border: 1px solid rgba(249, 115, 22, 0.12);
   border-radius: 20px;
   background: var(--ce-surface);
@@ -8997,7 +9040,7 @@ body,
 }
 
 .ce-action-grid-btn {
-  min-height: 86px;
+  min-height: 72px;
   border-radius: 14px;
   padding: 10px;
   gap: 10px;
@@ -9761,21 +9804,19 @@ body,
 .ce-nearby-shell {
   width: 100%;
   max-width: 430px;
-  min-height: 100vh;
+  height: 100vh;
   margin: 0 auto;
-  padding: 84px 0 72px;
+  padding: 84px 0 78px;
   display: grid;
   grid-template-columns: 92px 1fr;
   background: #FFF7ED;
+  overflow: hidden;
 }
 
 .ce-online-rail,
 .ce-zone-rail,
 .ce-nearby-rail {
-  position: sticky;
-  top: 84px;
-  align-self: start;
-  height: calc(100vh - 152px);
+  height: 100%;
   overflow-y: auto;
   border-right: 1px solid #F3F4F6;
   background: rgba(255,255,255,.68);
@@ -9827,6 +9868,8 @@ body,
 .ce-nearby-content {
   min-width: 0;
   padding: 10px;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .ce-online-search,
@@ -10938,4 +10981,465 @@ body,
   font-size: 12.5px;
   line-height: 1.5;
   color: #047857;
+}
+
+/* =========================================
+   PROFILE EDIT PHOTO & LOGOUT DIALOG
+   ========================================= */
+
+.ce-profile-avatar-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.ce-profile-edit-btn {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4B5563;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: transform 0.15s ease, background 0.15s ease;
+  z-index: 10;
+  padding: 0;
+}
+
+.ce-profile-edit-btn:hover {
+  transform: scale(1.12);
+  background: #F3F4F6;
+  color: #111827;
+}
+
+.ce-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Bottom Sheet (Image Picker) */
+.ce-bottom-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  touch-action: none;
+}
+
+.ce-bottom-sheet {
+  width: min(100vw, 430px);
+  background: #ffffff;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  box-shadow: 0 -10px 32px rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: ceSlideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+@keyframes ceSlideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.ce-bottom-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #F3F4F6;
+  padding-bottom: 12px;
+}
+
+.ce-bottom-sheet-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.ce-bottom-sheet-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #6B7280;
+  font-size: 20px;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.ce-bottom-sheet-close:hover {
+  background: #F3F4F6;
+  color: #111827;
+}
+
+.ce-bottom-sheet-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ce-bottom-sheet-options button {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #E5E7EB;
+  border-radius: 14px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ce-bottom-sheet-options button:hover {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+  color: #111827;
+}
+
+.ce-bottom-sheet-options button svg {
+  font-size: 18px;
+  color: #EA580C;
+}
+
+.ce-bottom-sheet-options button.ce-remove-option {
+  color: #EF4444;
+  border-color: #FEE2E2;
+}
+
+.ce-bottom-sheet-options button.ce-remove-option:hover {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+}
+
+.ce-bottom-sheet-options button.ce-remove-option svg {
+  color: #EF4444;
+}
+
+.ce-bottom-sheet-cancel {
+  min-height: 48px;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  background: #F3F4F6;
+  color: #4B5563;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.ce-bottom-sheet-cancel:hover {
+  background: #E5E7EB;
+  color: #111827;
+}
+
+/* Dialog (Logout Confirmation) */
+.ce-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  background: rgba(15, 23, 42, 0.45);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(4px);
+  touch-action: none;
+}
+
+.ce-dialog {
+  width: min(100vw - 32px, 340px);
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: ceScaleUpDialog 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  touch-action: none;
+}
+
+@keyframes ceScaleUpDialog {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ce-dialog h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.ce-dialog p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #4B5563;
+}
+
+.ce-dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ce-dialog-btn {
+  flex: 1;
+  min-height: 44px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.ce-dialog-btn:active {
+  transform: scale(0.97);
+}
+
+.ce-cancel-btn {
+  background: #F3F4F6;
+  color: #4B5563;
+}
+
+.ce-cancel-btn:hover {
+  background: #E5E7EB;
+  color: #111827;
+}
+
+.ce-logout-btn {
+  background: #EF4444;
+  color: #ffffff;
+}
+
+.ce-logout-btn:hover {
+  background: #DC2626;
+}
+
+.ce-profile-list-logout {
+  color: #EF4444 !important;
+}
+
+.ce-profile-list-logout:hover {
+  background: #FEF2F2 !important;
+  border-color: #FCA5A5 !important;
+}
+
+.ce-profile-list-logout svg {
+  color: #EF4444 !important;
+}
+
+/* Prevent background scrolling when hamburger menu is open */
+html.ce-menu-open,
+body.ce-menu-open {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+body.ce-menu-open .ce-online-content,
+body.ce-menu-open .ce-zone-content,
+body.ce-menu-open .ce-nearby-content,
+body.ce-menu-open .ce-online-rail,
+body.ce-menu-open .ce-zone-rail,
+body.ce-menu-open .ce-nearby-rail {
+  overflow-y: hidden !important;
+}
+
+/* Personalized Section Styling */
+.ce-personalized-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px 4px 12px 4px;
+  margin: -4px -4px 0 -4px;
+}
+
+.ce-personalized-row::-webkit-scrollbar {
+  display: none;
+}
+
+.ce-personalized-card {
+  flex: 0 0 172px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--ce-surface);
+  border: 1.5px solid rgba(124, 58, 237, 0.12); /* Subtle violet outline for AI personalization */
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.04);
+  transition: transform 0.22s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.22s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.22s;
+  text-decoration: none;
+}
+
+.ce-personalized-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(124, 58, 237, 0.35);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+}
+
+.ce-personalized-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--ce-soft);
+}
+
+.ce-personalized-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ce-personalized-ai-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  background: rgba(124, 58, 237, 0.9);
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+.ce-personalized-ai-badge svg {
+  font-size: 11px;
+}
+
+.ce-personalized-discount {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  border-radius: 8px;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.ce-personalized-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-grow: 1;
+}
+
+.ce-personalized-body h3 {
+  margin: 0;
+  color: var(--ce-text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ce-personalized-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ce-personalized-price-row strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ce-text);
+}
+
+.ce-personalized-old {
+  font-size: 11px;
+  color: var(--ce-muted);
+  text-decoration: line-through;
+}
+
+.ce-personalized-buy-btn {
+  margin-top: auto;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--ce-accent, #7C3AED), #9061f9);
+  color: #ffffff;
+  text-align: center;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
+}
+
+.ce-personalized-card:hover .ce-personalized-buy-btn {
+  opacity: 0.95;
+  transform: scale(1.02);
+}
+
+.ce-personalized-buy-btn:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+  .ce-personalized-row {
+    gap: 8px;
+  }
+  .ce-personalized-card {
+    flex: 0 0 148px;
+    border-radius: 16px;
+  }
+  .ce-personalized-body {
+    padding: 10px;
+    gap: 4px;
+  }
+  .ce-personalized-body h3 {
+    font-size: 12px;
+  }
+  .ce-personalized-price-row strong {
+    font-size: 13px;
+  }
 }

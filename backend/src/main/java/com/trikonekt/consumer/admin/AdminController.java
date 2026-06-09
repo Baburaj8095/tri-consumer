@@ -1,9 +1,13 @@
 package com.trikonekt.consumer.admin;
 
+import com.trikonekt.consumer.admin.dto.AdminCreateRequest;
 import com.trikonekt.consumer.admin.dto.AdminLoginRequest;
 import com.trikonekt.consumer.admin.dto.AdminLoginResponse;
 import com.trikonekt.consumer.admin.dto.AdminOtpResponse;
 import com.trikonekt.consumer.admin.dto.AdminSummaryResponse;
+import com.trikonekt.consumer.auth.AuthService;
+import com.trikonekt.consumer.auth.dto.RegisterRequest;
+import com.trikonekt.consumer.auth.dto.AuthResponse;
 import com.trikonekt.consumer.common.ApiResponse;
 import com.trikonekt.consumer.user.UserRepository;
 import com.trikonekt.consumer.user.dto.UserResponse;
@@ -23,11 +27,14 @@ public class AdminController {
   private final AdminService adminService;
   private final AdminRepository adminRepository;
   private final UserRepository userRepository;
+  private final AuthService authService;
 
-  public AdminController(AdminService adminService, AdminRepository adminRepository, UserRepository userRepository) {
+  public AdminController(AdminService adminService, AdminRepository adminRepository,
+      UserRepository userRepository, AuthService authService) {
     this.adminService = adminService;
     this.adminRepository = adminRepository;
     this.userRepository = userRepository;
+    this.authService = authService;
   }
 
   @PostMapping("/login")
@@ -54,5 +61,30 @@ public class AdminController {
   public ApiResponse<List<AdminOtpResponse>> otps(@RequestHeader(value = "Authorization", required = false) String authorization) {
     adminService.requireAdmin(authorization);
     return ApiResponse.ok("OTP requests", adminRepository.listOtpRequests());
+  }
+
+  @PostMapping("/admins")
+  public ApiResponse<String> createAdmin(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @Valid @RequestBody AdminCreateRequest request) {
+    adminService.requireAdmin(authorization);
+    adminService.createAdmin(request.username(), request.password());
+    return ApiResponse.ok("Administrator created successfully", request.username());
+  }
+
+  @GetMapping("/admins")
+  public ApiResponse<List<String>> listAdmins(
+      @RequestHeader(value = "Authorization", required = false) String authorization) {
+    adminService.requireAdmin(authorization);
+    return ApiResponse.ok("Administrator list", adminRepository.listAdmins());
+  }
+
+  @PostMapping("/users")
+  public ApiResponse<UserResponse> createUser(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @Valid @RequestBody RegisterRequest request) {
+    adminService.requireAdmin(authorization);
+    AuthResponse response = authService.register(request);
+    return ApiResponse.ok("User created successfully by administrator", response.getUser());
   }
 }

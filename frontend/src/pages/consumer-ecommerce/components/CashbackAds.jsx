@@ -56,7 +56,7 @@ export default function CashbackAds({ adType = 'cashback' }) {
     <section className="ce-content-section ce-cashback-section">
       <div className="ce-section-heading-row">
         <div>
-          <h2 className="ce-section-title"><LuSparkles /> Cashback rewards</h2>
+          <h2 className="ce-section-title">Cashback ads</h2>
           <p className="ce-section-subtitle">Warm offers from featured brands</p>
         </div>
       </div>
@@ -75,6 +75,7 @@ export default function CashbackAds({ adType = 'cashback' }) {
               <h3>{ad.title}</h3>
               <p>{ad.brand}</p>
             </div>
+            <span className="ce-ad-buy-btn">Buy</span>
           </Link>
         ))}
       </div>

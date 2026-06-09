@@ -69,6 +69,7 @@ export default function AdsCarousel() {
               <strong>{ad.title}</strong>
               <small>{ad.brand}</small>
             </div>
+            <span className="ce-ad-buy-btn">Buy</span>
           </Link>
         ))}
       </div>

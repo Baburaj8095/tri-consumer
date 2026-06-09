@@ -17,11 +17,8 @@ public class AdminService {
   private final AdminRepository adminRepository;
   private final HashingService hashingService;
   private final SecureRandom secureRandom = new SecureRandom();
-
-  @Value("${app.admin.username}")
-  private String adminUsername;
-  @Value("${app.admin.password}")
-  private String adminPassword;
+  private final org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder passwordEncoder =
+      new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
 
   public AdminService(AdminRepository adminRepository, HashingService hashingService) {
     this.adminRepository = adminRepository;
@@ -29,15 +26,30 @@ public class AdminService {
   }
 
   public AdminLoginResponse login(AdminLoginRequest request) {
-    if (!adminUsername.equals(request.username()) || !adminPassword.equals(request.password())) {
+    String username = request.username().trim();
+    String passwordHash = adminRepository.findAdminPasswordHash(username)
+        .orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid admin credentials"));
+
+    if (!passwordEncoder.matches(request.password(), passwordHash)) {
       throw new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid admin credentials");
     }
 
     byte[] tokenBytes = new byte[32];
     secureRandom.nextBytes(tokenBytes);
     String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
-    adminRepository.createSession(adminUsername, hashingService.adminTokenHash(token), Instant.now().plus(12, ChronoUnit.HOURS));
-    return new AdminLoginResponse(token, adminUsername);
+    adminRepository.createSession(username, hashingService.adminTokenHash(token), Instant.now().plus(12, ChronoUnit.HOURS));
+    return new AdminLoginResponse(token, username);
+  }
+
+  public void createAdmin(String username, String password) {
+    if (username == null || username.isBlank() || password == null || password.isBlank()) {
+      throw new BusinessException(HttpStatus.BAD_REQUEST, "Username and password cannot be blank");
+    }
+    String normalized = username.trim().toLowerCase();
+    if (adminRepository.findAdminPasswordHash(normalized).isPresent()) {
+      throw new BusinessException(HttpStatus.CONFLICT, "Admin username already exists");
+    }
+    adminRepository.createAdmin(normalized, passwordEncoder.encode(password));
   }
 
   public String requireAdmin(String authorizationHeader) {

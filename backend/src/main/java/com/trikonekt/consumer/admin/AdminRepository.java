@@ -53,6 +53,32 @@ public class AdminRepository {
         """, this::mapOtp);
   }
 
+  public int countAdmins() {
+    return count("SELECT COUNT(*) FROM admins");
+  }
+
+  public void createAdmin(String username, String passwordHash) {
+    jdbcTemplate.update("""
+        INSERT INTO admins (username, password_hash)
+        VALUES (?, ?)
+        """, username, passwordHash);
+  }
+
+  public Optional<String> findAdminPasswordHash(String username) {
+    List<String> hashes = jdbcTemplate.query("""
+        SELECT password_hash FROM admins
+        WHERE username = ?
+        """, (rs, rowNum) -> rs.getString("password_hash"), username);
+    return hashes.stream().findFirst();
+  }
+
+  public List<String> listAdmins() {
+    return jdbcTemplate.query("""
+        SELECT username FROM admins
+        ORDER BY username ASC
+        """, (rs, rowNum) -> rs.getString("username"));
+  }
+
   private int count(String sql) {
     Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
     return count == null ? 0 : count;

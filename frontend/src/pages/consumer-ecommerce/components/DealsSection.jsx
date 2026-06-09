@@ -29,6 +29,7 @@ export default function DealsSection() {
     <section className="ce-deals-section">
       <div className="ce-deals-carousel">
         {/* Card 1: Shopping Deals */}
+        {/*
         <div className="ce-deals-card ce-shopping-deals-card">
           <div className="ce-deals-card-header">
             <h3 className="ce-deals-card-title">Shopping Deals</h3>
@@ -47,6 +48,7 @@ export default function DealsSection() {
             ))}
           </div>
         </div>
+        */}
 
         {/* Card 2: Minimum 60% Off Banner */}
         <div className="ce-deals-card ce-promo-banner-card">

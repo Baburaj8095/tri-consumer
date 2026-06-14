@@ -272,8 +272,22 @@ public class HubbleController {
     }
     // Call Django to validate the token and get user details
     com.trikonekt.consumer.user.dto.UserResponse djangoUser = djangoAuthClient.me(authHeader);
-    return userRepository.findById(djangoUser.getId())
-        .orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "User not found"));
+    return new User(
+        djangoUser.getId(),
+        djangoUser.getSponsorId(),
+        djangoUser.getSponsorName(),
+        djangoUser.getFullName(),
+        djangoUser.getCountryCode(),
+        djangoUser.getMobile(),
+        djangoUser.getEmail(),
+        djangoUser.getPinCode(),
+        djangoUser.getDistrict(),
+        djangoUser.getState(),
+        null, // passwordHash not needed for Hubble
+        djangoUser.getStatus(),
+        djangoUser.isMobileVerified(),
+        java.time.Instant.now()
+    );
   }
 
   /** Extract leading digits from a string (for phone normalisation). */

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * DB operations for Hubble webhook events and transactions.
- * Mirrors Django's business/hubble_models.py (HubbleWebhookEvent + HubbleTransaction).
+ * Maps directly to Django's database tables created by the 'business' app.
  */
 @Repository
 public class HubbleRepository {
@@ -28,7 +28,7 @@ public class HubbleRepository {
    * Insert a new webhook event if the idempotency key doesn't exist.
    * Returns the row id if inserted, or the existing id if duplicate.
    *
-   * Mirrors: HubbleWebhookEvent.objects.get_or_create(idempotency_key=idem, ...)
+   * Maps to table: business_hubblewebhookevent
    */
   public long upsertWebhookEvent(String idempotencyKey, String eventType,
                                   String transactionReferenceId, String orderStatus,
@@ -39,9 +39,9 @@ public class HubbleRepository {
 
     return jdbc.queryForObject(
         """
-        INSERT INTO hubble_webhook_events
+        INSERT INTO business_hubblewebhookevent
           (idempotency_key, event_type, transaction_reference_id,
-           order_status, x_verify, raw_body, process_status, received_at)
+           status, x_verify, raw_body, process_status, received_at)
         VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?)
         RETURNING id
         """,
@@ -54,7 +54,7 @@ public class HubbleRepository {
   private Optional<Long> findWebhookEventByIdempotencyKey(String key) {
     try {
       Long id = jdbc.queryForObject(
-          "SELECT id FROM hubble_webhook_events WHERE idempotency_key = ?", Long.class, key);
+          "SELECT id FROM business_hubblewebhookevent WHERE idempotency_key = ?", Long.class, key);
       return Optional.ofNullable(id);
     } catch (EmptyResultDataAccessException e) {
       return Optional.empty();
@@ -65,15 +65,15 @@ public class HubbleRepository {
 
   /**
    * Upsert a HubbleTransaction from a webhook payload.
-   * Mirrors Django's HubbleTransaction.apply_status_transition() logic.
+   * Maps to table: business_hubbletransaction
    */
   public void upsertTransaction(String txRef, String hubbleUserId, Long userId,
                                  String status, String amount, String discountAmount,
                                  String currency, long webhookEventId) {
     int updated = jdbc.update(
         """
-        UPDATE hubble_transactions
-           SET status              = CASE
+        UPDATE business_hubbletransaction
+           SET status        = CASE
                  WHEN status = 'REVERSED' THEN status
                  WHEN ? = 'REVERSED'      THEN ?
                  WHEN status = 'COMPLETED' AND ? != 'REVERSED' THEN status
@@ -82,7 +82,7 @@ public class HubbleRepository {
                amount              = COALESCE(NULLIF(?, ''), amount::TEXT)::NUMERIC,
                discount_amount     = COALESCE(NULLIF(?, ''), discount_amount::TEXT)::NUMERIC,
                currency            = COALESCE(NULLIF(?, ''), currency),
-               last_webhook_event_id = ?,
+               last_event_id       = ?,
                updated_at          = NOW()
          WHERE transaction_reference_id = ?
         """,
@@ -94,9 +94,9 @@ public class HubbleRepository {
     if (updated == 0) {
       jdbc.update(
           """
-          INSERT INTO hubble_transactions
+          INSERT INTO business_hubbletransaction
             (transaction_reference_id, hubble_user_id, user_id, status,
-             amount, discount_amount, currency, last_webhook_event_id, created_at, updated_at)
+             amount, discount_amount, currency, last_event_id, created_at, updated_at)
           VALUES (?, ?, ?, ?, NULLIF(?, '')::NUMERIC, NULLIF(?, '')::NUMERIC, ?, ?, NOW(), NOW())
           """,
           txRef, hubbleUserId, userId, status,
@@ -107,18 +107,18 @@ public class HubbleRepository {
 
   /**
    * List the last N transactions for a user.
-   * Mirrors Django's HubbleTransactionsMeView.
+   * Maps to table: business_hubbletransaction
    */
   public List<HubbleTransactionDto> findTransactionsByUserId(long userId, int limit) {
     return jdbc.query(
         """
         SELECT transaction_reference_id, status, amount, discount_amount,
                currency, created_at, updated_at
-          FROM hubble_transactions
+          FROM business_hubbletransaction
          WHERE user_id = ?
          ORDER BY updated_at DESC, id DESC
          LIMIT ?
-        """,
+         """,
         (rs, row) -> new HubbleTransactionDto(
             rs.getString("transaction_reference_id"),
             rs.getString("status"),
@@ -134,13 +134,14 @@ public class HubbleRepository {
 
   /**
    * Find user_id by hubble_user_id (the "sub" claim from SSO JWT).
+   * Maps to table: accounts_customuser
    */
   public Optional<Long> findUserIdByHubbleSubject(String subject) {
     if (subject == null || subject.isBlank()) return Optional.empty();
     try {
       // subject is our user's DB id as string (matches Django's generate_hubble_sso_jwt sub=str(user.id))
       Long id = jdbc.queryForObject(
-          "SELECT id FROM users WHERE id = ?", Long.class,
+          "SELECT id FROM accounts_customuser WHERE id = ?", Long.class,
           Long.parseLong(subject.trim())
       );
       return Optional.ofNullable(id);

@@ -272,7 +272,7 @@ public class HubbleController {
     }
     // Call Django to validate the token and get user details
     com.trikonekt.consumer.user.dto.UserResponse djangoUser = djangoAuthClient.me(authHeader);
-    return userRepository.findById(djangoUser.id())
+    return userRepository.findById(djangoUser.getId())
         .orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "User not found"));
   }
 

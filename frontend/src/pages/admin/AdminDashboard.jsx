@@ -85,8 +85,16 @@ const TOKEN_KEY = 'triAdminToken';
 function AdminDashboard() {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || '');
   const [credentials, setCredentials] = useState({ username: 'admin', password: '' });
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const selectTab = (tab) => {
     setActiveTab(tab);
     setMobileMenuOpen(false);
@@ -483,6 +491,7 @@ function AdminDashboard() {
               onToggleBlock={handleToggleBlock}
               onViewKyc={(user) => setSelectedKycUser(user)}
               onToggleAccountActive={handleToggleAccountActive}
+              isMobile={isMobile}
             />
           )}
 
@@ -535,7 +544,7 @@ function AdminDashboard() {
             </div>
           )}
 
-          {activeTab === 'otps' && <OtpTable otps={otps} />}
+          {activeTab === 'otps' && <OtpTable otps={otps} isMobile={isMobile} />}
 
           {activeTab === 'webhooks' && (
             <WebhooksTable webhooks={webhooks} onViewPayload={(w) => setSelectedWebhook(w)} />
@@ -648,7 +657,7 @@ function Metric({ label, value, icon }) {
   );
 }
 
-function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKyc, onToggleAccountActive }) {
+function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKyc, onToggleAccountActive, isMobile }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [expandedUserId, setExpandedUserId] = useState(null);
@@ -719,8 +728,8 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
   return (
     <div>
       {/* Search & Actions Bar */}
-      <div className="admin-search-filter-bar">
-        <div className="admin-search-input-wrapper">
+      <div className={`admin-search-filter-bar ${isMobile ? 'mobile-search-bar' : ''}`}>
+        <div className="admin-search-input-wrapper" style={isMobile ? { width: '100%', marginBottom: '12px' } : {}}>
           <span className="admin-search-icon"><LuSearch /></span>
           <input
             placeholder="Search User (Name, ID, Phone, Sponsor...)"
@@ -729,7 +738,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className={isMobile ? 'mobile-filter-actions' : ''} style={!isMobile ? { display: 'flex', alignItems: 'center', gap: '16px' } : {}}>
           {selectedUserIds.size > 0 && (
             <div className="admin-selection-pill">
               <input
@@ -755,7 +764,8 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
               color: '#475569',
               background: '#ffffff',
               outline: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flex: isMobile ? 1 : 'unset'
             }}
           >
             <option value="ALL">All Login Status</option>
@@ -763,212 +773,273 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
             <option value="INACTIVE">Blocked</option>
           </select>
 
-          <button className="admin-blue-btn" onClick={onCreateClick}>
+          <button className="admin-blue-btn" onClick={onCreateClick} style={isMobile ? { whiteSpace: 'nowrap' } : {}}>
             <LuPlus /> ADD USER
           </button>
         </div>
       </div>
 
       {/* Table wrapping */}
-      <div className="admin-card-table-wrap">
-        <table className="admin-modern-table">
-          <thead>
-            <tr>
-              <th style={{ width: '40px' }}>
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={handleSelectAll}
-                  className="admin-selection-checkbox"
-                />
-              </th>
-              <th>Name</th>
-              <th>Sponsor ID & Name</th>
-              <th>Address & Pincode</th>
-              <th>KYC Status</th>
-              <th>Active/Inactive</th>
-              <th>Block/Unblock</th>
-              <th>Edit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedUsers.map((user) => {
-              const isSelected = selectedUserIds.has(user.id);
-              const isExpanded = expandedUserId === user.id;
-              const initials = getInitials(user.fullName);
-              const avatarColor = getAvatarColor(user.id);
+      {!isMobile ? (
+        <div className="admin-card-table-wrap">
+          <table className="admin-modern-table">
+            <thead>
+              <tr>
+                <th style={{ width: '40px' }}>
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={handleSelectAll}
+                    className="admin-selection-checkbox"
+                  />
+                </th>
+                <th>Name</th>
+                <th>Sponsor ID & Name</th>
+                <th>Address & Pincode</th>
+                <th>KYC Status</th>
+                <th>Active/Inactive</th>
+                <th>Block/Unblock</th>
+                <th>Edit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedUsers.map((user) => {
+                const isSelected = selectedUserIds.has(user.id);
+                const isExpanded = expandedUserId === user.id;
+                const initials = getInitials(user.fullName);
+                const avatarColor = getAvatarColor(user.id);
 
-              return (
-                <React.Fragment key={user.id}>
-                  <tr className={`${isSelected ? 'row-selected' : ''} ${isExpanded ? 'row-expanded-parent' : ''}`}>
-                    <td data-label="Select">
-                      <div className="admin-cell-checkbox-chevron">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleSelectRow(user.id)}
-                          className="admin-selection-checkbox"
-                        />
-                        <button 
-                          type="button"
-                          className="admin-chevron-btn"
-                          onClick={() => toggleExpand(user.id)}
-                          title="Toggle details"
-                        >
-                          {isExpanded ? <LuChevronDown size={14} /> : <LuChevronRight size={14} />}
-                        </button>
-                      </div>
-                    </td>
-                    <td data-label="Name">
-                      <div className="admin-cell-name-avatar">
-                        <div 
-                          className="admin-user-avatar" 
-                          style={{ backgroundColor: avatarColor }}
-                        >
-                          {initials}
+                return (
+                  <React.Fragment key={user.id}>
+                    <tr className={`${isSelected ? 'row-selected' : ''} ${isExpanded ? 'row-expanded-parent' : ''}`}>
+                      <td data-label="Select">
+                        <div className="admin-cell-checkbox-chevron">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectRow(user.id)}
+                            className="admin-selection-checkbox"
+                          />
+                          <button 
+                            type="button"
+                            className="admin-chevron-btn"
+                            onClick={() => toggleExpand(user.id)}
+                            title="Toggle details"
+                          >
+                            {isExpanded ? <LuChevronDown size={14} /> : <LuChevronRight size={14} />}
+                          </button>
                         </div>
-                        <div className="admin-cell-name-info">
-                          <strong>{user.fullName}</strong>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>
-                            ID: {user.id} | {user.email || 'No email'} | {user.mobile}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-                    <td data-label="Sponsor ID & Name">
-                      <div>
-                        <strong>{user.sponsorId || '-'}</strong>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{user.sponsorName || 'Direct'}</div>
-                      </div>
-                    </td>
-                    <td data-label="Address & Pincode">
-                      <div>
-                        <div style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.address}>
-                          {user.address || '-'}
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>
-                          {user.pinCode || '-'}, {user.district || '-'}, {user.state || '-'}
-                        </div>
-                      </div>
-                    </td>
-                    <td data-label="KYC Status">
-                      <span 
-                        className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}
-                        onClick={() => onViewKyc(user)}
-                        style={{ cursor: 'pointer' }}
-                        title="Click to manage KYC"
-                      >
-                        {user.kycStatus || 'UNSUBMITTED'}
-                      </span>
-                    </td>
-                    <td data-label="Active/Inactive">
-                      <button
-                        type="button"
-                        className={`admin-active-toggle-btn ${user.accountActive ? 'active' : 'inactive'}`}
-                        onClick={() => onToggleAccountActive(user)}
-                        title={user.accountActive ? 'Click to set inactive' : 'Click to set active'}
-                      >
-                        {user.accountActive ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td data-label="Block/Unblock">
-                      <button
-                        type="button"
-                        className={`admin-block-toggle-btn ${user.status === 'ACTIVE' ? 'unblocked' : 'blocked'}`}
-                        onClick={() => onToggleBlock(user)}
-                        title={user.status === 'ACTIVE' ? 'Click to block user' : 'Click to unblock user'}
-                      >
-                        {user.status === 'ACTIVE' ? 'Unblocked' : 'Blocked'}
-                      </button>
-                    </td>
-                    <td data-label="Edit">
-                      <div className="admin-action-buttons">
-                        <button 
-                          type="button" 
-                          className="admin-action-btn" 
-                          title="Edit user details"
-                          onClick={() => onEditClick(user)}
-                        >
-                          <LuPencil size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {isExpanded && (
-                    <tr className="admin-row-expanded-details-row">
-                      <td colSpan={8}>
-                        <div className="admin-row-expanded-details-container">
-                          <div className="admin-expanded-grid">
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Sponsor Details</span>
-                              <div className="admin-expanded-value">
-                                <LuUsers />
-                                <span>{user.sponsorName || 'Direct'} ({user.sponsorId || 'None'})</span>
-                              </div>
-                            </div>
-                            
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Identity / KYC Info</span>
-                              <div className="admin-expanded-value">
-                                <LuShieldCheck />
-                                <div>
-                                  <div>KYC: <strong>{user.kycStatus || 'UNSUBMITTED'}</strong></div>
-                                  {user.bankAccountNumber && (
-                                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                                      {user.bankName} - Account: {user.bankAccountNumber}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Mobile Verified</span>
-                              <div className="admin-expanded-value">
-                                <LuShieldCheck />
-                                <span>{user.mobileVerified ? 'Verified' : 'Unverified'}</span>
-                              </div>
-                            </div>
-
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">MLM Eligibility</span>
-                              <div className="admin-expanded-value">
-                                <LuShieldCheck />
-                                <span>{user.accountActive ? 'Eligible (Active)' : 'Ineligible (Inactive)'}</span>
-                              </div>
-                            </div>
-
-                            <div className="admin-expanded-col" style={{ gridColumn: 'span 2' }}>
-                              <span className="admin-expanded-label">Full Address & Location</span>
-                              <div className="admin-expanded-value">
-                                <LuMapPin />
-                                <span>
-                                  {user.address ? `${user.address}, ` : ''} 
-                                  {user.district || ''}, {user.state || ''} {user.pinCode ? `- ${user.pinCode}` : ''}
-                                </span>
-                              </div>
-                            </div>
+                      </td>
+                      <td data-label="Name">
+                        <div className="admin-cell-name-avatar">
+                          <div 
+                            className="admin-user-avatar" 
+                            style={{ backgroundColor: avatarColor }}
+                          >
+                            {initials}
+                          </div>
+                          <div className="admin-cell-name-info">
+                            <strong>{user.fullName}</strong>
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                              ID: {user.id} | {user.email || 'No email'} | {user.mobile}
+                            </span>
                           </div>
                         </div>
                       </td>
+                      <td data-label="Sponsor ID & Name">
+                        <div>
+                          <strong>{user.sponsorId || '-'}</strong>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>{user.sponsorName || 'Direct'}</div>
+                        </div>
+                      </td>
+                      <td data-label="Address & Pincode">
+                        <div>
+                          <div style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.address}>
+                            {user.address || '-'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>
+                            {user.pinCode || '-'}, {user.district || '-'}, {user.state || '-'}
+                          </div>
+                        </div>
+                      </td>
+                      <td data-label="KYC Status">
+                        <span 
+                          className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}
+                          onClick={() => onViewKyc(user)}
+                          style={{ cursor: 'pointer' }}
+                          title="Click to manage KYC"
+                        >
+                          {user.kycStatus || 'UNSUBMITTED'}
+                        </span>
+                      </td>
+                      <td data-label="Active/Inactive">
+                        <button
+                          type="button"
+                          className={`admin-active-toggle-btn ${user.accountActive ? 'active' : 'inactive'}`}
+                          onClick={() => onToggleAccountActive(user)}
+                          title={user.accountActive ? 'Click to set inactive' : 'Click to set active'}
+                        >
+                          {user.accountActive ? 'Active' : 'Inactive'}
+                        </button>
+                      </td>
+                      <td data-label="Block/Unblock">
+                        <button
+                          type="button"
+                          className={`admin-block-toggle-btn ${user.status === 'ACTIVE' ? 'unblocked' : 'blocked'}`}
+                          onClick={() => onToggleBlock(user)}
+                          title={user.status === 'ACTIVE' ? 'Click to block user' : 'Click to unblock user'}
+                        >
+                          {user.status === 'ACTIVE' ? 'Unblocked' : 'Blocked'}
+                        </button>
+                      </td>
+                      <td data-label="Edit">
+                        <div className="admin-action-buttons">
+                          <button 
+                            type="button" 
+                            className="admin-action-btn" 
+                            title="Edit user details"
+                            onClick={() => onEditClick(user)}
+                          >
+                            <LuPencil size={14} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            {!paginatedUsers.length && <EmptyRow colSpan={8} text="No registered users found matching the filter" />}
-          </tbody>
-        </table>
-      </div>
+
+                    {isExpanded && (
+                      <tr className="admin-row-expanded-details-row">
+                        <td colSpan={8}>
+                          <div className="admin-row-expanded-details-container">
+                            <div className="admin-expanded-grid">
+                              <div className="admin-expanded-col">
+                                <span className="admin-expanded-label">Sponsor Details</span>
+                                <div className="admin-expanded-value">
+                                  <LuUsers />
+                                  <span>{user.sponsorName || 'Direct'} ({user.sponsorId || 'None'})</span>
+                                </div>
+                              </div>
+                              
+                              <div className="admin-expanded-col">
+                                <span className="admin-expanded-label">Identity / KYC Info</span>
+                                <div className="admin-expanded-value">
+                                  <LuShieldCheck />
+                                  <div>
+                                    <div>KYC: <strong>{user.kycStatus || 'UNSUBMITTED'}</strong></div>
+                                    {user.bankAccountNumber && (
+                                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                        {user.bankName} - Account: {user.bankAccountNumber}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="admin-expanded-col">
+                                <span className="admin-expanded-label">Mobile Verified</span>
+                                <div className="admin-expanded-value">
+                                  <LuShieldCheck />
+                                  <span>{user.mobileVerified ? 'Verified' : 'Unverified'}</span>
+                                </div>
+                              </div>
+
+                              <div className="admin-expanded-col">
+                                <span className="admin-expanded-label">MLM Eligibility</span>
+                                <div className="admin-expanded-value">
+                                  <LuShieldCheck />
+                                  <span>{user.accountActive ? 'Eligible (Active)' : 'Ineligible (Inactive)'}</span>
+                                </div>
+                              </div>
+
+                              <div className="admin-expanded-col" style={{ gridColumn: 'span 2' }}>
+                                <span className="admin-expanded-label">Full Address & Location</span>
+                                <div className="admin-expanded-value">
+                                  <LuMapPin />
+                                  <span>
+                                    {user.address ? `${user.address}, ` : ''} 
+                                    {user.district || ''}, {user.state || ''} {user.pinCode ? `- ${user.pinCode}` : ''}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+              {!paginatedUsers.length && <EmptyRow colSpan={8} text="No registered users found matching the filter" />}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-mobile-user-cards-container">
+          {paginatedUsers.map((user) => {
+            const isExpanded = expandedUserId === user.id;
+            const initials = getInitials(user.fullName);
+            const avatarColor = getAvatarColor(user.id);
+            return (
+              <div key={user.id} className="mobile-user-card">
+                <div className="mobile-user-card-header">
+                  <div className="admin-user-avatar" style={{ backgroundColor: avatarColor }}>{initials}</div>
+                  <div className="mobile-user-card-title">
+                    <strong>{user.fullName}</strong>
+                    <span>ID: {user.id}</span>
+                  </div>
+                </div>
+                <div className="mobile-user-card-contact">
+                  <div><LuMail size={14} /> {user.email || "No email"}</div>
+                  <div><LuMapPin size={14} /> {user.mobile}</div>
+                </div>
+                <div className="mobile-user-card-status">
+                  <span className={`admin-kyc-badge kyc-${(user.kycStatus || "UNSUBMITTED").toLowerCase()}`}>
+                    KYC: {user.kycStatus || "UNSUBMITTED"}
+                  </span>
+                  <span className={`admin-active-toggle-btn ${user.accountActive ? "active" : "inactive"}`}>
+                    Account: {user.accountActive ? "Active" : "Inactive"}
+                  </span>
+                  <span className={`admin-block-toggle-btn ${user.status === "ACTIVE" ? "unblocked" : "blocked"}`}>
+                    Login: {user.status === "ACTIVE" ? "Unblocked" : "Blocked"}
+                  </span>
+                </div>
+                <div className="mobile-user-card-actions">
+                  <button className="admin-action-btn" onClick={() => onEditClick(user)}><LuPencil size={14} /> Edit</button>
+                  <button className="admin-action-btn" onClick={() => toggleExpand(user.id)}>
+                    {isExpanded ? <LuChevronDown size={14} /> : <LuChevronRight size={14} />} Details
+                  </button>
+                </div>
+                {isExpanded && (
+                  <div className="mobile-user-card-details">
+                    <div className="mobile-detail-row">
+                      <span className="mobile-detail-label">Sponsor</span>
+                      <span>{user.sponsorName || "Direct"} ({user.sponsorId || "None"})</span>
+                    </div>
+                    <div className="mobile-detail-row">
+                      <span className="mobile-detail-label">Bank</span>
+                      <span>{user.bankAccountNumber ? `${user.bankName} - ${user.bankAccountNumber}` : "None"}</span>
+                    </div>
+                    <div className="mobile-detail-row">
+                      <span className="mobile-detail-label">Address</span>
+                      <span>{user.address ? `${user.address}, ` : ""}{user.district || ""}, {user.state || ""} {user.pinCode || ""}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!paginatedUsers.length && <div className="admin-empty-card">No registered users found matching the filter</div>}
+        </div>
+      )}
 
       {/* Pagination controls */}
       {totalPages > 1 && (
         <div className="admin-pagination-bar">
-          <span className="admin-pagination-info">
-            Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</strong> of <strong>{filteredUsers.length}</strong> entries
-          </span>
-          <div className="admin-pagination-buttons">
+          {!isMobile && (
+            <span className="admin-pagination-info">
+              Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</strong> of <strong>{filteredUsers.length}</strong> entries
+            </span>
+          )}
+          <div className="admin-pagination-buttons" style={isMobile ? { width: "100%", justifyContent: "space-between" } : {}}>
             <button 
               type="button" 
               className="admin-pagination-btn" 
@@ -977,7 +1048,11 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
             >
               Previous
             </button>
-            {(() => {
+            {isMobile ? (
+              <span className="admin-mobile-page-info" style={{ fontWeight: 600, color: "#475569" }}>
+                Page {currentPage} of {totalPages}
+              </span>
+            ) : (() => {
               const maxPagesToShow = 5;
               let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
               let endPage = startPage + maxPagesToShow - 1;
@@ -993,7 +1068,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                 <button
                   key={pageNum}
                   type="button"
-                  className={`admin-pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
+                  className={`admin-pagination-btn ${currentPage === pageNum ? "active" : ""}`}
                   onClick={() => setCurrentPage(pageNum)}
                 >
                   {pageNum}
@@ -1045,44 +1120,64 @@ function AdminsTable({ admins }) {
   );
 }
 
-function OtpTable({ otps }) {
+function OtpTable({ otps, isMobile }) {
   return (
     <section className="admin-panel">
       <div className="admin-panel-head">
         <h2>OTP Management</h2>
         <span>{otps.length} latest requests</span>
       </div>
-      <div className="admin-table-wrap">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Mobile</th>
-              <th>Purpose</th>
-              <th>Attempts</th>
-              <th>Created</th>
-              <th>Expires</th>
-              <th>Consumed</th>
-              <th>Provider Response</th>
-            </tr>
-          </thead>
-          <tbody>
-            {otps.map((otp) => (
-              <tr key={otp.id}>
-                <td>{otp.id}</td>
-                <td>{otp.mobile}</td>
-                <td><span className="admin-pill">{otp.purpose}</span></td>
-                <td>{otp.attempts}</td>
-                <td>{formatDate(otp.createdAt)}</td>
-                <td>{formatDate(otp.expiresAt)}</td>
-                <td>{otp.consumedAt ? formatDate(otp.consumedAt) : '-'}</td>
-                <td className="admin-provider-response">{otp.providerResponse || '-'}</td>
+      {!isMobile ? (
+        <div className="admin-card-table-wrap">
+          <table className="admin-modern-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Mobile</th>
+                <th>Purpose</th>
+                <th>Attempts</th>
+                <th>Created</th>
+                <th>Expires</th>
+                <th>Consumed</th>
+                <th>Provider Response</th>
               </tr>
-            ))}
-            {!otps.length && <EmptyRow colSpan={8} text="No OTP requests yet" />}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {otps.map((otp) => (
+                <tr key={otp.id}>
+                  <td data-label="ID">{otp.id}</td>
+                  <td data-label="Mobile">{otp.mobile}</td>
+                  <td data-label="Purpose"><span className="admin-pill">{otp.purpose}</span></td>
+                  <td data-label="Attempts">{otp.attempts}</td>
+                  <td data-label="Created">{formatDate(otp.createdAt)}</td>
+                  <td data-label="Expires">{formatDate(otp.expiresAt)}</td>
+                  <td data-label="Consumed">{otp.consumedAt ? formatDate(otp.consumedAt) : '-'}</td>
+                  <td data-label="Response" className="admin-provider-response">{otp.providerResponse || '-'}</td>
+                </tr>
+              ))}
+              {!otps.length && <EmptyRow colSpan={8} text="No OTP requests yet" />}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-mobile-user-cards-container">
+          {otps.map((otp) => (
+            <div key={otp.id} className="mobile-user-card" style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <strong style={{ color: '#0f172a' }}>{otp.mobile}</strong>
+                <span className="admin-pill">{otp.purpose}</span>
+              </div>
+              <div style={{ fontSize: '13px', color: '#64748b', display: 'grid', gap: '4px' }}>
+                <div>ID: {otp.id}</div>
+                <div>Created: {formatDate(otp.createdAt)}</div>
+                <div>Expires: {formatDate(otp.expiresAt)}</div>
+                {otp.consumedAt && <div style={{ color: '#16a34a', fontWeight: 600 }}>Consumed: {formatDate(otp.consumedAt)}</div>}
+              </div>
+            </div>
+          ))}
+          {!otps.length && <div className="admin-empty-card">No OTP requests yet</div>}
+        </div>
+      )}
     </section>
   );
 }

@@ -14,21 +14,34 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.trikonekt.consumer.user.UserRepository;
+import com.trikonekt.consumer.common.BusinessException;
+import org.springframework.http.HttpStatus;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
   private final OtpService otpService;
   private final AuthService authService;
+  private final UserRepository userRepository;
 
-  public AuthController(OtpService otpService, AuthService authService) {
+  public AuthController(OtpService otpService, AuthService authService, UserRepository userRepository) {
     this.otpService = otpService;
     this.authService = authService;
+    this.userRepository = userRepository;
   }
 
   @PostMapping("/send-otp")
   public ApiResponse<Void> sendOtp(@Valid @RequestBody SendOtpRequest request) {
     OtpPurpose purpose = request.purpose() == null ? OtpPurpose.LOGIN : request.purpose();
     String mobile = AuthService.normalizeMobile(request.countryCode(), request.mobile());
+    
+    if (purpose == OtpPurpose.LOGIN) {
+      if (userRepository.findByMobile(mobile).isEmpty()) {
+        throw new BusinessException(HttpStatus.NOT_FOUND, "User is not registered. Please sign up first.");
+      }
+    }
+
     otpService.sendOtp(mobile, purpose);
     return ApiResponse.ok("OTP sent", null);
   }
@@ -37,6 +50,13 @@ public class AuthController {
   public ApiResponse<AuthResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
     OtpPurpose purpose = request.purpose() == null ? OtpPurpose.LOGIN : request.purpose();
     String mobile = AuthService.normalizeMobile(request.countryCode(), request.mobile());
+    
+    if (purpose == OtpPurpose.LOGIN) {
+      if (userRepository.findByMobile(mobile).isEmpty()) {
+        throw new BusinessException(HttpStatus.NOT_FOUND, "User is not registered. Please sign up first.");
+      }
+    }
+
     otpService.verifyOtp(mobile, purpose, request.otp());
     AuthResponse response = purpose == OtpPurpose.LOGIN ? authService.createOtpLogin(mobile) : null;
     return ApiResponse.ok("OTP verified", response);

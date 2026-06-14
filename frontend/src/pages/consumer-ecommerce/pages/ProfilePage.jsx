@@ -167,9 +167,15 @@ export default function ProfilePage() {
 
   const displayName = profile?.fullName || profile?.full_name || 'My Profile';
   const displayId = profile?.prefixed_id || profile?.unique_id || (profile?.id ? `TR-${String(profile.id).padStart(10, '0')}` : '—');
-  const displayMobile = profile?.mobile || profile?.phone || '—';
+  const rawMobile = profile?.mobile || profile?.phone || '';
+  const displayMobile = rawMobile ? (rawMobile.startsWith('+91') ? rawMobile : `+91 ${rawMobile}`) : '—';
   const displayPinCode = profile?.pinCode || profile?.pincode || '—';
-  const displayLocation = [profile?.district, profile?.state, 'India'].filter(Boolean).join(', ') || '—';
+  // Build location cleanly – avoid duplicate fields
+  const locParts = [];
+  if (profile?.district) locParts.push(profile.district);
+  if (profile?.state && profile.state !== profile?.district) locParts.push(profile.state);
+  if (locParts.length > 0) locParts.push('India');
+  const displayLocation = locParts.join(', ') || profile?.address || '—';
   const walletBalance = profile?.walletBalance ?? profile?.wallet_balance ?? null;
 
   return (
@@ -212,55 +218,49 @@ export default function ProfilePage() {
       {/* ── Info Cards Grid ── */}
       <div className="pf-cards-section">
 
-        {/* ID + Pincode row */}
+        {/* Row 1: ID + Pincode */}
         <div className="pf-cards-row">
           <div className="pf-info-card">
-            <div className="pf-info-card-icon">
-              <LuHash size={18} />
-            </div>
+            <div className="pf-info-card-icon"><LuHash size={18} /></div>
             <span className="pf-info-card-label">ID Number</span>
             <strong className="pf-info-card-value">{displayId}</strong>
           </div>
           <div className="pf-info-card">
-            <div className="pf-info-card-icon">
-              <LuMapPin size={18} />
-            </div>
+            <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
             <span className="pf-info-card-label">Pin Code</span>
             <strong className="pf-info-card-value">{displayPinCode}</strong>
           </div>
         </div>
 
-        {/* Phone */}
-        <div className="pf-info-card pf-info-card-full">
-          <div className="pf-info-card-icon">
-            <LuPhone size={18} />
-          </div>
-          <div>
+        {/* Row 2: Phone + Wallet (2-col) */}
+        <div className="pf-cards-row">
+          <div className="pf-info-card">
+            <div className="pf-info-card-icon"><LuPhone size={18} /></div>
             <span className="pf-info-card-label">Phone</span>
-            <strong className="pf-info-card-value">+91{displayMobile}</strong>
+            <strong className="pf-info-card-value" style={{ fontSize: '13px' }}>{displayMobile}</strong>
           </div>
+          {walletBalance !== null ? (
+            <div className="pf-info-card">
+              <div className="pf-info-card-icon"><LuWallet size={18} /></div>
+              <span className="pf-info-card-label">Wallet</span>
+              <strong className="pf-info-card-value">₹{Number(walletBalance).toFixed(2)}</strong>
+            </div>
+          ) : (
+            <div className="pf-info-card">
+              <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
+              <span className="pf-info-card-label">Location</span>
+              <strong className="pf-info-card-value" style={{ fontSize: '13px' }}>{displayLocation}</strong>
+            </div>
+          )}
         </div>
 
-        {/* Location */}
-        <div className="pf-info-card pf-info-card-full">
-          <div className="pf-info-card-icon">
-            <LuMapPin size={18} />
-          </div>
-          <div>
-            <span className="pf-info-card-label">Location</span>
-            <strong className="pf-info-card-value">{displayLocation}</strong>
-          </div>
-        </div>
-
-        {/* Wallet Balance */}
+        {/* Location full-width if wallet also present */}
         {walletBalance !== null && (
           <div className="pf-info-card pf-info-card-full">
-            <div className="pf-info-card-icon">
-              <LuWallet size={18} />
-            </div>
+            <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
             <div>
-              <span className="pf-info-card-label">Wallet Balance</span>
-              <strong className="pf-info-card-value">Rs. {Number(walletBalance).toFixed(2)}</strong>
+              <span className="pf-info-card-label">Location</span>
+              <strong className="pf-info-card-value">{displayLocation}</strong>
             </div>
           </div>
         )}

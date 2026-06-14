@@ -17,6 +17,13 @@ public class UserResponse {
   private boolean mobileVerified;
   private String walletBalance;
   private String idNumber;
+  private boolean accountActive;
+  private String address;
+  private String kycStatus;
+  private String bankName;
+  private String bankAccountNumber;
+  private String ifscCode;
+  private String aadhaarDigilockerUrl;
 
   public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
       String mobile, String email, String pinCode, String district, String state, String status,
@@ -33,6 +40,13 @@ public class UserResponse {
   public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
       String mobile, String email, String pinCode, String district, String state, String status,
       boolean mobileVerified, String walletBalance, String idNumber) {
+    this(id, sponsorId, sponsorName, fullName, countryCode, mobile, email, pinCode, district, state, status, mobileVerified, walletBalance, idNumber, false, "", "UNSUBMITTED", "", "", "", "");
+  }
+
+  public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
+      String mobile, String email, String pinCode, String district, String state, String status,
+      boolean mobileVerified, String walletBalance, String idNumber, boolean accountActive, String address,
+      String kycStatus, String bankName, String bankAccountNumber, String ifscCode, String aadhaarDigilockerUrl) {
     this.id = id;
     this.sponsorId = sponsorId;
     this.sponsorName = sponsorName;
@@ -47,12 +61,39 @@ public class UserResponse {
     this.mobileVerified = mobileVerified;
     this.walletBalance = walletBalance;
     this.idNumber = idNumber;
+    this.accountActive = accountActive;
+    this.address = address;
+    this.kycStatus = kycStatus;
+    this.bankName = bankName;
+    this.bankAccountNumber = bankAccountNumber;
+    this.ifscCode = ifscCode;
+    this.aadhaarDigilockerUrl = aadhaarDigilockerUrl;
   }
 
   public static UserResponse from(User user) {
-    return new UserResponse(user.id(), user.sponsorId(), user.sponsorName(), user.fullName(), user.countryCode(),
-        user.mobile(), user.email(), user.pinCode(), user.district(), user.state(), user.status(),
-        user.mobileVerified());
+    return new UserResponse(
+        user.id(),
+        user.sponsorId(),
+        user.sponsorName(),
+        user.fullName(),
+        user.countryCode(),
+        user.mobile(),
+        user.email(),
+        user.pinCode(),
+        user.district(),
+        user.state(),
+        user.status(),
+        user.mobileVerified(),
+        null,
+        user.sponsorId(),
+        user.accountActive(),
+        user.address(),
+        user.kycStatus(),
+        user.bankName(),
+        user.bankAccountNumber(),
+        user.ifscCode(),
+        user.aadhaarDigilockerUrl()
+    );
   }
 
   public long getId() { return id; }
@@ -69,4 +110,11 @@ public class UserResponse {
   public boolean isMobileVerified() { return mobileVerified; }
   public String getWalletBalance() { return walletBalance; }
   public String getIdNumber() { return idNumber; }
+  public boolean getAccountActive() { return accountActive; }
+  public String getAddress() { return address; }
+  public String getKycStatus() { return kycStatus; }
+  public String getBankName() { return bankName; }
+  public String getBankAccountNumber() { return bankAccountNumber; }
+  public String getIfscCode() { return ifscCode; }
+  public String getAadhaarDigilockerUrl() { return aadhaarDigilockerUrl; }
 }

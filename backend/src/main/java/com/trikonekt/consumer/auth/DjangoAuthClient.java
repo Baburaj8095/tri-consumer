@@ -214,6 +214,13 @@ public class DjangoAuthClient {
     }
   }
 
+  public void changePassword(String phone, String newPassword) {
+    Map<String, Object> payload = new java.util.HashMap<>();
+    payload.put("phone", nationalMobile(phone));
+    payload.put("new_password", newPassword);
+    postJson("/accounts/password/reset/", payload);
+  }
+
   private UserResponse userFromDjango(JsonNode node, UserResponse fallback) {
     return userFromDjango(node, fallback, null);
   }
@@ -225,6 +232,27 @@ public class DjangoAuthClient {
     long id = node.path("id").asLong(0L);
     String phone = text(node, "phone");
     String pincode = text(node, "pincode");
+    boolean isActive = bool(node, "is_active");
+    boolean accountActive = bool(node, "account_active");
+    String address = text(node, "address");
+    if (address == null) address = "";
+
+    JsonNode kycNode = node.get("kyc");
+    String kycStatus = "UNSUBMITTED";
+    String bankName = "";
+    String bankAccountNumber = "";
+    String ifscCode = "";
+    String aadhaarDigilockerUrl = "";
+
+    if (kycNode != null && !kycNode.isNull()) {
+      boolean verified = bool(kycNode, "verified");
+      kycStatus = verified ? "VERIFIED" : "PENDING";
+      bankName = text(kycNode, "bank_name");
+      bankAccountNumber = text(kycNode, "bank_account_number");
+      ifscCode = text(kycNode, "ifsc_code");
+      aadhaarDigilockerUrl = text(kycNode, "aadhaar_digilocker_url");
+    }
+
     return new UserResponse(
         id,
         text(node, "sponsor_id"),
@@ -236,10 +264,17 @@ public class DjangoAuthClient {
         pincode,
         valueOr(text(node, "city"), text(node, "city_name")),
         valueOr(text(node, "state"), text(node, "state_name")),
-        bool(node, "is_active") ? "ACTIVE" : "INACTIVE",
+        isActive ? "ACTIVE" : "INACTIVE",
         true,
         walletBalance,
-        valueOr(text(node, "prefixed_id"), valueOr(text(node, "unique_id"), text(node, "username"))));
+        valueOr(text(node, "prefixed_id"), valueOr(text(node, "unique_id"), text(node, "username"))),
+        accountActive,
+        address,
+        kycStatus,
+        bankName != null ? bankName : "",
+        bankAccountNumber != null ? bankAccountNumber : "",
+        ifscCode != null ? ifscCode : "",
+        aadhaarDigilockerUrl != null ? aadhaarDigilockerUrl : "");
   }
 
   private static String stripTrailingSlash(String value) {

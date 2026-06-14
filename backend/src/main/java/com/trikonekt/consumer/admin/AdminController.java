@@ -126,7 +126,7 @@ public class AdminController {
       @PathVariable("id") long id,
       @Valid @RequestBody UserUpdateRequest request) {
     adminService.requireAdmin(authorization);
-    userRepository.updateUser(id, request.email(), request.mobile(), request.pinCode(), request.district(), request.state(), request.status(), request.fullName());
+    userRepository.updateUser(id, request.email(), request.mobile(), request.pinCode(), request.district(), request.state(), request.status(), request.fullName(), request.address(), request.accountActive(), request.kycStatus());
     return ApiResponse.ok("User updated successfully", null);
   }
 
@@ -137,6 +137,9 @@ public class AdminController {
       String district,
       String state,
       String status,
-      String fullName
+      String fullName,
+      String address,
+      Boolean accountActive,
+      String kycStatus
   ) {}
 }

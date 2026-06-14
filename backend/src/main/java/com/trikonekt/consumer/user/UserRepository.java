@@ -52,11 +52,19 @@ public class UserRepository {
         u.id, u.sponsor_id, sp.full_name AS sponsor_name, u.full_name, '+91' AS country_code,
         u.phone AS mobile, u.email, u.pincode AS pin_code, c.name AS district, st.name AS state,
         u.password AS password_hash, CASE WHEN u.is_active = TRUE THEN 'ACTIVE' ELSE 'INACTIVE' END AS status,
-        TRUE AS mobile_verified, u.date_joined AS created_at
+        TRUE AS mobile_verified, u.date_joined AS created_at,
+        u.account_active, u.address,
+        k.verified AS kyc_verified, k.bank_name, k.bank_account_number, k.ifsc_code, k.aadhaar_digilocker_url,
+        CASE
+          WHEN k.id IS NULL THEN 'UNSUBMITTED'
+          WHEN k.verified = TRUE THEN 'VERIFIED'
+          ELSE 'PENDING'
+        END AS kyc_status
       FROM accounts_customuser u
       LEFT JOIN accounts_customuser sp ON u.sponsor_id = sp.username
       LEFT JOIN locations_city c ON u.city_id = c.id
       LEFT JOIN locations_state st ON u.state_id = st.id
+      LEFT JOIN accounts_userkyc k ON u.id = k.user_id
       """;
 
   public Optional<User> findById(long id) {
@@ -98,11 +106,18 @@ public class UserRepository {
         rs.getString("password_hash"),
         rs.getString("status"),
         rs.getBoolean("mobile_verified"),
-        createdAt.toInstant()
+        createdAt.toInstant(),
+        rs.getBoolean("account_active"),
+        rs.getString("address") != null ? rs.getString("address") : "",
+        rs.getString("kyc_status"),
+        rs.getString("bank_name") != null ? rs.getString("bank_name") : "",
+        rs.getString("bank_account_number") != null ? rs.getString("bank_account_number") : "",
+        rs.getString("ifsc_code") != null ? rs.getString("ifsc_code") : "",
+        rs.getString("aadhaar_digilocker_url") != null ? rs.getString("aadhaar_digilocker_url") : ""
     );
   }
 
-  public void updateUser(long id, String email, String mobile, String pinCode, String district, String state, String status, String fullName) {
+  public void updateUser(long id, String email, String mobile, String pinCode, String district, String state, String status, String fullName, String address, Boolean accountActive, String kycStatus) {
     // 1. Get or create Country ID for India
     Long countryId = null;
     List<Long> countryIds = jdbcTemplate.query("SELECT id FROM locations_country WHERE UPPER(name) = 'INDIA'", (rs, rowNum) -> rs.getLong("id"));
@@ -161,7 +176,8 @@ public class UserRepository {
     boolean isActive = "ACTIVE".equalsIgnoreCase(status);
     jdbcTemplate.update("""
         UPDATE accounts_customuser
-        SET email = ?, phone = ?, pincode = ?, city_id = ?, state_id = ?, is_active = ?, full_name = ?,
+        SET email = ?, phone = ?, pincode = ?, city_id = COALESCE(?, city_id), state_id = COALESCE(?, state_id), is_active = ?, full_name = ?,
+            address = COALESCE(?, address), account_active = COALESCE(?, account_active),
             username = CASE WHEN username = phone THEN ? ELSE username END
         WHERE id = ?
         """,
@@ -172,9 +188,36 @@ public class UserRepository {
         stateId,
         isActive,
         blankToNull(fullName),
+        blankToNull(address),
+        accountActive,
         mobile.trim(),
         id
     );
+
+    // 5. Update user KYC status if provided
+    if (kycStatus != null && !kycStatus.isBlank()) {
+      if ("VERIFIED".equalsIgnoreCase(kycStatus)) {
+        List<Long> kycIds = jdbcTemplate.query("SELECT id FROM accounts_userkyc WHERE user_id = ?", (rs, rowNum) -> rs.getLong("id"), id);
+        if (kycIds.isEmpty()) {
+          jdbcTemplate.update("""
+              INSERT INTO accounts_userkyc (user_id, bank_name, bank_account_number, ifsc_code, verified, verified_at, kyc_reopen_allowed, aadhaar_digilocker_url, created_at, updated_at)
+              VALUES (?, '', '', '', TRUE, CURRENT_TIMESTAMP, FALSE, '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              """, id);
+        } else {
+          jdbcTemplate.update("UPDATE accounts_userkyc SET verified = TRUE, verified_at = CURRENT_TIMESTAMP, kyc_reopen_allowed = FALSE, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?", id);
+        }
+      } else if ("REJECTED".equalsIgnoreCase(kycStatus) || "REOPENED".equalsIgnoreCase(kycStatus)) {
+        List<Long> kycIds = jdbcTemplate.query("SELECT id FROM accounts_userkyc WHERE user_id = ?", (rs, rowNum) -> rs.getLong("id"), id);
+        if (kycIds.isEmpty()) {
+          jdbcTemplate.update("""
+              INSERT INTO accounts_userkyc (user_id, bank_name, bank_account_number, ifsc_code, verified, kyc_reopen_allowed, aadhaar_digilocker_url, created_at, updated_at)
+              VALUES (?, '', '', '', FALSE, TRUE, '', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              """, id);
+        } else {
+          jdbcTemplate.update("UPDATE accounts_userkyc SET verified = FALSE, kyc_reopen_allowed = TRUE, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?", id);
+        }
+      }
+    }
   }
 
   private String blankToNull(String value) {

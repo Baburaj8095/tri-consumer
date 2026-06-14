@@ -1120,3 +1120,226 @@
   }
 }
 
+/* KYC Status Badges */
+.admin-kyc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.admin-kyc-badge.kyc-verified {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.admin-kyc-badge.kyc-pending {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.admin-kyc-badge.kyc-unsubmitted {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-kyc-badge.kyc-rejected,
+.admin-kyc-badge.kyc-reopened {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* Active & Block Toggles */
+.admin-active-toggle-btn,
+.admin-block-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-active-toggle-btn.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.admin-active-toggle-btn.inactive {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.admin-block-toggle-btn.unblocked {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.admin-block-toggle-btn.blocked {
+  background: #fff5f5;
+  color: #c53030;
+  border-color: #feb2b2;
+}
+
+.admin-active-toggle-btn:hover,
+.admin-block-toggle-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Bottom Navigation Bar for Mobile */
+.admin-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 8px 16px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.admin-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.admin-bottom-nav-item.active {
+  color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  /* Ensure no horizontal page overflow */
+  body, html {
+    overflow-x: hidden;
+  }
+  
+  .admin-main-content-inner {
+    padding: 16px 12px;
+    padding-bottom: 80px; /* Space for bottom nav */
+  }
+
+  .admin-bottom-nav {
+    display: flex;
+  }
+
+  /* Header icons reduction */
+  .admin-header-icons {
+    gap: 8px;
+  }
+  .admin-header-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .admin-header-icon-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .admin-main-title {
+    font-size: 20px;
+  }
+
+  /* Convert statistics cards to horizontally scrollable compact cards */
+  .admin-summary-grid {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 12px;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  
+  .admin-summary-grid::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .admin-metric {
+    min-width: 220px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Make data table horizontally scrollable */
+  .admin-card-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .admin-modern-table {
+    min-width: 800px; /* Forces scroll on small devices */
+  }
+
+  /* Reduce space in search bar */
+  .admin-search-filter-bar {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .admin-search-filter-bar > div:last-child {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  /* Pagination responsiveness */
+  .admin-pagination-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+
+  /* Hide sidebar on mobile in favor of drawer overlay */
+  .admin-sidebar {
+    position: fixed;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 90;
+    backdrop-filter: blur(4px);
+  }
+}

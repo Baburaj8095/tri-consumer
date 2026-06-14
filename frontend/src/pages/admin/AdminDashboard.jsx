@@ -87,7 +87,12 @@ function AdminDashboard() {
   const [credentials, setCredentials] = useState({ username: 'admin', password: '' });
   const [activeTab, setActiveTab] = useState('users');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const selectTab = (tab) => {
+    setActiveTab(tab);
+    setMobileMenuOpen(false);
+  };
   const [editingUser, setEditingUser] = useState(null);
+  const [selectedKycUser, setSelectedKycUser] = useState(null);
   const [summary, setSummary] = useState(null);
   const [users, setUsers] = useState([]);
   const [otps, setOtps] = useState([]);
@@ -228,6 +233,39 @@ function AdminDashboard() {
     }
   };
 
+  const handleToggleAccountActive = async (user) => {
+    const nextActive = !user.accountActive;
+    const confirmMsg = nextActive 
+      ? `Are you sure you want to ACTIVATE user account ${user.fullName} for MLM & rewards?`
+      : `Are you sure you want to DEACTIVATE user account ${user.fullName}?`;
+      
+    if (!window.confirm(confirmMsg)) return;
+
+    setLoading(true);
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/users/${user.id}`, {
+        email: user.email,
+        mobile: user.mobile,
+        pinCode: user.pinCode,
+        district: user.district,
+        state: user.state,
+        status: user.status,
+        fullName: user.fullName,
+        address: user.address,
+        accountActive: nextActive,
+        kycStatus: user.kycStatus
+      }, { headers });
+      setSuccess(`User account status updated successfully.`);
+      loadAdminData();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err) {
+      setError(formatErrorMessage(err));
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabTitle = useMemo(() => {
     switch (activeTab) {
       case 'users':
@@ -283,22 +321,49 @@ function AdminDashboard() {
 
   return (
     <div className="admin-layout">
+      {/* Sidebar Overlay for mobile drawer */}
+      {mobileMenuOpen && (
+        <div 
+          className="admin-sidebar-overlay md:hidden" 
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Left Sidebar Layout */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="admin-sidebar-logo">
-          <div className="admin-sidebar-logo-icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-            </svg>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="admin-sidebar-logo-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <span className="admin-sidebar-logo-text">Trikonekt</span>
           </div>
-          <span className="admin-sidebar-logo-text">Trikonekt</span>
+          <button 
+            type="button"
+            className="admin-sidebar-close-btn md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#64748b',
+              cursor: 'pointer',
+              fontSize: '18px',
+              padding: '4px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <LuX />
+          </button>
         </div>
         
         <nav className="admin-sidebar-menu">
           <button 
             type="button"
             className={`admin-sidebar-item ${activeTab === 'users' ? 'active' : ''}`}
-            onClick={() => setActiveTab('users')}
+            onClick={() => selectTab('users')}
           >
             <LuUsers size={18} />
             <span>Users</span>
@@ -306,7 +371,7 @@ function AdminDashboard() {
           <button 
             type="button"
             className={`admin-sidebar-item ${activeTab === 'admins' ? 'active' : ''}`}
-            onClick={() => setActiveTab('admins')}
+            onClick={() => selectTab('admins')}
           >
             <LuLock size={18} />
             <span>Admin Accounts</span>
@@ -314,7 +379,7 @@ function AdminDashboard() {
           <button 
             type="button"
             className={`admin-sidebar-item ${activeTab === 'otps' ? 'active' : ''}`}
-            onClick={() => setActiveTab('otps')}
+            onClick={() => selectTab('otps')}
           >
             <LuKeyRound size={18} />
             <span>OTP Management</span>
@@ -322,7 +387,7 @@ function AdminDashboard() {
           <button 
             type="button"
             className={`admin-sidebar-item ${activeTab === 'webhooks' ? 'active' : ''}`}
-            onClick={() => setActiveTab('webhooks')}
+            onClick={() => selectTab('webhooks')}
           >
             <LuShieldCheck size={18} />
             <span>Webhook Logs</span>
@@ -330,7 +395,7 @@ function AdminDashboard() {
           <button 
             type="button"
             className={`admin-sidebar-item ${activeTab === 'hubble' ? 'active' : ''}`}
-            onClick={() => setActiveTab('hubble')}
+            onClick={() => selectTab('hubble')}
           >
             <LuGift size={18} />
             <span>Hubble Gift Cards</span>
@@ -351,13 +416,33 @@ function AdminDashboard() {
           
           {/* Breadcrumbs Header */}
           <div className="admin-breadcrumb-header">
-            <div>
-              <div className="admin-breadcrumbs">
-                <span className="clickable" onClick={() => setActiveTab('users')}>Admin Dashboard</span>
-                <span>&gt;</span>
-                <span className="active">{tabTitle}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button 
+                type="button"
+                className="admin-hamburger-btn md:hidden" 
+                onClick={() => setMobileMenuOpen(true)}
+                title="Open Sidebar"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#475569',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '20px'
+                }}
+              >
+                <LuMenu />
+              </button>
+              <div>
+                <div className="admin-breadcrumbs">
+                  <span className="clickable" onClick={() => selectTab('users')}>Admin Dashboard</span>
+                  <span>&gt;</span>
+                  <span className="active">{tabTitle}</span>
+                </div>
+                <h1 className="admin-main-title">{tabTitle}</h1>
               </div>
-              <h1 className="admin-main-title">{tabTitle}</h1>
             </div>
             
             <div className="admin-header-icons">
@@ -401,6 +486,8 @@ function AdminDashboard() {
               onCreateClick={() => setShowUserModal(true)} 
               onEditClick={(user) => setEditingUser(user)}
               onToggleBlock={handleToggleBlock}
+              onViewKyc={(user) => setSelectedKycUser(user)}
+              onToggleAccountActive={handleToggleAccountActive}
             />
           )}
 
@@ -418,7 +505,7 @@ function AdminDashboard() {
                       required
                       placeholder="e.g. support_admin"
                       value={newAdmin.username}
-                      onChange={(e) => setNewAdmin((p) => ({ ...p, username: e.target.value }))}
+                      onChange={(e) => setNewAdmin((prev) => ({ ...prev, username: e.target.value }))}
                     />
                   </label>
 
@@ -428,9 +515,9 @@ function AdminDashboard() {
                       <input
                         required
                         type={showAdminPassword ? 'text' : 'password'}
-                        placeholder="Min 6 characters"
+                        placeholder="Password"
                         value={newAdmin.password}
-                        onChange={(e) => setNewAdmin((p) => ({ ...p, password: e.target.value }))}
+                        onChange={(e) => setNewAdmin((prev) => ({ ...prev, password: e.target.value }))}
                       />
                       <button
                         type="button"
@@ -445,8 +532,8 @@ function AdminDashboard() {
                   {newAdminError && <div className="admin-error">{newAdminError}</div>}
                   {newAdminSuccess && <div className="admin-success">{newAdminSuccess}</div>}
 
-                  <button className="admin-primary-btn" disabled={adminLoading}>
-                    <LuPlus /> {adminLoading ? 'Creating...' : 'Create Admin'}
+                  <button className="admin-blue-btn" disabled={adminLoading}>
+                    {adminLoading ? 'Creating...' : 'Create Admin'}
                   </button>
                 </form>
               </section>
@@ -481,7 +568,7 @@ function AdminDashboard() {
         }}
       />
 
-      {/* User Editing Modal */}
+       {/* User Editing Modal */}
       {editingUser && (
         <EditUserModal
           isOpen={true}
@@ -495,6 +582,72 @@ function AdminDashboard() {
           }}
         />
       )}
+
+      {/* KYC Verification Details Modal */}
+      {selectedKycUser && (
+        <KycDetailsModal
+          isOpen={true}
+          user={selectedKycUser}
+          onClose={() => setSelectedKycUser(null)}
+          headers={headers}
+          onSuccess={(msg) => {
+            setSuccess(msg);
+            loadAdminData();
+            setTimeout(() => setSuccess(''), 5000);
+          }}
+        />
+      )}
+
+      {/* Fixed Bottom Navigation Bar for Mobile */}
+      <nav className="admin-bottom-nav md:hidden">
+        <button 
+          type="button"
+          className={`admin-bottom-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => selectTab('users')}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`admin-bottom-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => selectTab('users')}
+        >
+          <LuUsers size={20} />
+          <span>Team</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`admin-bottom-nav-item ${activeTab === 'admins' || activeTab === 'otps' ? 'active' : ''}`}
+          onClick={() => selectTab('admins')}
+        >
+          <LuLock size={20} />
+          <span>Business</span>
+        </button>
+
+        <button 
+          type="button"
+          className={`admin-bottom-nav-item ${activeTab === 'webhooks' || activeTab === 'hubble' ? 'active' : ''}`}
+          onClick={() => selectTab('webhooks')}
+        >
+          <LuShieldCheck size={20} />
+          <span>Reports</span>
+        </button>
+
+        <button 
+          type="button"
+          className="admin-bottom-nav-item"
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <LuMenu size={20} />
+          <span>More</span>
+        </button>
+      </nav>
     </div>
   );
 }
@@ -509,7 +662,7 @@ function Metric({ label, value, icon }) {
   );
 }
 
-function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
+function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKyc, onToggleAccountActive }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [expandedUserId, setExpandedUserId] = useState(null);
@@ -529,6 +682,8 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
         (user.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.mobile || '').includes(searchTerm) ||
+        (user.sponsorId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.sponsorName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.id || '').toString().includes(searchTerm);
       
       const matchesStatus = 
@@ -582,23 +737,10 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
         <div className="admin-search-input-wrapper">
           <span className="admin-search-icon"><LuSearch /></span>
           <input
-            placeholder="Search Task"
+            placeholder="Search User (Name, ID, Phone, Sponsor...)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button className="admin-filter-toggle-btn" title="Toggle Filters">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="4" y1="21" x2="4" y2="14" />
-              <line x1="4" y1="10" x2="4" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12" y2="3" />
-              <line x1="20" y1="21" x2="20" y2="16" />
-              <line x1="20" y1="12" x2="20" y2="3" />
-              <line x1="1" y1="14" x2="7" y2="14" />
-              <line x1="9" y1="8" x2="15" y2="8" />
-              <line x1="17" y1="16" x2="23" y2="16" />
-            </svg>
-          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -630,8 +772,8 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
               cursor: 'pointer'
             }}
           >
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active</option>
+            <option value="ALL">All Login Status</option>
+            <option value="ACTIVE">Unblocked</option>
             <option value="INACTIVE">Blocked</option>
           </select>
 
@@ -655,11 +797,11 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
                 />
               </th>
               <th>Name</th>
-              <th>Position</th>
-              <th>Department</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Status</th>
+              <th>Sponsor ID & Name</th>
+              <th>Address & Pincode</th>
+              <th>KYC Status</th>
+              <th>Active/Inactive</th>
+              <th>Block/Unblock</th>
               <th>Edit</th>
             </tr>
           </thead>
@@ -667,11 +809,6 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
             {paginatedUsers.map((user) => {
               const isSelected = selectedUserIds.has(user.id);
               const isExpanded = expandedUserId === user.id;
-              
-              // Mock details based on global index to maintain visual variety
-              const originalIdx = filteredUsers.indexOf(user);
-              const mockPos = MOCK_POSITIONS[originalIdx % MOCK_POSITIONS.length];
-              const mockDept = MOCK_DEPARTMENTS[originalIdx % MOCK_DEPARTMENTS.length];
               const initials = getInitials(user.fullName);
               const avatarColor = getAvatarColor(user.id);
 
@@ -706,36 +843,67 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
                         </div>
                         <div className="admin-cell-name-info">
                           <strong>{user.fullName}</strong>
-                          <span style={{ fontSize: '11px', color: '#64748b' }}>ID: {user.id}</span>
+                          <span style={{ fontSize: '11px', color: '#64748b' }}>
+                            ID: {user.id} | {user.email || 'No email'} | {user.mobile}
+                          </span>
                         </div>
                       </div>
                     </td>
-                    <td>{mockPos}</td>
-                    <td>{mockDept}</td>
-                    <td>{user.email || '-'}</td>
-                    <td>{user.mobile}</td>
                     <td>
-                      <span className={`admin-status-badge ${user.status === 'ACTIVE' ? 'status-fulltime' : 'status-blocked'}`}>
-                        {user.status === 'ACTIVE' ? 'Active' : 'Blocked'}
+                      <div>
+                        <strong>{user.sponsorId || '-'}</strong>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>{user.sponsorName || 'Direct'}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div>
+                        <div style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.address}>
+                          {user.address || '-'}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          {user.pinCode || '-'}, {user.district || '-'}, {user.state || '-'}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span 
+                        className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}
+                        onClick={() => onViewKyc(user)}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to manage KYC"
+                      >
+                        {user.kycStatus || 'UNSUBMITTED'}
                       </span>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`admin-active-toggle-btn ${user.accountActive ? 'active' : 'inactive'}`}
+                        onClick={() => onToggleAccountActive(user)}
+                        title={user.accountActive ? 'Click to set inactive' : 'Click to set active'}
+                      >
+                        {user.accountActive ? 'Active' : 'Inactive'}
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        className={`admin-block-toggle-btn ${user.status === 'ACTIVE' ? 'unblocked' : 'blocked'}`}
+                        onClick={() => onToggleBlock(user)}
+                        title={user.status === 'ACTIVE' ? 'Click to block user' : 'Click to unblock user'}
+                      >
+                        {user.status === 'ACTIVE' ? 'Unblocked' : 'Blocked'}
+                      </button>
                     </td>
                     <td>
                       <div className="admin-action-buttons">
                         <button 
                           type="button" 
                           className="admin-action-btn" 
-                          title="Edit user"
+                          title="Edit user details"
                           onClick={() => onEditClick(user)}
                         >
                           <LuPencil size={14} />
-                        </button>
-                        <button 
-                          type="button" 
-                          className="admin-action-btn btn-delete" 
-                          title={user.status === 'ACTIVE' ? 'Block user' : 'Unblock user'}
-                          onClick={() => onToggleBlock(user)}
-                        >
-                          <LuTrash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -747,46 +915,52 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
                         <div className="admin-row-expanded-details-container">
                           <div className="admin-expanded-grid">
                             <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Office Location</span>
+                              <span className="admin-expanded-label">Sponsor Details</span>
                               <div className="admin-expanded-value">
-                                <LuMapPin />
-                                <span>{user.pinCode || '-'}, {user.district || 'Santa Ana'}, {user.state || 'Illinois'}</span>
+                                <LuUsers />
+                                <span>{user.sponsorName || 'Direct'} ({user.sponsorId || 'None'})</span>
                               </div>
                             </div>
                             
                             <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Team Mates</span>
-                              <div className="admin-expanded-value">
-                                <LuUsers />
-                                <ul>
-                                  <li>{user.sponsorName || 'Ronald Richards'} {user.sponsorId && `(${user.sponsorId})`}</li>
-                                  <li style={{ color: '#64748b', fontWeight: 500 }}>Floyd Miles</li>
-                                  <li style={{ color: '#64748b', fontWeight: 500 }}>Savannah Nguyen</li>
-                                </ul>
-                              </div>
-                            </div>
-
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Birthday</span>
-                              <div className="admin-expanded-value">
-                                <LuCalendar />
-                                <span>12/2/1998</span>
-                              </div>
-                            </div>
-
-                            <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">HR Year</span>
+                              <span className="admin-expanded-label">Identity / KYC Info</span>
                               <div className="admin-expanded-value">
                                 <LuShieldCheck />
-                                <span>{user.mobileVerified ? 'Verified Account' : 'Unverified'}</span>
+                                <div>
+                                  <div>KYC: <strong>{user.kycStatus || 'UNSUBMITTED'}</strong></div>
+                                  {user.bankAccountNumber && (
+                                    <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                                      {user.bankName} - Account: {user.bankAccountNumber}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
                             <div className="admin-expanded-col">
-                              <span className="admin-expanded-label">Address</span>
+                              <span className="admin-expanded-label">Mobile Verified</span>
                               <div className="admin-expanded-value">
-                                <LuMap />
-                                <span>{user.district || '4140 Parker Rd. Allentown'}, {user.state || 'New Mexico'} {user.pinCode || '31134'}</span>
+                                <LuShieldCheck />
+                                <span>{user.mobileVerified ? 'Verified' : 'Unverified'}</span>
+                              </div>
+                            </div>
+
+                            <div className="admin-expanded-col">
+                              <span className="admin-expanded-label">MLM Eligibility</span>
+                              <div className="admin-expanded-value">
+                                <LuShieldCheck />
+                                <span>{user.accountActive ? 'Eligible (Active)' : 'Ineligible (Inactive)'}</span>
+                              </div>
+                            </div>
+
+                            <div className="admin-expanded-col" style={{ gridColumn: 'span 2' }}>
+                              <span className="admin-expanded-label">Full Address & Location</span>
+                              <div className="admin-expanded-value">
+                                <LuMapPin />
+                                <span>
+                                  {user.address ? `${user.address}, ` : ''} 
+                                  {user.district || ''}, {user.state || ''} {user.pinCode ? `- ${user.pinCode}` : ''}
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -817,16 +991,29 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
             >
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                type="button"
-                className={`admin-pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
-                onClick={() => setCurrentPage(pageNum)}
-              >
-                {pageNum}
-              </button>
-            ))}
+            {(() => {
+              const maxPagesToShow = 5;
+              let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+              let endPage = startPage + maxPagesToShow - 1;
+              if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - maxPagesToShow + 1);
+              }
+              const pages = [];
+              for (let i = startPage; i <= endPage; i++) {
+                pages.push(i);
+              }
+              return pages.map((pageNum) => (
+                <button
+                  key={pageNum}
+                  type="button"
+                  className={`admin-pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
+                  onClick={() => setCurrentPage(pageNum)}
+                >
+                  {pageNum}
+                </button>
+              ));
+            })()}
             <button 
               type="button" 
               className="admin-pagination-btn" 
@@ -1394,5 +1581,386 @@ function WebhookPayloadModal({ webhook, onClose }) {
     </div>
   );
 }
- 
+
+function EditUserModal({ isOpen, user, onClose, headers, onSuccess }) {
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || '',
+    mobile: user?.mobile || '',
+    email: user?.email || '',
+    address: user?.address || '',
+    pinCode: user?.pinCode || '',
+    district: user?.district || '',
+    state: user?.state || '',
+    status: user?.status || 'ACTIVE',
+    accountActive: user?.accountActive ?? false,
+    kycStatus: user?.kycStatus || 'UNSUBMITTED'
+  });
+
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [pinLoading, setPinLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        mobile: user.mobile || '',
+        email: user.email || '',
+        address: user.address || '',
+        pinCode: user.pinCode || '',
+        district: user.district || '',
+        state: user.state || '',
+        status: user.status || 'ACTIVE',
+        accountActive: user.accountActive ?? false,
+        kycStatus: user.kycStatus || 'UNSUBMITTED'
+      });
+      setError('');
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const pin = formData.pinCode.trim();
+    if (pin.length !== 6) return;
+
+    const fetchLocation = async () => {
+      setPinLoading(true);
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/location/pincode/${pin}`);
+        const location = response.data?.data;
+        if (response.data?.success && location) {
+          setFormData((prev) => ({
+            ...prev,
+            district: location.district || '',
+            state: location.state || '',
+          }));
+        }
+      } catch (err) {
+        // ignore
+      } finally {
+        setPinLoading(false);
+      }
+    };
+
+    const timer = setTimeout(fetchLocation, 600);
+    return () => clearTimeout(timer);
+  }, [formData.pinCode]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    if (formData.mobile.length !== 10) {
+      setError('Mobile number must be exactly 10 digits.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/users/${user.id}`, formData, { headers });
+      onSuccess(`User '${formData.fullName}' updated successfully.`);
+      onClose();
+    } catch (err) {
+      setError(formatErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="admin-modal-backdrop">
+      <div className="admin-modal-card">
+        <header className="admin-modal-header">
+          <h2>Edit Customer Account</h2>
+          <button className="admin-modal-close" onClick={onClose}>
+            <LuX />
+          </button>
+        </header>
+        <form className="admin-modal-form" onSubmit={handleSubmit}>
+          <div className="admin-form-row">
+            <label className="span-2">
+              Full Name
+              <input
+                required
+                placeholder="Enter client's full name"
+                value={formData.fullName}
+                onChange={(e) => setFormData((p) => ({ ...p, fullName: e.target.value }))}
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-row">
+            <label>
+              Mobile Number
+              <input
+                required
+                type="tel"
+                placeholder="10-digit number"
+                value={formData.mobile}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, mobile: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }))
+                }
+              />
+            </label>
+            <label>
+              Email Address
+              <input
+                type="email"
+                placeholder="client@example.com (optional)"
+                value={formData.email}
+                onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-row">
+            <label className="span-2">
+              Address
+              <textarea
+                placeholder="Full street address details"
+                value={formData.address}
+                onChange={(e) => setFormData((p) => ({ ...p, address: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  minHeight: '80px',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  fontSize: '13px'
+                }}
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-row">
+            <label>
+              Pincode {pinLoading && <span className="admin-sub-loader">Lookup...</span>}
+              <input
+                required
+                placeholder="6-digit pincode"
+                value={formData.pinCode}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, pinCode: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) }))
+                }
+              />
+            </label>
+            <label>
+              District
+              <input
+                required
+                placeholder="District name"
+                value={formData.district}
+                onChange={(e) => setFormData((p) => ({ ...p, district: e.target.value }))}
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-row">
+            <label className="span-2">
+              State
+              <input
+                required
+                placeholder="State name"
+                value={formData.state}
+                onChange={(e) => setFormData((p) => ({ ...p, state: e.target.value }))}
+              />
+            </label>
+          </div>
+
+          <div className="admin-form-row" style={{ gridTemplateColumns: '1fr 1fr', alignItems: 'center' }}>
+            <label style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={formData.accountActive}
+                onChange={(e) => setFormData((p) => ({ ...p, accountActive: e.target.checked }))}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#334155' }}>Genealogy MLM Active</span>
+            </label>
+
+            <label>
+              Login Block Status
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData((p) => ({ ...p, status: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: '1px solid #e2e8f0',
+                  background: '#ffffff',
+                  fontSize: '13px',
+                  fontWeight: 600
+                }}
+              >
+                <option value="ACTIVE">Active (Unblocked)</option>
+                <option value="INACTIVE">Blocked</option>
+              </select>
+            </label>
+          </div>
+
+          {error && <div className="admin-error">{error}</div>}
+
+          <footer className="admin-modal-footer">
+            <button type="button" className="admin-secondary-btn" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="admin-primary-btn" disabled={loading}>
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function KycDetailsModal({ isOpen, user, onClose, headers, onSuccess }) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleUpdateKyc = async (status) => {
+    setLoading(true);
+    setError('');
+    try {
+      await axios.put(`${API_BASE_URL}/api/admin/users/${user.id}`, {
+        email: user.email,
+        mobile: user.mobile,
+        pinCode: user.pinCode,
+        district: user.district,
+        state: user.state,
+        status: user.status,
+        fullName: user.fullName,
+        address: user.address,
+        accountActive: user.accountActive,
+        kycStatus: status
+      }, { headers });
+      onSuccess(`KYC status for ${user.fullName} updated to ${status}.`);
+      onClose();
+    } catch (err) {
+      setError(formatErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="admin-modal-backdrop">
+      <div className="admin-modal-card" style={{ width: 'min(100%, 540px)' }}>
+        <header className="admin-modal-header">
+          <h2>KYC Verification Details</h2>
+          <button className="admin-modal-close" onClick={onClose}>
+            <LuX />
+          </button>
+        </header>
+        <div className="admin-modal-form" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+              <div>
+                <strong style={{ fontSize: '15px', color: '#0f172a' }}>{user.fullName}</strong>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>User ID: {user.id}</div>
+              </div>
+              <span className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}>
+                {user.kycStatus || 'UNSUBMITTED'}
+              </span>
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bank Account Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block' }}>Bank Name</span>
+                  <strong style={{ color: '#0f172a' }}>{user.bankName || 'Not Provided'}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#64748b', display: 'block' }}>Account Number</span>
+                  <strong style={{ color: '#0f172a' }}>{user.bankAccountNumber || 'Not Provided'}</strong>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={{ color: '#64748b', display: 'block' }}>IFSC Code</span>
+                  <strong style={{ color: '#0f172a' }}>{user.ifscCode || 'Not Provided'}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Identity Verification</h3>
+              <div style={{ fontSize: '13px' }}>
+                <span style={{ color: '#64748b', display: 'block', marginBottom: '4px' }}>Aadhaar DigiLocker Link</span>
+                {user.aadhaarDigilockerUrl ? (
+                  <a 
+                    href={user.aadhaarDigilockerUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ color: '#3b82f6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'underline' }}
+                  >
+                    View Aadhaar Document (DigiLocker)
+                  </a>
+                ) : (
+                  <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No document linked</span>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {error && <div className="admin-error" style={{ marginTop: '12px' }}>{error}</div>}
+        </div>
+        <footer className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
+          <button 
+            type="button" 
+            className="admin-secondary-btn" 
+            onClick={onClose} 
+            disabled={loading}
+            style={{ minHeight: '38px', padding: '0 16px' }}
+          >
+            Close
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={() => handleUpdateKyc('REOPENED')} 
+            disabled={loading}
+            style={{ 
+              minHeight: '38px', 
+              padding: '0 16px', 
+              background: '#ef4444', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '10px', 
+              fontWeight: 600,
+              cursor: 'pointer' 
+            }}
+          >
+            Reject/Reopen
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={() => handleUpdateKyc('VERIFIED')} 
+            disabled={loading}
+            style={{ 
+              minHeight: '38px', 
+              padding: '0 16px', 
+              background: '#10b981', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '10px', 
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            Approve KYC
+          </button>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
 export default AdminDashboard;

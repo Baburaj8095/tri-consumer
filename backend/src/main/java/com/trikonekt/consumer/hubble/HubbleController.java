@@ -289,7 +289,14 @@ public class HubbleController {
         null, // passwordHash not needed for Hubble
         djangoUser.getStatus(),
         djangoUser.isMobileVerified(),
-        java.time.Instant.now()
+        java.time.Instant.now(),
+        djangoUser.getAccountActive(),
+        djangoUser.getAddress(),
+        djangoUser.getKycStatus(),
+        djangoUser.getBankName(),
+        djangoUser.getBankAccountNumber(),
+        djangoUser.getIfscCode(),
+        djangoUser.getAadhaarDigilockerUrl()
     );
   }
 

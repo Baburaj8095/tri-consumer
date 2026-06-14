@@ -13,8 +13,11 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 function RegisterForm() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const queryParams = new URLSearchParams(window.location.search);
+  const urlSponsorId = queryParams.get('sponsor_id') || queryParams.get('sponsor') || '';
+
   const [formData, setFormData] = useState({
-    sponsorId: '',
+    sponsorId: urlSponsorId,
     sponsorName: '',
     fullName: '',
     countryCode: '+91',

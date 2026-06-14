@@ -222,6 +222,21 @@ export default function Header() {
               <p className="ce-profile-label">Profile</p>
               <h2 className="ce-profile-name">{displayProfile.name}</h2>
               <p className="ce-profile-subtitle">{displayProfile.membership}</p>
+              <Link 
+                to="/consumer-ecommerce/profile" 
+                className="ce-profile-settings-link" 
+                onClick={() => setIsMenuOpen(false)}
+                style={{ 
+                  display: 'inline-block', 
+                  marginTop: '8px', 
+                  color: '#2563eb', 
+                  fontWeight: 600, 
+                  fontSize: '13px', 
+                  textDecoration: 'underline' 
+                }}
+              >
+                Edit Account / Settings
+              </Link>
             </div>
 
             <div className="ce-profile-detail-grid">

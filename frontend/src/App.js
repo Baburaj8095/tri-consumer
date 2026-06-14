@@ -17,6 +17,7 @@ import TriInventoryBillingPage from "./pages/consumer-ecommerce/pages/TriInvento
 import LoginForm from "./pages/login-registration/LoginForm";
 import RegisterForm from "./pages/login-registration/RegisterForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import ProfilePage from "./pages/consumer-ecommerce/pages/ProfilePage";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
         <Route path="/consumer-ecommerce/tritrip" element={<TriTripPage />} />
         <Route path="/consumer-ecommerce/tripickdrop" element={<TriPickDropPage />} />
         <Route path="/business/inventory-billing" element={<TriInventoryBillingPage />} />
+        <Route path="/consumer-ecommerce/profile" element={<ProfilePage />} />
         
         {/* Catch all to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

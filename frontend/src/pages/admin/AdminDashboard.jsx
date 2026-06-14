@@ -407,139 +407,143 @@ function AdminDashboard() {
       {/* Main content pane */}
       <div className="admin-main-content">
         <div className="admin-main-content-inner">
-          
-          {/* Breadcrumbs Header */}
-          <div className="admin-breadcrumb-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <button 
+
+          {/* ── Sticky Top Header Bar ── */}
+          <header className="admin-top-header">
+            <div className="admin-top-header-left">
+              <button
                 type="button"
                 className="admin-hamburger-btn"
                 onClick={() => setMobileMenuOpen(true)}
-                title="Open Sidebar"
+                title="Open menu"
               >
                 <LuMenu size={22} />
               </button>
+
+              {/* Breadcrumb title */}
               <div>
                 <div className="admin-breadcrumbs">
-                  <span className="clickable" onClick={() => selectTab('dashboard')}>Admin Dashboard</span>
-                  <span>&gt;</span>
+                  <span className="clickable" onClick={() => selectTab('dashboard')}>Dashboard</span>
+                  <span>/</span>
                   <span className="active">{tabTitle}</span>
                 </div>
                 <h1 className="admin-main-title">{tabTitle}</h1>
               </div>
+
+              {/* Global search */}
+              <div className="admin-top-search-wrap">
+                <LuSearch size={16} />
+                <input placeholder="Search here..." />
+              </div>
             </div>
-            
-            <div className="admin-header-icons">
+
+            <div className="admin-top-header-right">
               <button className="admin-header-icon-btn" onClick={loadAdminData} disabled={loading} title="Refresh">
                 <LuRefreshCcw size={16} />
               </button>
-              
               <div className="admin-header-icon-btn" title="Notifications" style={{ position: 'relative' }}>
                 <LuBell size={18} />
                 <span className="admin-header-badge">3</span>
               </div>
-              
               <div className="admin-header-icon-btn" title="Messages">
                 <LuMail size={18} />
               </div>
-              
-              <img 
-                src="https://flagcdn.com/w40/us.png" 
-                alt="US Flag" 
-                className="admin-header-flag"
-                title="English (US)"
-              />
             </div>
-          </div>
+          </header>
 
-          {error && <div className="admin-error admin-page-error">{error}</div>}
-          {success && <div className="admin-success admin-page-success">{success}</div>}
+          {/* ── Scrollable Page Content ── */}
+          <div className="admin-page-content">
+            {error && <div className="admin-error admin-page-error">{error}</div>}
+            {success && <div className="admin-success admin-page-success">{success}</div>}
 
-          {/* Metric Overview section – always visible */}
-          <section className="admin-summary-grid">
-            <Metric label="Users" value={summary?.totalUsers ?? users.length} icon={<LuUsers />} />
-            <Metric label="Verified" value={summary?.verifiedUsers ?? 0} icon={<LuShieldCheck />} />
-            <Metric label="Administrators" value={admins.length} icon={<LuLock />} />
-            <Metric label="OTP Requests" value={summary?.otpRequests ?? otps.length} icon={<LuKeyRound />} />
-          </section>
+            {/* Metric Overview section – always visible */}
+            <section className="admin-summary-grid">
+              <Metric label="Users" value={summary?.totalUsers ?? users.length} icon={<LuUsers />} />
+              <Metric label="Verified" value={summary?.verifiedUsers ?? 0} icon={<LuShieldCheck />} />
+              <Metric label="Administrators" value={admins.length} icon={<LuLock />} />
+              <Metric label="OTP Requests" value={summary?.otpRequests ?? otps.length} icon={<LuKeyRound />} />
+            </section>
 
-          {/* Active view component */}
-          {activeTab === 'dashboard' && (
-            <DashboardHome users={users} otps={otps} summary={summary} />
-          )}
+            {/* Active view component */}
+            {activeTab === 'dashboard' && (
+              <DashboardHome users={users} otps={otps} summary={summary} />
+            )}
 
-          {activeTab === 'users' && (
-            <UsersTable 
-              users={users} 
-              onCreateClick={() => setShowUserModal(true)} 
-              onEditClick={(user) => setEditingUser(user)}
-              onToggleBlock={handleToggleBlock}
-              onViewKyc={(user) => setSelectedKycUser(user)}
-              onToggleAccountActive={handleToggleAccountActive}
-              isMobile={isMobile}
-            />
-          )}
+            {activeTab === 'users' && (
+              <UsersTable
+                users={users}
+                onCreateClick={() => setShowUserModal(true)}
+                onEditClick={(user) => setEditingUser(user)}
+                onToggleBlock={handleToggleBlock}
+                onViewKyc={(user) => setSelectedKycUser(user)}
+                onToggleAccountActive={handleToggleAccountActive}
+                isMobile={isMobile}
+              />
+            )}
 
-          {activeTab === 'admins' && (
-            <div className="admin-two-col">
-              <AdminsTable admins={admins} />
-              <section className="admin-panel admin-create-panel">
-                <div className="admin-panel-head">
-                  <h2>Create Administrator</h2>
-                </div>
-                <form className="admin-form" onSubmit={handleCreateAdmin}>
-                  <label>
-                    Username
-                    <input
-                      required
-                      placeholder="e.g. support_admin"
-                      value={newAdmin.username}
-                      onChange={(e) => setNewAdmin((prev) => ({ ...prev, username: e.target.value }))}
-                    />
-                  </label>
-
-                  <label className="admin-password-label">
-                    Password
-                    <div className="admin-password-input-wrap">
+            {activeTab === 'admins' && (
+              <div className="admin-two-col">
+                <AdminsTable admins={admins} />
+                <section className="admin-panel admin-create-panel">
+                  <div className="admin-panel-head">
+                    <h2>Create Administrator</h2>
+                  </div>
+                  <form className="admin-form" onSubmit={handleCreateAdmin}>
+                    <label>
+                      Username
                       <input
                         required
-                        type={showAdminPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        value={newAdmin.password}
-                        onChange={(e) => setNewAdmin((prev) => ({ ...prev, password: e.target.value }))}
+                        placeholder="e.g. support_admin"
+                        value={newAdmin.username}
+                        onChange={(e) => setNewAdmin((prev) => ({ ...prev, username: e.target.value }))}
                       />
-                      <button
-                        type="button"
-                        className="admin-password-toggle-btn"
-                        onClick={() => setShowAdminPassword(!showAdminPassword)}
-                      >
-                        {showAdminPassword ? <LuEyeOff /> : <LuEye />}
-                      </button>
-                    </div>
-                  </label>
+                    </label>
 
-                  {newAdminError && <div className="admin-error">{newAdminError}</div>}
-                  {newAdminSuccess && <div className="admin-success">{newAdminSuccess}</div>}
+                    <label className="admin-password-label">
+                      Password
+                      <div className="admin-password-input-wrap">
+                        <input
+                          required
+                          type={showAdminPassword ? 'text' : 'password'}
+                          placeholder="Password"
+                          value={newAdmin.password}
+                          onChange={(e) => setNewAdmin((prev) => ({ ...prev, password: e.target.value }))}
+                        />
+                        <button
+                          type="button"
+                          className="admin-password-toggle-btn"
+                          onClick={() => setShowAdminPassword(!showAdminPassword)}
+                        >
+                          {showAdminPassword ? <LuEyeOff /> : <LuEye />}
+                        </button>
+                      </div>
+                    </label>
 
-                  <button className="admin-blue-btn" disabled={adminLoading}>
-                    {adminLoading ? 'Creating...' : 'Create Admin'}
-                  </button>
-                </form>
-              </section>
-            </div>
-          )}
+                    {newAdminError && <div className="admin-error">{newAdminError}</div>}
+                    {newAdminSuccess && <div className="admin-success">{newAdminSuccess}</div>}
 
-          {activeTab === 'otps' && <OtpTable otps={otps} isMobile={isMobile} />}
+                    <button className="admin-blue-btn" disabled={adminLoading}>
+                      {adminLoading ? 'Creating...' : 'Create Admin'}
+                    </button>
+                  </form>
+                </section>
+              </div>
+            )}
 
-          {activeTab === 'webhooks' && (
-            <WebhooksTable webhooks={webhooks} onViewPayload={(w) => setSelectedWebhook(w)} />
-          )}
+            {activeTab === 'otps' && <OtpTable otps={otps} isMobile={isMobile} />}
 
-          {activeTab === 'hubble' && (
-            <HubblePanel transactions={hubbleTransactions} config={hubbleConfig} />
-          )}
+            {activeTab === 'webhooks' && (
+              <WebhooksTable webhooks={webhooks} onViewPayload={(w) => setSelectedWebhook(w)} />
+            )}
+
+            {activeTab === 'hubble' && (
+              <HubblePanel transactions={hubbleTransactions} config={hubbleConfig} />
+            )}
+          </div>{/* end .admin-page-content */}
+
         </div>
       </div>
+
       
       {selectedWebhook && (
         <WebhookPayloadModal webhook={selectedWebhook} onClose={() => setSelectedWebhook(null)} />

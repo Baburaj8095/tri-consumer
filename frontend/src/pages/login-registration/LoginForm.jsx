@@ -8,6 +8,7 @@ import logo from './logo.png';
 import SMSService from '../../services/smsService';
 import { generateOtp } from '../../services/otpGenerator';
 import { storeAuth } from '../../services/authStorage';
+import { formatErrorMessage } from '../../utils/errorFormatter';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -71,7 +72,7 @@ function LoginForm() {
 
       navigate('/consumer-ecommerce');
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'Unable to login';
+      const message = formatErrorMessage(err);
       setLoginError(message);
     } finally {
       setIsLoading(false);
@@ -102,12 +103,11 @@ function LoginForm() {
         return;
       }
 
-      alert('Logged in successfully!');
       navigate('/consumer-ecommerce');
       setGeneratedOtp('');
       setOtp(['', '', '', '', '', '']);
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'OTP verification failed';
+      const message = formatErrorMessage(err);
       setOtpError(message);
     } finally {
       setIsLoading(false);
@@ -168,7 +168,7 @@ function LoginForm() {
       setOtp(['', '', '', '', '', '']);
     } catch (err) {
       console.warn('OTP send failed.', err);
-      const message = err.response?.data?.message || err.message || 'Unable to send OTP';
+      const message = formatErrorMessage(err);
       setLoginError(message);
     } finally {
       setIsLoading(false);
@@ -291,8 +291,6 @@ function LoginForm() {
                   <button type="button" className="secondary-outline-button" onClick={() => setView('login-otp-request')}>
                     Continue with OTP
                   </button>
-
-
 
                   <div className="compact-footer">
                     <span>New here? </span>

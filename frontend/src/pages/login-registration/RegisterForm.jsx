@@ -6,6 +6,7 @@ import axios from 'axios';
 import './loginRegistration.css';
 import SMSService from '../../services/smsService';
 import { storeAuth } from '../../services/authStorage';
+import { formatErrorMessage } from '../../utils/errorFormatter';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -224,7 +225,7 @@ function RegisterForm() {
       alert('Registration complete!');
       navigate('/login');
     } catch (err) {
-      const message = err.response?.data?.message || err.message || 'Registration failed';
+      const message = formatErrorMessage(err);
       setErrors((prev) => ({ ...prev, submit: message }));
     } finally {
       setIsSubmitting(false);

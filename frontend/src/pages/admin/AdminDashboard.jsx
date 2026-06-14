@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { formatErrorMessage } from '../../utils/errorFormatter';
 import {
   LuKeyRound,
   LuRefreshCcw,
@@ -17,6 +18,7 @@ import {
   LuSearch,
   LuMail,
   LuBell,
+  LuGift,
   LuCalendar,
   LuMapPin,
   LuMap,
@@ -154,7 +156,7 @@ function AdminDashboard() {
       localStorage.setItem(TOKEN_KEY, nextToken);
       setToken(nextToken);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Admin login failed');
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -173,7 +175,7 @@ function AdminDashboard() {
       const adminsRes = await axios.get(`${API_BASE_URL}/api/admin/admins`, { headers });
       setAdmins(adminsRes.data?.data || []);
     } catch (err) {
-      setNewAdminError(err.response?.data?.message || err.message || 'Failed to create admin');
+      setNewAdminError(formatErrorMessage(err));
     } finally {
       setAdminLoading(false);
     }
@@ -910,7 +912,7 @@ function CreateUserModal({ isOpen, onClose, headers, onSuccess }) {
       onSuccess(`User '${formData.fullName}' created successfully.`);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to create user');
+      setError(formatErrorMessage(err));
     } finally {
       setLoading(false);
     }

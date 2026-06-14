@@ -245,7 +245,7 @@ public class HubbleRepository {
     String escapedNote = note != null ? note.replace("\"", "\\\"") : "";
     jdbc.update(
         "INSERT INTO accounts_wallettransaction (user_id, amount, balance_after, type, source_type, source_id, meta, created_at) " +
-        "VALUES (?, ?, ?, 'VOUCHER_CREATE_DEBIT', 'HUBBLE_DEBIT', ?, ?, NOW())",
+        "VALUES (?, ?, ?, 'VOUCHER_CREATE_DEBIT', 'HUBBLE_DEBIT', ?, ?::jsonb, NOW())",
         userId, -amount, newBalance, referenceId, "{\"note\":\"" + escapedNote + "\"}"
     );
 
@@ -277,7 +277,7 @@ public class HubbleRepository {
     String escapedNote = note != null ? note.replace("\"", "\\\"") : "";
     jdbc.update(
         "INSERT INTO accounts_wallettransaction (user_id, amount, balance_after, type, source_type, source_id, meta, created_at) " +
-        "VALUES (?, ?, ?, 'VOUCHER_REDEEM_CREDIT', 'HUBBLE_REVERSAL', ?, ?, NOW())",
+        "VALUES (?, ?, ?, 'VOUCHER_REDEEM_CREDIT', 'HUBBLE_REVERSAL', ?, ?::jsonb, NOW())",
         userId, amount, newBalance, referenceId, "{\"note\":\"" + escapedNote + "\"}"
     );
 

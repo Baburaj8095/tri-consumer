@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { LuX, LuGift, LuRefreshCw, LuAlertTriangle } from 'react-icons/lu';
+import { LuX, LuGift, LuRefreshCw, LuTriangleAlert } from 'react-icons/lu';
 import { fetchHubbleIframeUrl } from '../services/hubbleService';
 
 /**
@@ -98,7 +98,7 @@ export default function HubbleGiftCardModal({ isOpen, onClose, cardName = 'Gift 
           {/* Error state */}
           {!loading && error && (
             <div className="hubble-modal-error">
-              <LuAlertTriangle className="hubble-modal-error-icon" />
+              <LuTriangleAlert className="hubble-modal-error-icon" />
               <h3>Could not load Gift Cards</h3>
               <p>{error}</p>
               <button

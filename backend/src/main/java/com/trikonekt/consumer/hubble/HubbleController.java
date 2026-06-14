@@ -2,6 +2,7 @@ package com.trikonekt.consumer.hubble;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.trikonekt.consumer.auth.DjangoAuthClient;
 import com.trikonekt.consumer.auth.HashingService;
 import com.trikonekt.consumer.auth.SessionRepository;
 import com.trikonekt.consumer.common.ApiResponse;
@@ -48,12 +49,14 @@ public class HubbleController {
   private final UserRepository userRepository;
   private final ObjectMapper objectMapper;
   private final HashingService hashingService;
+  private final DjangoAuthClient djangoAuthClient;
 
   public HubbleController(HubbleConfig config, HubbleJwtService jwtService,
                            HubbleWebhookService webhookService, HubbleRepository hubbleRepository,
                            SessionRepository sessionRepository, UserRepository userRepository,
                            ObjectMapper objectMapper,
-                           HashingService hashingService) {
+                           HashingService hashingService,
+                           DjangoAuthClient djangoAuthClient) {
     this.config = config;
     this.jwtService = jwtService;
     this.webhookService = webhookService;
@@ -62,6 +65,7 @@ public class HubbleController {
     this.userRepository = userRepository;
     this.objectMapper = objectMapper;
     this.hashingService = hashingService;
+    this.djangoAuthClient = djangoAuthClient;
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -266,10 +270,9 @@ public class HubbleController {
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       throw new BusinessException(HttpStatus.UNAUTHORIZED, "Missing or invalid Authorization header");
     }
-    String token = authHeader.substring("Bearer ".length()).trim();
-    Long userId = sessionRepository.findActiveUserId(hashingService.tokenHash(token))
-        .orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "Invalid or expired session token"));
-    return userRepository.findById(userId)
+    // Call Django to validate the token and get user details
+    com.trikonekt.consumer.user.dto.UserResponse djangoUser = djangoAuthClient.me(authHeader);
+    return userRepository.findById(djangoUser.id())
         .orElseThrow(() -> new BusinessException(HttpStatus.UNAUTHORIZED, "User not found"));
   }
 

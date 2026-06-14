@@ -4,10 +4,12 @@ import com.trikonekt.consumer.hubble.dto.HubbleTransactionDto;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * DB operations for Hubble webhook events and transactions.
@@ -148,5 +150,137 @@ public class HubbleRepository {
     } catch (Exception e) {
       return Optional.empty();
     }
+  }
+
+  // ─── Coins / Wallet Integration ─────────────────────────────────────────────
+
+  /**
+   * Get the available wallet balance of a user.
+   */
+  public Optional<Double> getUserBalance(long userId) {
+    try {
+      Double balance = jdbc.queryForObject(
+          "SELECT balance FROM accounts_wallet WHERE user_id = ?",
+          Double.class,
+          userId
+      );
+      return Optional.ofNullable(balance);
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Get the balance_after of an existing transaction for idempotency checks.
+   */
+  public Optional<Double> getTransactionBalanceAfter(String sourceType, String sourceId) {
+    try {
+      Double balanceAfter = jdbc.queryForObject(
+          "SELECT balance_after FROM accounts_wallettransaction WHERE source_type = ? AND source_id = ?",
+          Double.class,
+          sourceType,
+          sourceId
+      );
+      return Optional.ofNullable(balanceAfter);
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Find the absolute amount of the original debit transaction for a reversal.
+   */
+  public Optional<Double> findOriginalDebitAmount(String sourceId, long userId) {
+    try {
+      Double amount = jdbc.queryForObject(
+          "SELECT amount FROM accounts_wallettransaction WHERE source_type = 'HUBBLE_DEBIT' AND source_id = ? AND user_id = ?",
+          Double.class,
+          sourceId,
+          userId
+      );
+      if (amount != null) {
+        return Optional.of(Math.abs(amount));
+      }
+      return Optional.empty();
+    } catch (EmptyResultDataAccessException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Debit the user's wallet with pessimistic locking.
+   * Throws IllegalArgumentException("INSUFFICIENT_BALANCE") if insufficient funds.
+   */
+  @Transactional
+  public double debitWalletBalance(long userId, double amount, String referenceId, String note) {
+    Map<String, Object> wallet = jdbc.queryForMap(
+        "SELECT main_balance, withdrawable_balance, balance FROM accounts_wallet WHERE user_id = ? FOR UPDATE",
+        userId
+    );
+    double mainBalance = ((Number) wallet.get("main_balance")).doubleValue();
+    double withdrawableBalance = ((Number) wallet.get("withdrawable_balance")).doubleValue();
+    double balance = ((Number) wallet.get("balance")).doubleValue();
+
+    if (balance < amount) {
+      throw new IllegalArgumentException("INSUFFICIENT_BALANCE");
+    }
+
+    double takeMain = Math.min(mainBalance, amount);
+    double rem = amount - takeMain;
+    if (withdrawableBalance < rem) {
+      throw new IllegalArgumentException("INSUFFICIENT_BALANCE");
+    }
+
+    double newMain = mainBalance - takeMain;
+    double newWd = withdrawableBalance - rem;
+    double newBalance = balance - amount;
+
+    // Update wallet
+    jdbc.update(
+        "UPDATE accounts_wallet SET main_balance = ?, withdrawable_balance = ?, balance = ?, updated_at = NOW() WHERE user_id = ?",
+        newMain, newWd, newBalance, userId
+    );
+
+    // Insert transaction
+    String escapedNote = note != null ? note.replace("\"", "\\\"") : "";
+    jdbc.update(
+        "INSERT INTO accounts_wallettransaction (user_id, amount, balance_after, type, source_type, source_id, meta, created_at) " +
+        "VALUES (?, ?, ?, 'VOUCHER_CREATE_DEBIT', 'HUBBLE_DEBIT', ?, ?, NOW())",
+        userId, -amount, newBalance, referenceId, "{\"note\":\"" + escapedNote + "\"}"
+    );
+
+    return newBalance;
+  }
+
+  /**
+   * Credit the user's wallet (refund) with pessimistic locking.
+   */
+  @Transactional
+  public double creditWalletBalance(long userId, double amount, String referenceId, String note) {
+    Map<String, Object> wallet = jdbc.queryForMap(
+        "SELECT main_balance, balance FROM accounts_wallet WHERE user_id = ? FOR UPDATE",
+        userId
+    );
+    double mainBalance = ((Number) wallet.get("main_balance")).doubleValue();
+    double balance = ((Number) wallet.get("balance")).doubleValue();
+
+    double newMain = mainBalance + amount;
+    double newBalance = balance + amount;
+
+    // Update wallet
+    jdbc.update(
+        "UPDATE accounts_wallet SET main_balance = ?, balance = ?, updated_at = NOW() WHERE user_id = ?",
+        newMain, newBalance, userId
+    );
+
+    // Insert transaction
+    String escapedNote = note != null ? note.replace("\"", "\\\"") : "";
+    jdbc.update(
+        "INSERT INTO accounts_wallettransaction (user_id, amount, balance_after, type, source_type, source_id, meta, created_at) " +
+        "VALUES (?, ?, ?, 'VOUCHER_REDEEM_CREDIT', 'HUBBLE_REVERSAL', ?, ?, NOW())",
+        userId, amount, newBalance, referenceId, "{\"note\":\"" + escapedNote + "\"}"
+    );
+
+    return newBalance;
   }
 }

@@ -120,6 +120,8 @@ public class HubbleJwtService {
           .replace("-----END PRIVATE KEY-----", "")
           .replace("-----BEGIN RSA PRIVATE KEY-----", "")
           .replace("-----END RSA PRIVATE KEY-----", "")
+          .replace("\"", "")
+          .replace("'", "")
           .replaceAll("\\s+", "");
 
       byte[] decoded = Base64.getDecoder().decode(normalised.getBytes(StandardCharsets.UTF_8));

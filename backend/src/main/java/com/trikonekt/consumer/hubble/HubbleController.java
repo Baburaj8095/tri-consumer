@@ -12,6 +12,8 @@ import com.trikonekt.consumer.hubble.dto.HubbleTransactionDto;
 import com.trikonekt.consumer.user.User;
 import com.trikonekt.consumer.user.UserRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -310,5 +313,184 @@ public class HubbleController {
     if (node == null || !node.hasNonNull(field)) return "";
     String v = node.get(field).asText();
     return v == null ? "" : v;
+  }
+
+  // ─── Coins / Wallet Endpoints ──────────────────────────────────────────────
+
+  /**
+   * GET /api/hubble/balance?userId=...
+   */
+  @GetMapping("/balance")
+  public ResponseEntity<Object> getCoinBalance(
+      @RequestHeader(value = "X-Hubble-Secret", required = false) String xHubbleSecret,
+      @RequestParam("userId") String userIdStr) {
+
+    if (!verifySecret(xHubbleSecret)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("error", "UNAUTHORIZED", "message", "Invalid X-Hubble-Secret"));
+    }
+
+    long userId;
+    try {
+      userId = Long.parseLong(userIdStr.trim());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("error", "BAD_REQUEST", "message", "Invalid user ID"));
+    }
+
+    double balance = hubbleRepository.getUserBalance(userId).orElse(-1.0);
+    if (balance < 0) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of("error", "USER_NOT_FOUND", "message", "No user with this ID"));
+    }
+
+    return ResponseEntity.ok(Map.of(
+        "userId", userIdStr,
+        "totalCoins", balance
+    ));
+  }
+
+  /**
+   * POST /api/hubble/debit
+   */
+  @PostMapping("/debit")
+  public ResponseEntity<Object> debitCoins(
+      @RequestHeader(value = "X-Hubble-Secret", required = false) String xHubbleSecret,
+      @RequestBody JsonNode body) {
+
+    if (!verifySecret(xHubbleSecret)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "UNAUTHORIZED"));
+    }
+
+    String userIdStr = textOrEmpty(body, "userId");
+    double coins = body.hasNonNull("coins") ? body.get("coins").asDouble() : 0.0;
+    String referenceId = textOrEmpty(body, "referenceId");
+    String note = textOrEmpty(body, "note");
+
+    if (userIdStr.isBlank() || referenceId.isBlank() || coins <= 0) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "BAD_REQUEST", "message", "Missing or invalid fields"));
+    }
+
+    long userId;
+    try {
+      userId = Long.parseLong(userIdStr.trim());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "BAD_REQUEST", "message", "Invalid user ID"));
+    }
+
+    // 1. Idempotency Check
+    Optional<Double> existingBalanceAfter = hubbleRepository.getTransactionBalanceAfter("HUBBLE_DEBIT", referenceId);
+    if (existingBalanceAfter.isPresent()) {
+      log.info("Hubble coin debit duplicate request received for referenceId={}", referenceId);
+      return ResponseEntity.ok(Map.of(
+          "status", "SUCCESS",
+          "transactionId", referenceId,
+          "balance", existingBalanceAfter.get(),
+          "referenceId", referenceId
+      ));
+    }
+
+    // 2. Perform Debit
+    try {
+      double newBalance = hubbleRepository.debitWalletBalance(userId, coins, referenceId, note);
+      return ResponseEntity.ok(Map.of(
+          "status", "SUCCESS",
+          "transactionId", referenceId,
+          "balance", newBalance,
+          "referenceId", referenceId
+      ));
+    } catch (IllegalArgumentException e) {
+      if ("INSUFFICIENT_BALANCE".equals(e.getMessage())) {
+        double currentBalance = hubbleRepository.getUserBalance(userId).orElse(0.0);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(Map.of(
+                "status", "INSUFFICIENT_BALANCE",
+                "balance", currentBalance
+            ));
+      }
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "BAD_REQUEST", "message", e.getMessage()));
+    } catch (Exception e) {
+      log.error("Failed to debit wallet for user={}", userId, e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("status", "INTERNAL_ERROR", "message", e.getMessage()));
+    }
+  }
+
+  /**
+   * POST /api/hubble/reverse
+   */
+  @PostMapping("/reverse")
+  public ResponseEntity<Object> reverseDebit(
+      @RequestHeader(value = "X-Hubble-Secret", required = false) String xHubbleSecret,
+      @RequestBody JsonNode body) {
+
+    if (!verifySecret(xHubbleSecret)) {
+      return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+          .body(Map.of("status", "UNAUTHORIZED"));
+    }
+
+    String userIdStr = textOrEmpty(body, "userId");
+    String referenceId = textOrEmpty(body, "referenceId");
+    String note = textOrEmpty(body, "note");
+
+    if (userIdStr.isBlank() || referenceId.isBlank()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "BAD_REQUEST", "message", "Missing or invalid fields"));
+    }
+
+    long userId;
+    try {
+      userId = Long.parseLong(userIdStr.trim());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(Map.of("status", "BAD_REQUEST", "message", "Invalid user ID"));
+    }
+
+    // 1. Idempotency Check (Already reversed?)
+    Optional<Double> existingBalanceAfter = hubbleRepository.getTransactionBalanceAfter("HUBBLE_REVERSAL", referenceId);
+    if (existingBalanceAfter.isPresent()) {
+      log.info("Hubble coin reversal duplicate request received for referenceId={}", referenceId);
+      return ResponseEntity.ok(Map.of(
+          "status", "SUCCESS",
+          "transactionId", referenceId,
+          "balance", existingBalanceAfter.get(),
+          "referenceId", referenceId
+      ));
+    }
+
+    // 2. Find original debit amount
+    Optional<Double> debitAmount = hubbleRepository.findOriginalDebitAmount(referenceId, userId);
+    if (debitAmount.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND)
+          .body(Map.of(
+              "status", "TRANSACTION_NOT_FOUND",
+              "message", "No debit found for this referenceId"
+          ));
+    }
+
+    // 3. Perform Credit Refund
+    try {
+      double newBalance = hubbleRepository.creditWalletBalance(userId, debitAmount.get(), referenceId, note);
+      return ResponseEntity.ok(Map.of(
+          "status", "SUCCESS",
+          "transactionId", referenceId,
+          "balance", newBalance,
+          "referenceId", referenceId
+      ));
+    } catch (Exception e) {
+      log.error("Failed to reverse wallet debit for user={}", userId, e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(Map.of("status", "INTERNAL_ERROR", "message", e.getMessage()));
+    }
+  }
+
+  private boolean verifySecret(String secret) {
+    String expected = config.getWebhookSecret();
+    if (expected.isBlank() || secret == null) return false;
+    return expected.trim().equals(secret.trim());
   }
 }

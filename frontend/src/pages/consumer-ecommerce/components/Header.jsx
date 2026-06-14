@@ -144,12 +144,16 @@ export default function Header() {
     };
   }, []);
 
+  const locParts = [];
+  if (profile?.district || profile?.city) locParts.push(profile.district || profile.city);
+  if (profile?.state && profile.state !== (profile.district || profile.city)) locParts.push(profile.state);
+
   const displayProfile = {
     name: profile?.fullName || profile?.full_name || profile?.username || consumerProfile.name,
     idNumber: profile?.idNumber || profile?.prefixed_id || profile?.unique_id || profile?.username || profile?.id || consumerProfile.idNumber,
     pinCode: profile?.pinCode || profile?.pincode || consumerProfile.pinCode,
     phone: formatPhone(profile?.mobile || profile?.phone) || consumerProfile.phone,
-    city: [profile?.district || profile?.city, profile?.state].filter(Boolean).join(', ') || consumerProfile.city,
+    city: locParts.join(', ') || consumerProfile.city,
     membership: profile?.status === 'ACTIVE' ? 'Prime Consumer Member' : consumerProfile.membership,
     walletBalance: profile?.walletBalance ? formatWallet(profile.walletBalance) : consumerProfile.walletBalance,
   };
@@ -160,8 +164,8 @@ export default function Header() {
         <div className="ce-header-inner">
           <button 
             className="ce-icon-btn" 
-            onClick={() => setIsMenuOpen(true)} 
-            aria-label="Open profile menu"
+            onClick={() => navigate('/consumer-ecommerce/profile')} 
+            aria-label="Open profile"
           >
             <LuMenu />
           </button>

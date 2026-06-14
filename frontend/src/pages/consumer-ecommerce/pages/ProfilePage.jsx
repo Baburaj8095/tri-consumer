@@ -178,122 +178,143 @@ export default function ProfilePage() {
   const displayLocation = locParts.join(', ') || profile?.address || '—';
   const walletBalance = profile?.walletBalance ?? profile?.wallet_balance ?? null;
 
+  // Initials fallback for avatar
+  const initials = displayName
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <div className="pf-page">
-      {/* ── Header ── */}
-      <div className="pf-header">
-        <button className="pf-back-btn" onClick={() => navigate('/consumer-ecommerce')} aria-label="Go back">
-          <LuChevronLeft size={20} />
-        </button>
-        <span className="pf-header-title">Profile</span>
-        <div style={{ width: 36 }} />
-      </div>
 
-      {/* ── Avatar + Name Card ── */}
-      <div className="pf-hero">
-        <div className="pf-avatar-wrap" onClick={handleAvatarClick} title="Change photo">
+      {/* ── Gradient Hero Banner ── */}
+      <div className="pf-hero-banner">
+        {/* Top bar inside banner */}
+        <div className="pf-banner-topbar">
+          <button className="pf-banner-back" onClick={() => navigate('/consumer-ecommerce')} aria-label="Go back">
+            <LuChevronLeft size={20} />
+          </button>
+          <span className="pf-banner-title">My Profile</span>
+          <button
+            className="pf-banner-edit"
+            onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}
+            title="Edit profile"
+          >
+            ✏️
+          </button>
+        </div>
+
+        {/* Avatar */}
+        <div
+          className="pf-avatar-wrap"
+          onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}
+          title="Edit profile"
+        >
           {profilePic ? (
             <img src={profilePic} alt="Avatar" className="pf-avatar-img" />
           ) : (
-            <div className="pf-avatar-placeholder">
-              <LuUser size={36} />
-            </div>
+            <div className="pf-avatar-initials">{initials || <LuUser size={32} />}</div>
           )}
-          <div className="pf-camera-badge">
-            <LuCamera size={12} />
-          </div>
-          <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+          <div className="pf-camera-badge"><LuCamera size={12} /></div>
         </div>
 
-        <div className="pf-hero-info">
-          <p className="pf-hero-label">PROFILE</p>
-          <h2 className="pf-hero-name">{displayName}</h2>
-          <p className="pf-hero-subtitle">Prime Consumer Member</p>
-          <button className="pf-edit-link" onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}>
-            Edit Account / Settings
+        {/* Name + badge */}
+        <h2 className="pf-banner-name">{displayName}</h2>
+        <div className="pf-prime-badge">⭐ Prime Consumer Member</div>
+      </div>
+
+      {/* ── Stats Strip ── */}
+      <div className="pf-stats-strip">
+        <div className="pf-stat">
+          <strong>{displayId}</strong>
+          <span>Member ID</span>
+        </div>
+        <div className="pf-stat-divider" />
+        <div className="pf-stat">
+          <strong>{displayPinCode}</strong>
+          <span>Pin Code</span>
+        </div>
+        <div className="pf-stat-divider" />
+        <div className="pf-stat">
+          <strong>{displayMobile.replace('+91 ', '')}</strong>
+          <span>Mobile</span>
+        </div>
+      </div>
+
+      {/* ── Wallet Card ── */}
+      {walletBalance !== null && (
+        <div className="pf-wallet-card">
+          <div className="pf-wallet-left">
+            <div className="pf-wallet-icon"><LuWallet size={20} /></div>
+            <div>
+              <span className="pf-wallet-label">Wallet Balance</span>
+              <strong className="pf-wallet-amount">₹{Number(walletBalance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>
+            </div>
+          </div>
+          <button className="pf-wallet-add-btn">Add Money</button>
+        </div>
+      )}
+
+      {/* ── Location Card ── */}
+      {displayLocation !== '—' && (
+        <div className="pf-location-card">
+          <div className="pf-location-icon"><LuMapPin size={16} /></div>
+          <div>
+            <span className="pf-location-label">Location</span>
+            <strong className="pf-location-value">{displayLocation}</strong>
+          </div>
+        </div>
+      )}
+
+      {/* ── Settings Section ── */}
+      <div className="pf-section">
+        <p className="pf-section-title">Account</p>
+        <div className="pf-settings-group">
+          <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}>
+            <div className="pf-settings-icon pf-settings-icon--purple"><LuUser size={17} /></div>
+            <span>Edit Profile</span>
+            <LuChevronRight size={15} className="pf-chevron" />
+          </button>
+          <div className="pf-settings-divider" />
+          <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('password'); }}>
+            <div className="pf-settings-icon pf-settings-icon--blue"><LuLock size={17} /></div>
+            <span>Change Password</span>
+            <LuChevronRight size={15} className="pf-chevron" />
           </button>
         </div>
       </div>
 
-      {/* ── Info Cards Grid ── */}
-      <div className="pf-cards-section">
-
-        {/* Row 1: ID + Pincode */}
-        <div className="pf-cards-row">
-          <div className="pf-info-card">
-            <div className="pf-info-card-icon"><LuHash size={18} /></div>
-            <span className="pf-info-card-label">ID Number</span>
-            <strong className="pf-info-card-value">{displayId}</strong>
-          </div>
-          <div className="pf-info-card">
-            <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
-            <span className="pf-info-card-label">Pin Code</span>
-            <strong className="pf-info-card-value">{displayPinCode}</strong>
-          </div>
+      <div className="pf-section">
+        <p className="pf-section-title">More</p>
+        <div className="pf-settings-group">
+          <button className="pf-settings-row" onClick={() => { setIsSuccess(false); setActiveModal('refer'); }}>
+            <div className="pf-settings-icon pf-settings-icon--orange"><LuGift size={17} /></div>
+            <span>Refer Friends &amp; Businesses</span>
+            <LuChevronRight size={15} className="pf-chevron" />
+          </button>
+          <div className="pf-settings-divider" />
+          <button className="pf-settings-row" onClick={() => setActiveModal('contact')}>
+            <div className="pf-settings-icon pf-settings-icon--green"><LuPhone size={17} /></div>
+            <span>Contact Support</span>
+            <LuChevronRight size={15} className="pf-chevron" />
+          </button>
         </div>
+      </div>
 
-        {/* Row 2: Phone + Wallet (2-col) */}
-        <div className="pf-cards-row">
-          <div className="pf-info-card">
-            <div className="pf-info-card-icon"><LuPhone size={18} /></div>
-            <span className="pf-info-card-label">Phone</span>
-            <strong className="pf-info-card-value" style={{ fontSize: '13px' }}>{displayMobile}</strong>
-          </div>
-          {walletBalance !== null ? (
-            <div className="pf-info-card">
-              <div className="pf-info-card-icon"><LuWallet size={18} /></div>
-              <span className="pf-info-card-label">Wallet</span>
-              <strong className="pf-info-card-value">₹{Number(walletBalance).toFixed(2)}</strong>
-            </div>
-          ) : (
-            <div className="pf-info-card">
-              <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
-              <span className="pf-info-card-label">Location</span>
-              <strong className="pf-info-card-value" style={{ fontSize: '13px' }}>{displayLocation}</strong>
-            </div>
-          )}
-        </div>
-
-        {/* Location full-width if wallet also present */}
-        {walletBalance !== null && (
-          <div className="pf-info-card pf-info-card-full">
-            <div className="pf-info-card-icon"><LuMapPin size={18} /></div>
-            <div>
-              <span className="pf-info-card-label">Location</span>
-              <strong className="pf-info-card-value">{displayLocation}</strong>
-            </div>
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <button className="pf-action-row" onClick={() => { setErrorMsg(''); setActiveModal('password'); }}>
-          <div className="pf-action-icon pf-action-icon--blue"><LuLock size={18} /></div>
-          <span>Change Password</span>
-          <LuChevronRight size={16} className="pf-chevron" />
-        </button>
-
-        <button className="pf-action-row" onClick={() => { setIsSuccess(false); setActiveModal('refer'); }}>
-          <div className="pf-action-icon pf-action-icon--orange"><LuGift size={18} /></div>
-          <span>Refer Friends &amp; Businesses</span>
-          <LuChevronRight size={16} className="pf-chevron" />
-        </button>
-
-        <button className="pf-action-row" onClick={() => setActiveModal('contact')}>
-          <div className="pf-action-icon pf-action-icon--green"><LuPhone size={18} /></div>
-          <span>Contact Us</span>
-          <LuChevronRight size={16} className="pf-chevron" />
-        </button>
-
-        {/* Logout */}
-        <button className="pf-action-row pf-logout-row" onClick={() => setActiveModal('logout')}>
-          <LuLogOut size={18} />
-          <span>Logout</span>
+      {/* ── Logout ── */}
+      <div style={{ padding: '0 16px 40px' }}>
+        <button className="pf-logout-full" onClick={() => setActiveModal('logout')}>
+          <LuLogOut size={17} />
+          Logout
         </button>
       </div>
 
+
       {/* ══ MODALS ══ */}
 
-      {/* Edit Profile */}
+      {/* Edit Profile – Bottom Sheet Modal */}
       {activeModal === 'edit' && (
         <div className="ce-modal-overlay" onClick={() => setActiveModal(null)}>
           <div className="ce-modal-card" onClick={(e) => e.stopPropagation()}>
@@ -301,6 +322,7 @@ export default function ProfilePage() {
               <h3>Edit Profile</h3>
               <button className="ce-modal-close" onClick={() => setActiveModal(null)}><LuX size={20} /></button>
             </div>
+
             {isSuccess ? (
               <div className="ce-modal-success">
                 <LuCheck size={40} style={{ strokeWidth: 3, color: '#22c55e' }} />
@@ -308,37 +330,92 @@ export default function ProfilePage() {
               </div>
             ) : (
               <form onSubmit={handleEditSubmit} className="ce-modal-form">
+
+                {/* ── Avatar Upload ── */}
+                <div className="pf-modal-avatar-row">
+                  <div
+                    className="pf-modal-avatar"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Change profile photo"
+                  >
+                    {profilePic ? (
+                      <img src={profilePic} alt="Avatar" />
+                    ) : (
+                      <div className="pf-modal-avatar-placeholder"><LuUser size={28} /></div>
+                    )}
+                    <div className="pf-modal-camera-badge"><LuCamera size={11} /></div>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileChange}
+                  />
+                  <div>
+                    <p className="pf-modal-avatar-title">Profile Photo</p>
+                    <button
+                      type="button"
+                      className="pf-modal-avatar-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Change Photo
+                    </button>
+                  </div>
+                </div>
+
                 {errorMsg && <div className="ce-form-error">{errorMsg}</div>}
+
                 <div className="ce-form-field">
                   <label>Full Name</label>
-                  <input type="text" required value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
+                  <input type="text" required value={editForm.fullName}
+                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                    placeholder="Enter your full name" />
                 </div>
+
                 <div className="ce-form-field">
                   <label>Email Address</label>
-                  <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+                  <input type="email" value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    placeholder="Enter email address" />
                 </div>
+
                 <div className="ce-form-field">
                   <label>Mobile Number</label>
-                  <input type="tel" required value={editForm.mobile} onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })} />
+                  <input type="tel" required value={editForm.mobile}
+                    onChange={(e) => setEditForm({ ...editForm, mobile: e.target.value })}
+                    placeholder="Enter mobile number" />
                 </div>
+
                 <div className="ce-form-field">
                   <label>Address</label>
-                  <textarea rows={2} value={editForm.address} onChange={(e) => setEditForm({ ...editForm, address: e.target.value })} />
+                  <textarea rows={2} value={editForm.address}
+                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    placeholder="Street address" />
                 </div>
+
                 <div className="ce-form-row">
                   <div className="ce-form-field">
                     <label>Pincode</label>
-                    <input type="text" maxLength={10} value={editForm.pinCode} onChange={(e) => setEditForm({ ...editForm, pinCode: e.target.value })} />
+                    <input type="text" maxLength={10} value={editForm.pinCode}
+                      onChange={(e) => setEditForm({ ...editForm, pinCode: e.target.value })}
+                      placeholder="Pincode" />
                   </div>
                   <div className="ce-form-field">
-                    <label>District/City</label>
-                    <input type="text" value={editForm.district} onChange={(e) => setEditForm({ ...editForm, district: e.target.value })} />
+                    <label>District / City</label>
+                    <input type="text" value={editForm.district}
+                      onChange={(e) => setEditForm({ ...editForm, district: e.target.value })}
+                      placeholder="District" />
                   </div>
                 </div>
+
                 <div className="ce-form-field">
                   <label>State</label>
-                  <input type="text" value={editForm.state} onChange={(e) => setEditForm({ ...editForm, state: e.target.value })} />
+                  <input type="text" value={editForm.state}
+                    onChange={(e) => setEditForm({ ...editForm, state: e.target.value })}
+                    placeholder="State" />
                 </div>
+
                 <button type="submit" className="ce-modal-submit-btn" disabled={loading}>
                   {loading ? 'Saving...' : 'Save Profile'}
                 </button>

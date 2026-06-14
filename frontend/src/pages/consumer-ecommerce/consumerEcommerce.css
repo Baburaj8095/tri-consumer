@@ -12246,3 +12246,448 @@ body.ce-menu-open .ce-nearby-rail {
 
 .ce-btn-primary.red-bg { background: #ef4444; }
 .ce-btn-primary.red-bg:hover { background: #dc2626; }
+
+/* Modal avatar upload row (Edit Profile) */
+.pf-modal-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 4px;
+}
+
+.pf-modal-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.pf-modal-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+.pf-modal-avatar-placeholder {
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-modal-camera-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ea580c;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
+.pf-modal-avatar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px;
+}
+
+.pf-modal-avatar-btn {
+  background: #fff3e8;
+  border: 1.5px solid #fed7aa;
+  color: #ea580c;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.pf-modal-avatar-btn:hover {
+  background: #fed7aa;
+}
+
+/* ==========================================================================
+   Profile Page V2 – Premium Visual Redesign
+   ========================================================================== */
+
+/* ── Hero Banner ── */
+.pf-hero-banner {
+  background: linear-gradient(145deg, #7c3aed 0%, #ea580c 100%);
+  padding: 0 20px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.pf-banner-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 0 20px;
+}
+
+.pf-banner-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  backdrop-filter: blur(6px);
+}
+.pf-banner-back:hover { background: rgba(255,255,255,0.3); }
+
+.pf-banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.pf-banner-edit {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s;
+  backdrop-filter: blur(6px);
+}
+.pf-banner-edit:hover { background: rgba(255,255,255,0.3); }
+
+/* Avatar on banner */
+.pf-avatar-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 24px;
+  background: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 3px solid rgba(255,255,255,0.5);
+  overflow: visible;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+.pf-avatar-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 22px;
+  object-fit: cover;
+}
+
+.pf-avatar-initials {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+}
+
+.pf-camera-badge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.pf-banner-name {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px;
+  text-align: center;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.pf-prime-badge {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.3);
+  letter-spacing: 0.02em;
+}
+
+/* ── Stats Strip ── */
+.pf-stats-strip {
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 16px 20px;
+  margin: 0 16px;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transform: translateY(-20px);
+  margin-bottom: -4px;
+}
+
+.pf-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-stat strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.pf-stat span {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.pf-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* ── Wallet Card ── */
+.pf-wallet-card {
+  margin: 8px 16px;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 6px 20px rgba(234,88,12,0.30);
+}
+
+.pf-wallet-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-wallet-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.pf-wallet-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.pf-wallet-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff;
+  display: block;
+}
+
+.pf-wallet-add-btn {
+  background: rgba(255,255,255,0.22);
+  border: 1.5px solid rgba(255,255,255,0.45);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  backdrop-filter: blur(6px);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.pf-wallet-add-btn:hover { background: rgba(255,255,255,0.35); }
+
+/* ── Location Card ── */
+.pf-location-card {
+  margin: 8px 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1px solid #f1f5f9;
+}
+
+.pf-location-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #fff3e8;
+  color: #ea580c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pf-location-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.pf-location-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* ── Sections ── */
+.pf-section {
+  padding: 16px 16px 0;
+}
+
+.pf-section-title {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px 4px;
+}
+
+.pf-settings-group {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  border: 1px solid #f1f5f9;
+  overflow: hidden;
+}
+
+.pf-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pf-settings-row:hover { background: #f8fafc; }
+.pf-settings-row:active { background: #f1f5f9; }
+.pf-settings-row span { flex: 1; }
+
+.pf-settings-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 0 16px;
+}
+
+.pf-settings-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pf-settings-icon--purple { background: #f5f3ff; color: #7c3aed; }
+.pf-settings-icon--blue   { background: #eff6ff; color: #2563eb; }
+.pf-settings-icon--orange { background: #fff3e8; color: #ea580c; }
+.pf-settings-icon--green  { background: #f0fdf4; color: #16a34a; }
+
+/* ── Logout Full Button ── */
+.pf-logout-full {
+  width: 100%;
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 16px;
+  border: 1.5px solid #fee2e2;
+  background: #fff5f5;
+  color: #ef4444;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+.pf-logout-full:hover { background: #fee2e2; border-color: #fecaca; }
+.pf-logout-full:active { background: #fecaca; }

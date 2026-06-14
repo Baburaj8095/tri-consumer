@@ -332,7 +332,7 @@ function AdminDashboard() {
       {/* Sidebar Overlay for mobile drawer */}
       {mobileMenuOpen && (
         <div 
-          className="admin-sidebar-overlay md:hidden" 
+          className="admin-sidebar-overlay" 
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -350,20 +350,11 @@ function AdminDashboard() {
           </div>
           <button 
             type="button"
-            className="admin-sidebar-close-btn md:hidden"
+            className="admin-sidebar-close-btn"
             onClick={() => setMobileMenuOpen(false)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#64748b',
-              cursor: 'pointer',
-              fontSize: '18px',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center'
-            }}
+            style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px' }}
           >
-            <LuX />
+            <LuX size={20} />
           </button>
         </div>
         
@@ -422,25 +413,15 @@ function AdminDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <button 
                 type="button"
-                className="admin-hamburger-btn md:hidden" 
+                className="admin-hamburger-btn"
                 onClick={() => setMobileMenuOpen(true)}
                 title="Open Sidebar"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontSize: '20px'
-                }}
               >
-                <LuMenu />
+                <LuMenu size={22} />
               </button>
               <div>
                 <div className="admin-breadcrumbs">
-                  <span className="clickable" onClick={() => selectTab('users')}>Admin Dashboard</span>
+                  <span className="clickable" onClick={() => selectTab('dashboard')}>Admin Dashboard</span>
                   <span>&gt;</span>
                   <span className="active">{tabTitle}</span>
                 </div>
@@ -450,10 +431,10 @@ function AdminDashboard() {
             
             <div className="admin-header-icons">
               <button className="admin-header-icon-btn" onClick={loadAdminData} disabled={loading} title="Refresh">
-                <LuRefreshCcw />
+                <LuRefreshCcw size={16} />
               </button>
               
-              <div className="admin-header-icon-btn" title="Notifications">
+              <div className="admin-header-icon-btn" title="Notifications" style={{ position: 'relative' }}>
                 <LuBell size={18} />
                 <span className="admin-header-badge">3</span>
               </div>
@@ -474,8 +455,8 @@ function AdminDashboard() {
           {error && <div className="admin-error admin-page-error">{error}</div>}
           {success && <div className="admin-success admin-page-success">{success}</div>}
 
-          {/* Metric Overview section */}
-          <section className="admin-summary-grid" style={{ marginBottom: '24px' }}>
+          {/* Metric Overview section – always visible */}
+          <section className="admin-summary-grid">
             <Metric label="Users" value={summary?.totalUsers ?? users.length} icon={<LuUsers />} />
             <Metric label="Verified" value={summary?.verifiedUsers ?? 0} icon={<LuShieldCheck />} />
             <Metric label="Administrators" value={admins.length} icon={<LuLock />} />
@@ -483,6 +464,10 @@ function AdminDashboard() {
           </section>
 
           {/* Active view component */}
+          {activeTab === 'dashboard' && (
+            <DashboardHome users={users} otps={otps} summary={summary} />
+          )}
+
           {activeTab === 'users' && (
             <UsersTable 
               users={users} 
@@ -657,6 +642,92 @@ function Metric({ label, value, icon }) {
   );
 }
 
+function DashboardHome({ users, otps, summary }) {
+  const recentUsers = [...users].reverse().slice(0, 8);
+  const verified = users.filter(u => u.kycStatus === 'VERIFIED').length;
+  const pending = users.filter(u => u.kycStatus === 'PENDING').length;
+  const active = users.filter(u => u.accountActive).length;
+  const blocked = users.filter(u => u.status === 'INACTIVE').length;
+
+  const statRows = [
+    { label: 'KYC Verified', value: verified, total: users.length, color: '#2563eb' },
+    { label: 'KYC Pending', value: pending, total: users.length, color: '#f59e0b' },
+    { label: 'Active Accounts', value: active, total: users.length, color: '#10b981' },
+    { label: 'Blocked Users', value: blocked, total: users.length, color: '#ef4444' },
+  ];
+
+  return (
+    <div className="admin-dashboard-home">
+      {/* Recent users feed */}
+      <div className="admin-activity-panel">
+        <div className="admin-panel-header">
+          <h3>Recent Registrations</h3>
+          <span>{users.length} total users</span>
+        </div>
+        <div className="admin-activity-list">
+          {recentUsers.length === 0 && (
+            <div style={{ padding: '24px', textAlign: 'center', color: '#94a3b8', fontSize: '14px' }}>
+              No users registered yet
+            </div>
+          )}
+          {recentUsers.map((user) => (
+            <div key={user.id} className="admin-activity-item">
+              <div
+                className="admin-activity-avatar"
+                style={{ backgroundColor: getAvatarColor(user.id) }}
+              >
+                {getInitials(user.fullName)}
+              </div>
+              <div className="admin-activity-info">
+                <strong>{user.fullName || 'Unknown'}</strong>
+                <span>{user.email || user.mobile || 'No contact'} · ID: {user.id}</span>
+              </div>
+              <div className="admin-activity-time">
+                <span className={`admin-kyc-badge kyc-${(user.kycStatus || 'unsubmitted').toLowerCase()}`}>
+                  {user.kycStatus || 'UNSUBMITTED'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick stats */}
+      <div className="admin-quick-stats-panel">
+        <div className="admin-panel-header">
+          <h3>Quick Stats</h3>
+          <span>Overview</span>
+        </div>
+        <div className="admin-quick-stats-list">
+          {statRows.map((row) => {
+            const pct = users.length > 0 ? Math.round((row.value / users.length) * 100) : 0;
+            return (
+              <div key={row.label}>
+                <div className="admin-quick-stat-row" style={{ marginBottom: '6px' }}>
+                  <span>{row.label}</span>
+                  <strong>{row.value}</strong>
+                </div>
+                <div className="admin-progress-bar-wrap">
+                  <div
+                    className="admin-progress-bar"
+                    style={{ width: `${pct}%`, background: row.color }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '12px', marginTop: '4px' }}>
+            <div className="admin-quick-stat-row">
+              <span>OTP Requests</span>
+              <strong>{summary?.otpRequests ?? otps.length}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKyc, onToggleAccountActive, isMobile }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -728,9 +799,9 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
   return (
     <div>
       {/* Search & Actions Bar */}
-      <div className={`admin-search-filter-bar ${isMobile ? 'mobile-search-bar' : ''}`}>
-        <div className="admin-search-input-wrapper" style={isMobile ? { width: '100%', marginBottom: '12px' } : {}}>
-          <span className="admin-search-icon"><LuSearch /></span>
+      <div className="admin-search-filter-bar">
+        <div className="admin-search-input-wrapper">
+          <span className="admin-search-icon"><LuSearch size={16} /></span>
           <input
             placeholder="Search User (Name, ID, Phone, Sponsor...)"
             value={searchTerm}
@@ -738,7 +809,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
           />
         </div>
 
-        <div className={isMobile ? 'mobile-filter-actions' : ''} style={!isMobile ? { display: 'flex', alignItems: 'center', gap: '16px' } : {}}>
+        <div className="filter-actions">
           {selectedUserIds.size > 0 && (
             <div className="admin-selection-pill">
               <input
@@ -755,26 +826,15 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '10px',
-              border: '1px solid #e2e8f0',
-              fontWeight: 700,
-              fontSize: '13px',
-              color: '#475569',
-              background: '#ffffff',
-              outline: 'none',
-              cursor: 'pointer',
-              flex: isMobile ? 1 : 'unset'
-            }}
+            className="admin-filter-select"
           >
             <option value="ALL">All Login Status</option>
             <option value="ACTIVE">Unblocked</option>
             <option value="INACTIVE">Blocked</option>
           </select>
 
-          <button className="admin-blue-btn" onClick={onCreateClick} style={isMobile ? { whiteSpace: 'nowrap' } : {}}>
-            <LuPlus /> ADD USER
+          <button className="admin-blue-btn" onClick={onCreateClick}>
+            <LuPlus size={16} /> ADD USER
           </button>
         </div>
       </div>

@@ -1343,3 +1343,27 @@
     backdrop-filter: blur(4px);
   }
 }
+
+@media (max-width: 768px) {
+  /* Mobile card layout for the table */
+  .admin-card-table-wrap { overflow-x: visible; }
+  .admin-modern-table { min-width: 100%; display: block; }
+  .admin-modern-table thead { display: none; }
+  .admin-modern-table tbody, .admin-modern-table tr, .admin-modern-table td { display: block; width: 100%; }
+  .admin-modern-table tr { margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .admin-modern-table td { border: none; border-bottom: 1px solid #f1f5f9; padding: 8px 0; position: relative; padding-left: 45%; text-align: right; min-height: 38px; display: flex; justify-content: flex-end; align-items: center; }
+  .admin-modern-table td:last-child { border-bottom: none; }
+  .admin-modern-table td::before { content: attr(data-label); position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40%; text-align: left; font-weight: 600; font-size: 13px; color: #64748b; }
+  .admin-modern-table td > div { max-width: 100%; text-align: right; }
+}
+
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+  }
+}
+

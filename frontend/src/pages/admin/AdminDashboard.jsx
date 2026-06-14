@@ -362,35 +362,22 @@ function AdminDashboard() {
         <nav className="admin-sidebar-menu">
           <button 
             type="button"
+            className={`admin-sidebar-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => selectTab('dashboard')}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Home</span>
+          </button>
+          <button 
+            type="button"
             className={`admin-sidebar-item ${activeTab === 'users' ? 'active' : ''}`}
             onClick={() => selectTab('users')}
           >
             <LuUsers size={18} />
-            <span>Users</span>
-          </button>
-          <button 
-            type="button"
-            className={`admin-sidebar-item ${activeTab === 'admins' ? 'active' : ''}`}
-            onClick={() => selectTab('admins')}
-          >
-            <LuLock size={18} />
-            <span>Admin Accounts</span>
-          </button>
-          <button 
-            type="button"
-            className={`admin-sidebar-item ${activeTab === 'otps' ? 'active' : ''}`}
-            onClick={() => selectTab('otps')}
-          >
-            <LuKeyRound size={18} />
-            <span>OTP Management</span>
-          </button>
-          <button 
-            type="button"
-            className={`admin-sidebar-item ${activeTab === 'webhooks' ? 'active' : ''}`}
-            onClick={() => selectTab('webhooks')}
-          >
-            <LuShieldCheck size={18} />
-            <span>Webhook Logs</span>
+            <span>User</span>
           </button>
           <button 
             type="button"
@@ -398,7 +385,15 @@ function AdminDashboard() {
             onClick={() => selectTab('hubble')}
           >
             <LuGift size={18} />
-            <span>Hubble Gift Cards</span>
+            <span>Gift Card</span>
+          </button>
+          <button 
+            type="button"
+            className={`admin-sidebar-item ${activeTab === 'otps' ? 'active' : ''}`}
+            onClick={() => selectTab('otps')}
+          >
+            <LuShieldCheck size={18} />
+            <span>OTP</span>
           </button>
         </nav>
         
@@ -602,8 +597,8 @@ function AdminDashboard() {
       <nav className="admin-bottom-nav md:hidden">
         <button 
           type="button"
-          className={`admin-bottom-nav-item ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => selectTab('users')}
+          className={`admin-bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => selectTab('dashboard')}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -618,34 +613,25 @@ function AdminDashboard() {
           onClick={() => selectTab('users')}
         >
           <LuUsers size={20} />
-          <span>Team</span>
+          <span>User</span>
         </button>
 
         <button 
           type="button"
-          className={`admin-bottom-nav-item ${activeTab === 'admins' || activeTab === 'otps' ? 'active' : ''}`}
-          onClick={() => selectTab('admins')}
+          className={`admin-bottom-nav-item ${activeTab === 'hubble' ? 'active' : ''}`}
+          onClick={() => selectTab('hubble')}
         >
-          <LuLock size={20} />
-          <span>Business</span>
+          <LuGift size={20} />
+          <span>Gift Card</span>
         </button>
 
         <button 
           type="button"
-          className={`admin-bottom-nav-item ${activeTab === 'webhooks' || activeTab === 'hubble' ? 'active' : ''}`}
-          onClick={() => selectTab('webhooks')}
+          className={`admin-bottom-nav-item ${activeTab === 'otps' ? 'active' : ''}`}
+          onClick={() => selectTab('otps')}
         >
           <LuShieldCheck size={20} />
-          <span>Reports</span>
-        </button>
-
-        <button 
-          type="button"
-          className="admin-bottom-nav-item"
-          onClick={() => setMobileMenuOpen(true)}
-        >
-          <LuMenu size={20} />
-          <span>More</span>
+          <span>OTP</span>
         </button>
       </nav>
     </div>
@@ -815,7 +801,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
               return (
                 <React.Fragment key={user.id}>
                   <tr className={`${isSelected ? 'row-selected' : ''} ${isExpanded ? 'row-expanded-parent' : ''}`}>
-                    <td>
+                    <td data-label="Select">
                       <div className="admin-cell-checkbox-chevron">
                         <input
                           type="checkbox"
@@ -833,7 +819,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         </button>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Name">
                       <div className="admin-cell-name-avatar">
                         <div 
                           className="admin-user-avatar" 
@@ -849,13 +835,13 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Sponsor ID & Name">
                       <div>
                         <strong>{user.sponsorId || '-'}</strong>
                         <div style={{ fontSize: '11px', color: '#64748b' }}>{user.sponsorName || 'Direct'}</div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="Address & Pincode">
                       <div>
                         <div style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={user.address}>
                           {user.address || '-'}
@@ -865,7 +851,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         </div>
                       </div>
                     </td>
-                    <td>
+                    <td data-label="KYC Status">
                       <span 
                         className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}
                         onClick={() => onViewKyc(user)}
@@ -875,7 +861,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         {user.kycStatus || 'UNSUBMITTED'}
                       </span>
                     </td>
-                    <td>
+                    <td data-label="Active/Inactive">
                       <button
                         type="button"
                         className={`admin-active-toggle-btn ${user.accountActive ? 'active' : 'inactive'}`}
@@ -885,7 +871,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         {user.accountActive ? 'Active' : 'Inactive'}
                       </button>
                     </td>
-                    <td>
+                    <td data-label="Block/Unblock">
                       <button
                         type="button"
                         className={`admin-block-toggle-btn ${user.status === 'ACTIVE' ? 'unblocked' : 'blocked'}`}
@@ -895,7 +881,7 @@ function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock, onViewKy
                         {user.status === 'ACTIVE' ? 'Unblocked' : 'Blocked'}
                       </button>
                     </td>
-                    <td>
+                    <td data-label="Edit">
                       <div className="admin-action-buttons">
                         <button 
                           type="button" 

@@ -15,10 +15,24 @@ public class UserResponse {
   private String state;
   private String status;
   private boolean mobileVerified;
+  private String walletBalance;
+  private String idNumber;
 
   public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
       String mobile, String email, String pinCode, String district, String state, String status,
       boolean mobileVerified) {
+    this(id, sponsorId, sponsorName, fullName, countryCode, mobile, email, pinCode, district, state, status, mobileVerified, null);
+  }
+
+  public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
+      String mobile, String email, String pinCode, String district, String state, String status,
+      boolean mobileVerified, String walletBalance) {
+    this(id, sponsorId, sponsorName, fullName, countryCode, mobile, email, pinCode, district, state, status, mobileVerified, walletBalance, null);
+  }
+
+  public UserResponse(long id, String sponsorId, String sponsorName, String fullName, String countryCode,
+      String mobile, String email, String pinCode, String district, String state, String status,
+      boolean mobileVerified, String walletBalance, String idNumber) {
     this.id = id;
     this.sponsorId = sponsorId;
     this.sponsorName = sponsorName;
@@ -31,6 +45,8 @@ public class UserResponse {
     this.state = state;
     this.status = status;
     this.mobileVerified = mobileVerified;
+    this.walletBalance = walletBalance;
+    this.idNumber = idNumber;
   }
 
   public static UserResponse from(User user) {
@@ -51,4 +67,6 @@ public class UserResponse {
   public String getState() { return state; }
   public String getStatus() { return status; }
   public boolean isMobileVerified() { return mobileVerified; }
+  public String getWalletBalance() { return walletBalance; }
+  public String getIdNumber() { return idNumber; }
 }

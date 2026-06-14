@@ -18,7 +18,6 @@ public class UserController {
 
   @GetMapping("/me")
   public ApiResponse<UserResponse> me(@RequestHeader(value = "Authorization", required = false) String authorization) {
-    return ApiResponse.ok("Current user", UserResponse.from(userService.currentUser(authorization)));
+    return ApiResponse.ok("Current user", userService.currentUser(authorization));
   }
 }
-

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './loginRegistration.css';
 import SMSService from '../../services/smsService';
+import { storeAuth } from '../../services/authStorage';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -216,9 +217,7 @@ function RegisterForm() {
         state: formData.state,
         password: formData.password,
       });
-      if (response.data?.data?.token) {
-        localStorage.setItem('triConsumerToken', response.data.data.token);
-      }
+      storeAuth(response.data);
       alert('Registration complete!');
       navigate('/login');
     } catch (err) {

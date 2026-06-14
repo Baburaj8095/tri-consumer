@@ -7,6 +7,7 @@ import './loginRegistration.css';
 import logo from './logo.png';
 import SMSService from '../../services/smsService';
 import { generateOtp } from '../../services/otpGenerator';
+import { storeAuth } from '../../services/authStorage';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -66,10 +67,7 @@ function LoginForm() {
         password: loginData.password,
       });
 
-      const token = response.data?.data?.token;
-      if (token) {
-        localStorage.setItem('triConsumerToken', token);
-      }
+      storeAuth(response.data);
 
       navigate('/consumer-ecommerce');
     } catch (err) {
@@ -98,9 +96,7 @@ function LoginForm() {
       if (loginOtpData.mobile) {
         const fullMobile = `${countryCode}${loginOtpData.mobile}`;
         const result = await smsService.verifyOtp(fullMobile, code, 'LOGIN');
-        if (result?.data?.token) {
-          localStorage.setItem('triConsumerToken', result.data.token);
-        }
+        storeAuth(result);
       } else if (code !== generatedOtp) {
         setOtpError('Invalid OTP');
         return;

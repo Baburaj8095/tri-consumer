@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import {
   LuBell,
   LuMapPin,
@@ -16,6 +17,22 @@ import {
   LuLogOut,
 } from 'react-icons/lu';
 import { consumerProfile } from '../services/mockData.js';
+import { clearAuth, getAccessToken } from '../../../services/authStorage.js';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+
+function formatPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (!digits) return '';
+  const national = digits.length > 10 && digits.startsWith('91') ? digits.slice(-10) : digits;
+  return national.length === 10 ? `+91 ${national}` : phone;
+}
+
+function formatWallet(value) {
+  const amount = Number(value || 0);
+  if (!Number.isFinite(amount)) return 'Rs. 0';
+  return `Rs. ${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+}
 
 export default function Header() {
   const navigate = useNavigate();
@@ -24,6 +41,13 @@ export default function Header() {
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem('triConsumerProfilePic') || '');
   const [isEditMenuOpen, setIsEditMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('triConsumerUser') || 'null');
+    } catch (_) {
+      return null;
+    }
+  });
 
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
@@ -92,9 +116,42 @@ export default function Header() {
   };
 
   const handleLogoutSubmit = () => {
-    localStorage.removeItem('triConsumerToken');
+    clearAuth();
     setShowLogoutConfirm(false);
     navigate('/login');
+  };
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) return;
+
+    let cancelled = false;
+    axios.get(`${API_BASE_URL}/api/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((response) => {
+      if (cancelled) return;
+      const data = response.data?.data || response.data;
+      if (data) {
+        setProfile(data);
+        localStorage.setItem('triConsumerUser', JSON.stringify(data));
+      }
+    }).catch(() => {
+      if (!cancelled) setProfile((prev) => prev || null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const displayProfile = {
+    name: profile?.fullName || profile?.full_name || profile?.username || consumerProfile.name,
+    idNumber: profile?.idNumber || profile?.prefixed_id || profile?.unique_id || profile?.username || profile?.id || consumerProfile.idNumber,
+    pinCode: profile?.pinCode || profile?.pincode || consumerProfile.pinCode,
+    phone: formatPhone(profile?.mobile || profile?.phone) || consumerProfile.phone,
+    city: [profile?.district || profile?.city, profile?.state].filter(Boolean).join(', ') || consumerProfile.city,
+    membership: profile?.status === 'ACTIVE' ? 'Prime Consumer Member' : consumerProfile.membership,
+    walletBalance: profile?.walletBalance ? formatWallet(profile.walletBalance) : consumerProfile.walletBalance,
   };
 
   return (
@@ -163,20 +220,20 @@ export default function Header() {
 
             <div className="ce-profile-main">
               <p className="ce-profile-label">Profile</p>
-              <h2 className="ce-profile-name">{consumerProfile.name}</h2>
-              <p className="ce-profile-subtitle">{consumerProfile.membership}</p>
+              <h2 className="ce-profile-name">{displayProfile.name}</h2>
+              <p className="ce-profile-subtitle">{displayProfile.membership}</p>
             </div>
 
             <div className="ce-profile-detail-grid">
               <div className="ce-profile-detail">
                 <LuShoppingBag className="ce-primary-text" />
                 <span>ID Number</span>
-                <strong>{consumerProfile.idNumber}</strong>
+                <strong>{displayProfile.idNumber}</strong>
               </div>
               <div className="ce-profile-detail">
                 <LuMapPin className="ce-primary-text" />
                 <span>Pin Code</span>
-                <strong>{consumerProfile.pinCode}</strong>
+                <strong>{displayProfile.pinCode}</strong>
               </div>
             </div>
 
@@ -185,21 +242,21 @@ export default function Header() {
                 <LuPhone className="ce-primary-text" />
                 <div>
                   <span>Phone</span>
-                  <strong>{consumerProfile.phone}</strong>
+                  <strong>{displayProfile.phone}</strong>
                 </div>
               </div>
               <div className="ce-profile-list-row">
                 <LuMapPin className="ce-primary-text" />
                 <div>
                   <span>Location</span>
-                  <strong>{consumerProfile.city}</strong>
+                  <strong>{displayProfile.city}</strong>
                 </div>
               </div>
               <div className="ce-profile-list-row">
                 <LuWallet className="ce-primary-text" />
                 <div>
                   <span>Wallet Balance</span>
-                  <strong>{consumerProfile.walletBalance}</strong>
+                  <strong>{displayProfile.walletBalance}</strong>
                 </div>
               </div>
               <button

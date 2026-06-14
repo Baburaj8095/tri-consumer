@@ -8,16 +8,13 @@
  * Response: { success: true, data: { iframeUrl: "...", expiresIn: 60 } }
  */
 
+import { getAccessToken } from '../../../services/authStorage';
+
 const BASE_URL = process.env.REACT_APP_API_BASE || '';
 
 /** Read the user's session token from localStorage (stored by the login flow). */
 function getToken() {
-  return (
-    localStorage.getItem('access') ||
-    localStorage.getItem('token') ||
-    localStorage.getItem('authToken') ||
-    ''
-  );
+  return getAccessToken();
 }
 
 /**

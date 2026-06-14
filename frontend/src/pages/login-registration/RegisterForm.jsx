@@ -9,14 +9,6 @@ import { storeAuth } from '../../services/authStorage';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
-const sponsorLookup = {
-  TRI001: 'Trikonekt Partner',
-  VIP100: 'Luxe Sponsor',
-  GROW20: 'Growth Circle',
-};
-
-
-
 function RegisterForm() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -67,13 +59,7 @@ function RegisterForm() {
   }, [resendTimer]);
 
   useEffect(() => {
-    if (formData.pinCode.length !== 6) {
-      setFormData((prev) => ({ ...prev, village: '', taluk: '', district: '', state: '', country: '' }));
-    }
-  }, [formData.pinCode]);
-
-  useEffect(() => {
-    const sponsorId = formData.sponsorId.trim().toUpperCase();
+    const sponsorId = formData.sponsorId.trim();
     if (!sponsorId) {
       setSponsorStatus('');
       setFormData((prev) => ({ ...prev, sponsorName: '' }));
@@ -83,20 +69,36 @@ function RegisterForm() {
 
     setSponsorLoading(true);
     setSponsorStatus('');
-    const timer = window.setTimeout(() => {
-      const sponsorName = sponsorLookup[sponsorId];
-      if (sponsorName) {
-        setFormData((prev) => ({ ...prev, sponsorName }));
-        setSponsorStatus('verified');
-      } else {
+    
+    const fetchSponsor = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/auth/sponsor/validate`, {
+          params: { sponsorId }
+        });
+        if (response.data?.success && response.data?.data?.sponsorName) {
+          setFormData((prev) => ({ ...prev, sponsorName: response.data.data.sponsorName }));
+          setSponsorStatus('verified');
+        } else {
+          setFormData((prev) => ({ ...prev, sponsorName: '' }));
+          setSponsorStatus('invalid');
+        }
+      } catch (err) {
         setFormData((prev) => ({ ...prev, sponsorName: '' }));
         setSponsorStatus('invalid');
+      } finally {
+        setSponsorLoading(false);
       }
-      setSponsorLoading(false);
-    }, 800);
+    };
 
+    const timer = window.setTimeout(fetchSponsor, 800);
     return () => window.clearTimeout(timer);
   }, [formData.sponsorId]);
+
+  useEffect(() => {
+    if (formData.pinCode.length !== 6) {
+      setFormData((prev) => ({ ...prev, village: '', taluk: '', district: '', state: '', country: '' }));
+    }
+  }, [formData.pinCode]);
 
   useEffect(() => {
     const pinCode = formData.pinCode.trim();
@@ -109,6 +111,7 @@ function RegisterForm() {
         const location = response.data?.data;
 
         if (response.data?.success && location) {
+
           setFormData((prev) => ({
             ...prev,
             village: location.village || '',

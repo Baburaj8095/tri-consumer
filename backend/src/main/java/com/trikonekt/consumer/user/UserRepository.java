@@ -44,18 +44,30 @@ public class UserRepository {
     return findById(keyHolder.getKey().longValue()).orElseThrow();
   }
 
+  private static final String SELECT_USER_SQL = """
+      SELECT
+        u.id, u.sponsor_id, sp.full_name AS sponsor_name, u.full_name, '+91' AS country_code,
+        u.phone AS mobile, u.email, u.pincode AS pin_code, c.name AS district, st.name AS state,
+        u.password AS password_hash, CASE WHEN u.is_active = TRUE THEN 'ACTIVE' ELSE 'INACTIVE' END AS status,
+        TRUE AS mobile_verified, u.date_joined AS created_at
+      FROM accounts_customuser u
+      LEFT JOIN accounts_customuser sp ON u.sponsor_id = sp.username
+      LEFT JOIN locations_city c ON u.city_id = c.id
+      LEFT JOIN locations_state st ON u.state_id = st.id
+      """;
+
   public Optional<User> findById(long id) {
-    List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE id = ?", this::mapUser, id);
+    List<User> users = jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.id = ?", this::mapUser, id);
     return users.stream().findFirst();
   }
 
   public Optional<User> findByMobile(String mobile) {
-    List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE mobile = ?", this::mapUser, mobile);
+    List<User> users = jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.phone = ?", this::mapUser, mobile);
     return users.stream().findFirst();
   }
 
   public Optional<User> findByEmail(String email) {
-    List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE email = ?", this::mapUser, email);
+    List<User> users = jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.email = ?", this::mapUser, email);
     return users.stream().findFirst();
   }
 
@@ -64,11 +76,7 @@ public class UserRepository {
   }
 
   public List<User> findAll() {
-    return jdbcTemplate.query("""
-        SELECT * FROM users
-        ORDER BY created_at DESC
-        LIMIT 500
-        """, this::mapUser);
+    return jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.category = 'consumer' ORDER BY u.date_joined DESC LIMIT 500", this::mapUser);
   }
 
   private User mapUser(ResultSet rs, int rowNum) throws SQLException {

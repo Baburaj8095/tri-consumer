@@ -115,6 +115,43 @@ public class DjangoAuthClient {
     }
   }
 
+  public AuthResponse refreshToken(String refreshToken) {
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("refresh", clean(refreshToken));
+    JsonNode data = postJson("/accounts/token/refresh/", payload);
+    String access = text(data, "access");
+    String nextRefresh = text(data, "refresh");
+    if (access == null || access.isBlank()) {
+      throw new BusinessException(HttpStatus.BAD_GATEWAY, "Django token refresh did not return an access token");
+    }
+    return new AuthResponse(access, nextRefresh != null && !nextRefresh.isBlank() ? nextRefresh : refreshToken, null);
+  }
+
+  public String validateSponsor(String sponsorId) {
+    if (sponsorId == null || sponsorId.isBlank()) {
+      return null;
+    }
+    try {
+      ResponseEntity<JsonNode> response = restTemplate.getForEntity(
+          baseUrl + "/accounts/regions/by-sponsor/?sponsor=" + clean(sponsorId) + "&level=state",
+          JsonNode.class);
+      JsonNode body = response.getBody();
+      if (body != null && body.has("sponsor")) {
+        JsonNode sponsorNode = body.get("sponsor");
+        String fullName = text(sponsorNode, "full_name");
+        String username = text(sponsorNode, "username");
+        return fullName != null ? fullName : username;
+      }
+    } catch (HttpStatusCodeException ex) {
+      if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
+        throw new BusinessException(HttpStatus.NOT_FOUND, "Sponsor ID not recognized");
+      }
+      throw djangoException(ex);
+    }
+    return null;
+  }
+
+
   private AuthResponse login(String username, String password, String role) {
     Map<String, Object> payload = new HashMap<>();
     payload.put("username", clean(username));

@@ -12,6 +12,7 @@ import com.trikonekt.consumer.common.ApiResponse;
 import com.trikonekt.consumer.user.UserRepository;
 import com.trikonekt.consumer.user.dto.UserResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,13 +29,16 @@ public class AdminController {
   private final AdminRepository adminRepository;
   private final UserRepository userRepository;
   private final AuthService authService;
+  private final com.trikonekt.consumer.hubble.HubbleConfig hubbleConfig;
 
   public AdminController(AdminService adminService, AdminRepository adminRepository,
-      UserRepository userRepository, AuthService authService) {
+      UserRepository userRepository, AuthService authService,
+      com.trikonekt.consumer.hubble.HubbleConfig hubbleConfig) {
     this.adminService = adminService;
     this.adminRepository = adminRepository;
     this.userRepository = userRepository;
     this.authService = authService;
+    this.hubbleConfig = hubbleConfig;
   }
 
   @PostMapping("/login")
@@ -86,5 +90,31 @@ public class AdminController {
     adminService.requireAdmin(authorization);
     AuthResponse response = authService.register(request);
     return ApiResponse.ok("User created successfully by administrator", response.getUser());
+  }
+ 
+  @GetMapping("/hubble/webhooks")
+  public ApiResponse<List<Map<String, Object>>> webhooks(@RequestHeader(value = "Authorization", required = false) String authorization) {
+    adminService.requireAdmin(authorization);
+    return ApiResponse.ok("Hubble webhook events", adminRepository.listWebhookEvents());
+  }
+ 
+  @GetMapping("/hubble/transactions")
+  public ApiResponse<List<Map<String, Object>>> hubbleTransactions(@RequestHeader(value = "Authorization", required = false) String authorization) {
+    adminService.requireAdmin(authorization);
+    return ApiResponse.ok("Hubble transactions", adminRepository.listHubbleTransactions());
+  }
+ 
+  @GetMapping("/hubble/config")
+  public ApiResponse<Map<String, Object>> hubbleConfig(
+      @RequestHeader(value = "Authorization", required = false) String authorization) {
+    adminService.requireAdmin(authorization);
+    String secret = hubbleConfig.getWebhookSecret();
+    String masked = secret.length() > 8 ? secret.substring(0, 4) + "****" + secret.substring(secret.length() - 4) : "****";
+    return ApiResponse.ok("Hubble configuration status", Map.of(
+        "clientId", hubbleConfig.getClientId(),
+        "sdkBaseUrl", hubbleConfig.getSdkBaseUrl(),
+        "webhookSecret", masked,
+        "isConfigured", hubbleConfig.isConfigured()
+    ));
   }
 }

@@ -25,6 +25,15 @@ public class AuthService {
     return djangoAuthClient.otpLogin(mobile);
   }
 
+  public AuthResponse refreshToken(String refreshToken) {
+    return djangoAuthClient.refreshToken(refreshToken);
+  }
+
+  public String validateSponsor(String sponsorId) {
+    return djangoAuthClient.validateSponsor(sponsorId);
+  }
+
+
   public static String normalizeCountryCode(String countryCode) {
     String value = countryCode == null || countryCode.isBlank() ? "+91" : countryCode.trim();
     return value.startsWith("+") ? value : "+" + value;

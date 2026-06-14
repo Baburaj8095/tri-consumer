@@ -37,8 +37,8 @@ public class AdminRepository {
   }
 
   public AdminSummaryResponse summary() {
-    int totalUsers = count("SELECT COUNT(*) FROM users");
-    int verifiedUsers = count("SELECT COUNT(*) FROM users WHERE mobile_verified = TRUE");
+    int totalUsers = count("SELECT COUNT(*) FROM accounts_customuser WHERE category = 'consumer'");
+    int verifiedUsers = count("SELECT COUNT(*) FROM accounts_customuser WHERE category = 'consumer' AND is_active = TRUE");
     int otpRequests = count("SELECT COUNT(*) FROM otp_requests");
     int consumedOtps = count("SELECT COUNT(*) FROM otp_requests WHERE consumed_at IS NOT NULL");
     return new AdminSummaryResponse(totalUsers, verifiedUsers, otpRequests, consumedOtps);
@@ -77,6 +77,28 @@ public class AdminRepository {
         SELECT username FROM admins
         ORDER BY username ASC
         """, (rs, rowNum) -> rs.getString("username"));
+  }
+
+  public List<java.util.Map<String, Object>> listWebhookEvents() {
+    return jdbcTemplate.queryForList("""
+        SELECT id, idempotency_key, event_type, transaction_reference_id,
+               status, x_verify, process_status, received_at, raw_body
+        FROM business_hubblewebhookevent
+        ORDER BY received_at DESC, id DESC
+        LIMIT 100
+        """);
+  }
+
+  public List<java.util.Map<String, Object>> listHubbleTransactions() {
+    return jdbcTemplate.queryForList("""
+        SELECT t.id, t.transaction_reference_id, t.hubble_user_id, t.user_id,
+               t.status, t.amount, t.discount_amount, t.currency, t.last_event_id,
+               t.created_at, t.updated_at, u.full_name as user_full_name, u.phone as user_mobile
+        FROM business_hubbletransaction t
+        LEFT JOIN accounts_customuser u ON t.user_id = u.id
+        ORDER BY t.updated_at DESC, t.id DESC
+        LIMIT 100
+        """);
   }
 
   private int count(String sql) {

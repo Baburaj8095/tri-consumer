@@ -7,9 +7,11 @@ import com.trikonekt.consumer.auth.dto.SendOtpRequest;
 import com.trikonekt.consumer.auth.dto.VerifyOtpRequest;
 import com.trikonekt.consumer.common.ApiResponse;
 import javax.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -49,4 +51,19 @@ public class AuthController {
   public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
     return ApiResponse.ok("Login successful", authService.login(request));
   }
+
+  @PostMapping("/refresh")
+  public ApiResponse<AuthResponse> refresh(@Valid @RequestBody com.trikonekt.consumer.auth.dto.TokenRefreshRequest request) {
+    return ApiResponse.ok("Token refreshed successfully", authService.refreshToken(request.refresh()));
+  }
+
+  @GetMapping("/sponsor/validate")
+  public ApiResponse<java.util.Map<String, String>> validateSponsor(@RequestParam String sponsorId) {
+    String name = authService.validateSponsor(sponsorId);
+    if (name == null) {
+      return ApiResponse.fail("Sponsor ID not recognized");
+    }
+    return ApiResponse.ok("Sponsor verified", java.util.Map.of("sponsorName", name));
+  }
+
 }

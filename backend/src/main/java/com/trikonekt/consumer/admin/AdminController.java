@@ -16,7 +16,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -117,4 +119,24 @@ public class AdminController {
         "isConfigured", hubbleConfig.isConfigured()
     ));
   }
+
+  @PutMapping("/users/{id}")
+  public ApiResponse<Void> updateUser(
+      @RequestHeader(value = "Authorization", required = false) String authorization,
+      @PathVariable("id") long id,
+      @Valid @RequestBody UserUpdateRequest request) {
+    adminService.requireAdmin(authorization);
+    userRepository.updateUser(id, request.email(), request.mobile(), request.pinCode(), request.district(), request.state(), request.status(), request.fullName());
+    return ApiResponse.ok("User updated successfully", null);
+  }
+
+  public record UserUpdateRequest(
+      String email,
+      String mobile,
+      String pinCode,
+      String district,
+      String state,
+      String status,
+      String fullName
+  ) {}
 }

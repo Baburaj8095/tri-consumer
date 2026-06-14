@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class UserRepository {
+  private static final Logger log = LoggerFactory.getLogger(UserRepository.class);
   private final JdbcTemplate jdbcTemplate;
 
   public UserRepository(JdbcTemplate jdbcTemplate) {
@@ -96,6 +99,81 @@ public class UserRepository {
         rs.getString("status"),
         rs.getBoolean("mobile_verified"),
         createdAt.toInstant()
+    );
+  }
+
+  public void updateUser(long id, String email, String mobile, String pinCode, String district, String state, String status, String fullName) {
+    // 1. Get or create Country ID for India
+    Long countryId = null;
+    List<Long> countryIds = jdbcTemplate.query("SELECT id FROM locations_country WHERE UPPER(name) = 'INDIA'", (rs, rowNum) -> rs.getLong("id"));
+    if (!countryIds.isEmpty()) {
+      countryId = countryIds.get(0);
+    } else {
+      KeyHolder kh = new GeneratedKeyHolder();
+      jdbcTemplate.update(conn -> {
+        var ps = conn.prepareStatement("INSERT INTO locations_country (name, iso2) VALUES ('India', 'IN')", new String[]{"id"});
+        return ps;
+      }, kh);
+      countryId = kh.getKey().longValue();
+    }
+
+    // 2. Get or create State ID
+    Long stateId = null;
+    if (state != null && !state.isBlank()) {
+      List<Long> stateIds = jdbcTemplate.query("SELECT id FROM locations_state WHERE UPPER(name) = UPPER(?)", (rs, rowNum) -> rs.getLong("id"), state.trim());
+      if (!stateIds.isEmpty()) {
+        stateId = stateIds.get(0);
+      } else {
+        final Long cId = countryId;
+        KeyHolder kh = new GeneratedKeyHolder();
+        jdbcTemplate.update(conn -> {
+          var ps = conn.prepareStatement("INSERT INTO locations_state (name, country_id) VALUES (?, ?)", new String[]{"id"});
+          ps.setString(1, state.trim());
+          ps.setLong(2, cId);
+          return ps;
+        }, kh);
+        stateId = kh.getKey().longValue();
+      }
+    }
+
+    // 3. Get or create City (district) ID
+    Long cityId = null;
+    if (district != null && !district.isBlank()) {
+      List<Long> cityIds = jdbcTemplate.query("SELECT id FROM locations_city WHERE UPPER(name) = UPPER(?)", (rs, rowNum) -> rs.getLong("id"), district.trim());
+      if (!cityIds.isEmpty()) {
+        cityId = cityIds.get(0);
+      } else {
+        final Long sId = stateId;
+        if (sId != null) {
+          KeyHolder kh = new GeneratedKeyHolder();
+          jdbcTemplate.update(conn -> {
+            var ps = conn.prepareStatement("INSERT INTO locations_city (name, state_id) VALUES (?, ?)", new String[]{"id"});
+            ps.setString(1, district.trim());
+            ps.setLong(2, sId);
+            return ps;
+          }, kh);
+          cityId = kh.getKey().longValue();
+        }
+      }
+    }
+
+    // 4. Update the user record
+    boolean isActive = "ACTIVE".equalsIgnoreCase(status);
+    jdbcTemplate.update("""
+        UPDATE accounts_customuser
+        SET email = ?, phone = ?, pincode = ?, city_id = ?, state_id = ?, is_active = ?, full_name = ?,
+            username = CASE WHEN username = phone THEN ? ELSE username END
+        WHERE id = ?
+        """,
+        blankToNull(email),
+        mobile.trim(),
+        blankToNull(pinCode),
+        cityId,
+        stateId,
+        isActive,
+        blankToNull(fullName),
+        mobile.trim(),
+        id
     );
   }
 

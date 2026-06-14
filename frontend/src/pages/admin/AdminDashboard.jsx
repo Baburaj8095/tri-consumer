@@ -19,6 +19,7 @@ import {
   LuMail,
   LuBell,
   LuGift,
+  LuMenu,
   LuCalendar,
   LuMapPin,
   LuMap,
@@ -85,6 +86,8 @@ function AdminDashboard() {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) || '');
   const [credentials, setCredentials] = useState({ username: 'admin', password: '' });
   const [activeTab, setActiveTab] = useState('users');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [summary, setSummary] = useState(null);
   const [users, setUsers] = useState([]);
   const [otps, setOtps] = useState([]);
@@ -192,6 +195,37 @@ function AdminDashboard() {
     setHubbleConfig(null);
     setSelectedWebhook(null);
     setSummary(null);
+  };
+
+  const handleToggleBlock = async (user) => {
+    const isBlocked = user.status === 'INACTIVE';
+    const confirmMsg = isBlocked 
+      ? `Are you sure you want to UNBLOCK user ${user.fullName} and restore access to the apps?`
+      : `Are you sure you want to BLOCK user ${user.fullName} and restrict access to the apps?`;
+      
+    if (!window.confirm(confirmMsg)) return;
+    
+    setLoading(true);
+    try {
+      const nextStatus = isBlocked ? 'ACTIVE' : 'INACTIVE';
+      await axios.put(`${API_BASE_URL}/api/admin/users/${user.id}`, {
+        email: user.email,
+        mobile: user.mobile,
+        pinCode: user.pinCode,
+        district: user.district,
+        state: user.state,
+        status: nextStatus,
+        fullName: user.fullName
+      }, { headers });
+      setSuccess(`User ${user.fullName} has been ${isBlocked ? 'unblocked' : 'blocked'} successfully.`);
+      loadAdminData();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err) {
+      setError(formatErrorMessage(err));
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabTitle = useMemo(() => {
@@ -362,7 +396,12 @@ function AdminDashboard() {
 
           {/* Active view component */}
           {activeTab === 'users' && (
-            <UsersTable users={users} onCreateClick={() => setShowUserModal(true)} />
+            <UsersTable 
+              users={users} 
+              onCreateClick={() => setShowUserModal(true)} 
+              onEditClick={(user) => setEditingUser(user)}
+              onToggleBlock={handleToggleBlock}
+            />
           )}
 
           {activeTab === 'admins' && (
@@ -441,6 +480,21 @@ function AdminDashboard() {
           setTimeout(() => setSuccess(''), 5000);
         }}
       />
+
+      {/* User Editing Modal */}
+      {editingUser && (
+        <EditUserModal
+          isOpen={true}
+          user={editingUser}
+          onClose={() => setEditingUser(null)}
+          headers={headers}
+          onSuccess={(msg) => {
+            setSuccess(msg);
+            loadAdminData();
+            setTimeout(() => setSuccess(''), 5000);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -455,11 +509,18 @@ function Metric({ label, value, icon }) {
   );
 }
 
-function UsersTable({ users, onCreateClick }) {
+function UsersTable({ users, onCreateClick, onEditClick, onToggleBlock }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [expandedUserId, setExpandedUserId] = useState(null);
   const [selectedUserIds, setSelectedUserIds] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   // Filter users based on search term and status
   const filteredUsers = useMemo(() => {
@@ -479,16 +540,26 @@ function UsersTable({ users, onCreateClick }) {
     });
   }, [users, searchTerm, statusFilter]);
 
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredUsers.slice(start, start + itemsPerPage);
+  }, [filteredUsers, currentPage]);
+
   const toggleExpand = (userId) => {
     setExpandedUserId(expandedUserId === userId ? null : userId);
   };
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const allIds = new Set(filteredUsers.map((u) => u.id));
-      setSelectedUserIds(allIds);
+      const next = new Set(selectedUserIds);
+      paginatedUsers.forEach(u => next.add(u.id));
+      setSelectedUserIds(next);
     } else {
-      setSelectedUserIds(new Set());
+      const next = new Set(selectedUserIds);
+      paginatedUsers.forEach(u => next.delete(u.id));
+      setSelectedUserIds(next);
     }
   };
 
@@ -502,7 +573,7 @@ function UsersTable({ users, onCreateClick }) {
     setSelectedUserIds(next);
   };
 
-  const isAllSelected = filteredUsers.length > 0 && selectedUserIds.size === filteredUsers.length;
+  const isAllSelected = paginatedUsers.length > 0 && paginatedUsers.every(u => selectedUserIds.has(u.id));
 
   return (
     <div>
@@ -560,8 +631,8 @@ function UsersTable({ users, onCreateClick }) {
             }}
           >
             <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active (Full Time)</option>
-            <option value="INACTIVE">Inactive (Part Time)</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Blocked</option>
           </select>
 
           <button className="admin-blue-btn" onClick={onCreateClick}>
@@ -593,13 +664,14 @@ function UsersTable({ users, onCreateClick }) {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map((user, idx) => {
+            {paginatedUsers.map((user) => {
               const isSelected = selectedUserIds.has(user.id);
               const isExpanded = expandedUserId === user.id;
               
-              // Mock details based on index
-              const mockPos = MOCK_POSITIONS[idx % MOCK_POSITIONS.length];
-              const mockDept = MOCK_DEPARTMENTS[idx % MOCK_DEPARTMENTS.length];
+              // Mock details based on global index to maintain visual variety
+              const originalIdx = filteredUsers.indexOf(user);
+              const mockPos = MOCK_POSITIONS[originalIdx % MOCK_POSITIONS.length];
+              const mockDept = MOCK_DEPARTMENTS[originalIdx % MOCK_DEPARTMENTS.length];
               const initials = getInitials(user.fullName);
               const avatarColor = getAvatarColor(user.id);
 
@@ -643,16 +715,26 @@ function UsersTable({ users, onCreateClick }) {
                     <td>{user.email || '-'}</td>
                     <td>{user.mobile}</td>
                     <td>
-                      <span className={`admin-status-badge ${user.status === 'ACTIVE' ? 'status-fulltime' : 'status-parttime'}`}>
-                        {user.status === 'ACTIVE' ? 'Full Time' : 'Part Time'}
+                      <span className={`admin-status-badge ${user.status === 'ACTIVE' ? 'status-fulltime' : 'status-blocked'}`}>
+                        {user.status === 'ACTIVE' ? 'Active' : 'Blocked'}
                       </span>
                     </td>
                     <td>
                       <div className="admin-action-buttons">
-                        <button type="button" className="admin-action-btn" title="Edit user">
+                        <button 
+                          type="button" 
+                          className="admin-action-btn" 
+                          title="Edit user"
+                          onClick={() => onEditClick(user)}
+                        >
                           <LuPencil size={14} />
                         </button>
-                        <button type="button" className="admin-action-btn btn-delete" title="Delete/Block user">
+                        <button 
+                          type="button" 
+                          className="admin-action-btn btn-delete" 
+                          title={user.status === 'ACTIVE' ? 'Block user' : 'Unblock user'}
+                          onClick={() => onToggleBlock(user)}
+                        >
                           <LuTrash2 size={14} />
                         </button>
                       </div>
@@ -715,10 +797,47 @@ function UsersTable({ users, onCreateClick }) {
                 </React.Fragment>
               );
             })}
-            {!filteredUsers.length && <EmptyRow colSpan={8} text="No registered users found matching the filter" />}
+            {!paginatedUsers.length && <EmptyRow colSpan={8} text="No registered users found matching the filter" />}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination controls */}
+      {totalPages > 1 && (
+        <div className="admin-pagination-bar">
+          <span className="admin-pagination-info">
+            Showing <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> to <strong>{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</strong> of <strong>{filteredUsers.length}</strong> entries
+          </span>
+          <div className="admin-pagination-buttons">
+            <button 
+              type="button" 
+              className="admin-pagination-btn" 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                type="button"
+                className={`admin-pagination-btn ${currentPage === pageNum ? 'active' : ''}`}
+                onClick={() => setCurrentPage(pageNum)}
+              >
+                {pageNum}
+              </button>
+            ))}
+            <button 
+              type="button" 
+              className="admin-pagination-btn" 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

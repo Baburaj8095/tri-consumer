@@ -1296,6 +1296,13 @@ button.admin-header-icon-btn {
   align-items: start;
 }
 
+.admin-hubble-grid {
+  display: grid;
+  grid-template-columns: 3fr 1.2fr;
+  gap: 20px;
+  align-items: start;
+}
+
 .admin-list-panel,
 .admin-create-panel {
   margin: 0;
@@ -1396,9 +1403,9 @@ button.admin-header-icon-btn {
 
 .admin-modal-card {
   width: min(100%, 580px);
-  background: #fff;
+  background: var(--admin-surface);
   border-radius: 20px;
-  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(249, 115, 22, 0.05);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1410,13 +1417,13 @@ button.admin-header-icon-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--admin-border);
 }
 
 .admin-modal-header h2 {
   font-size: 17px;
   margin: 0;
-  color: #0f172a;
+  color: var(--admin-text);
   font-weight: 700;
 }
 
@@ -1424,18 +1431,18 @@ button.admin-header-icon-btn {
   background: none;
   border: none;
   font-size: 20px;
-  color: #64748b;
+  color: var(--admin-muted);
   cursor: pointer;
   display: grid;
   place-items: center;
   padding: 4px;
   border-radius: 6px;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .admin-modal-close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--admin-soft);
+  color: var(--admin-primary);
 }
 
 .admin-modal-form {
@@ -1455,7 +1462,7 @@ button.admin-header-icon-btn {
 .admin-form-row label {
   display: grid;
   gap: 6px;
-  color: #475569;
+  color: var(--admin-text-light);
   font-size: 12px;
   font-weight: 700;
 }
@@ -1470,7 +1477,27 @@ button.admin-header-icon-btn {
   gap: 12px;
   margin-top: 8px;
   padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-light);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-secondary-btn:hover {
+  background: var(--admin-soft);
+  color: var(--admin-primary);
+  border-color: var(--admin-primary-light);
 }
 
 .admin-sub-loader {
@@ -1707,7 +1734,8 @@ button.admin-header-icon-btn {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .admin-two-col {
+  .admin-two-col,
+  .admin-hubble-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -28,6 +28,7 @@ import {
   LuLogOut
 } from 'react-icons/lu';
 import './admin.css';
+import AdminKYC from './AdminKYC';
 
 // Mock positions and departments for visual alignment with user's mockup
 const MOCK_POSITIONS = [
@@ -282,6 +283,8 @@ function AdminDashboard() {
         return 'Admin Accounts';
       case 'otps':
         return 'OTP Management';
+      case 'kyc':
+        return 'KYC Verification';
       case 'webhooks':
         return 'Webhook Logs';
       case 'hubble':
@@ -388,10 +391,18 @@ function AdminDashboard() {
           </button>
           <button 
             type="button"
+            className={`admin-sidebar-item ${activeTab === 'kyc' ? 'active' : ''}`}
+            onClick={() => selectTab('kyc')}
+          >
+            <LuShieldCheck size={18} />
+            <span>KYC</span>
+          </button>
+          <button 
+            type="button"
             className={`admin-sidebar-item ${activeTab === 'otps' ? 'active' : ''}`}
             onClick={() => selectTab('otps')}
           >
-            <LuShieldCheck size={18} />
+            <LuKeyRound size={18} />
             <span>OTP</span>
           </button>
         </nav>
@@ -532,6 +543,18 @@ function AdminDashboard() {
 
             {activeTab === 'otps' && <OtpTable otps={otps} isMobile={isMobile} />}
 
+            {activeTab === 'kyc' && (
+              <AdminKYC
+                users={users}
+                onViewKyc={(user) => setSelectedKycUser(user)}
+                isMobile={isMobile}
+                headers={headers}
+                loadAdminData={loadAdminData}
+                token={token}
+                API_BASE_URL={API_BASE_URL}
+              />
+            )}
+
             {activeTab === 'webhooks' && (
               <WebhooksTable webhooks={webhooks} onViewPayload={(w) => setSelectedWebhook(w)} />
             )}
@@ -625,10 +648,19 @@ function AdminDashboard() {
 
         <button 
           type="button"
+          className={`admin-bottom-nav-item ${activeTab === 'kyc' ? 'active' : ''}`}
+          onClick={() => selectTab('kyc')}
+        >
+          <LuShieldCheck size={20} />
+          <span>KYC</span>
+        </button>
+
+        <button 
+          type="button"
           className={`admin-bottom-nav-item ${activeTab === 'otps' ? 'active' : ''}`}
           onClick={() => selectTab('otps')}
         >
-          <LuShieldCheck size={20} />
+          <LuKeyRound size={20} />
           <span>OTP</span>
         </button>
       </nav>
@@ -1587,7 +1619,7 @@ function WebhooksTable({ webhooks, onViewPayload }) {
  
 function HubblePanel({ transactions, config }) {
   return (
-    <div className="admin-two-col" style={{ gridTemplateColumns: '3fr 1.2fr' }}>
+    <div className="admin-hubble-grid">
       <section className="admin-panel">
         <div className="admin-panel-head">
           <div>
@@ -1645,7 +1677,7 @@ function HubblePanel({ transactions, config }) {
       </section>
  
       <section className="admin-panel" style={{ padding: '20px' }}>
-        <div className="admin-panel-head" style={{ padding: '0 0 14px', borderBottom: '1px solid #e5e7eb', marginBottom: '16px' }}>
+        <div className="admin-panel-head" style={{ padding: '0 0 14px', borderBottom: '1px solid var(--admin-border)', marginBottom: '16px' }}>
           <h2>Hubble Config Status</h2>
         </div>
         <div className="admin-form" style={{ gap: '14px', marginTop: 0 }}>
@@ -1657,19 +1689,19 @@ function HubblePanel({ transactions, config }) {
           </div>
           <div>
             <span className="admin-cell-sub" style={{ fontSize: '11px', textTransform: 'uppercase' }}>Client ID</span>
-            <code style={{ display: 'block', padding: '6px 8px', background: '#f3f4f6', borderRadius: '6px', fontSize: '12px', wordBreak: 'break-all' }}>
+            <code style={{ display: 'block', padding: '10px 12px', background: 'rgba(249, 115, 22, 0.03)', border: '1px solid rgba(249, 115, 22, 0.08)', borderRadius: '8px', fontSize: '12px', wordBreak: 'break-all', color: 'var(--admin-text-light)', fontFamily: 'monospace' }}>
               {config?.clientId || 'Not configured'}
             </code>
           </div>
           <div>
             <span className="admin-cell-sub" style={{ fontSize: '11px', textTransform: 'uppercase' }}>SDK Base URL</span>
-            <code style={{ display: 'block', padding: '6px 8px', background: '#f3f4f6', borderRadius: '6px', fontSize: '12px', wordBreak: 'break-all' }}>
+            <code style={{ display: 'block', padding: '10px 12px', background: 'rgba(249, 115, 22, 0.03)', border: '1px solid rgba(249, 115, 22, 0.08)', borderRadius: '8px', fontSize: '12px', wordBreak: 'break-all', color: 'var(--admin-text-light)', fontFamily: 'monospace' }}>
               {config?.sdkBaseUrl || 'Not configured'}
             </code>
           </div>
           <div>
             <span className="admin-cell-sub" style={{ fontSize: '11px', textTransform: 'uppercase' }}>Webhook Secret (Masked)</span>
-            <code style={{ display: 'block', padding: '6px 8px', background: '#f3f4f6', borderRadius: '6px', fontSize: '12px', wordBreak: 'break-all' }}>
+            <code style={{ display: 'block', padding: '10px 12px', background: 'rgba(249, 115, 22, 0.03)', border: '1px solid rgba(249, 115, 22, 0.08)', borderRadius: '8px', fontSize: '12px', wordBreak: 'break-all', color: 'var(--admin-text-light)', fontFamily: 'monospace' }}>
               {config?.webhookSecret || 'Not configured'}
             </code>
           </div>
@@ -2007,49 +2039,50 @@ function KycDetailsModal({ isOpen, user, onClose, headers, onSuccess }) {
         </header>
         <div className="admin-modal-form" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--admin-border)', paddingBottom: '12px' }}>
               <div>
-                <strong style={{ fontSize: '15px', color: '#0f172a' }}>{user.fullName}</strong>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>User ID: {user.id}</div>
+                <strong style={{ fontSize: '15px', color: 'var(--admin-text)' }}>{user.fullName}</strong>
+                <div style={{ fontSize: '12px', color: 'var(--admin-muted)' }}>User ID: {user.id}</div>
               </div>
               <span className={`admin-kyc-badge kyc-${(user.kycStatus || 'UNSUBMITTED').toLowerCase()}`}>
                 {user.kycStatus || 'UNSUBMITTED'}
               </span>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bank Account Details</h3>
+            <div style={{ background: 'rgba(249, 115, 22, 0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(249, 115, 22, 0.08)' }}>
+              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: 'var(--admin-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bank Account Details</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '13px' }}>
                 <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>Bank Name</span>
-                  <strong style={{ color: '#0f172a' }}>{user.bankName || 'Not Provided'}</strong>
+                  <span style={{ color: 'var(--admin-text-light)', display: 'block' }}>Bank Name</span>
+                  <strong style={{ color: 'var(--admin-text)' }}>{user.bankName || 'Not Provided'}</strong>
                 </div>
                 <div>
-                  <span style={{ color: '#64748b', display: 'block' }}>Account Number</span>
-                  <strong style={{ color: '#0f172a' }}>{user.bankAccountNumber || 'Not Provided'}</strong>
+                  <span style={{ color: 'var(--admin-text-light)', display: 'block' }}>Account Number</span>
+                  <strong style={{ color: 'var(--admin-text)' }}>{user.bankAccountNumber || 'Not Provided'}</strong>
                 </div>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <span style={{ color: '#64748b', display: 'block' }}>IFSC Code</span>
-                  <strong style={{ color: '#0f172a' }}>{user.ifscCode || 'Not Provided'}</strong>
+                  <span style={{ color: 'var(--admin-text-light)', display: 'block' }}>IFSC Code</span>
+                  <strong style={{ color: 'var(--admin-text)' }}>{user.ifscCode || 'Not Provided'}</strong>
                 </div>
               </div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Identity Verification</h3>
+            <div style={{ background: 'rgba(249, 115, 22, 0.02)', padding: '14px', borderRadius: '12px', border: '1px solid rgba(249, 115, 22, 0.08)' }}>
+              <h3 style={{ fontSize: '13px', margin: '0 0 10px', color: 'var(--admin-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Identity Verification</h3>
               <div style={{ fontSize: '13px' }}>
-                <span style={{ color: '#64748b', display: 'block', marginBottom: '4px' }}>Aadhaar DigiLocker Link</span>
+                <span style={{ color: 'var(--admin-text-light)', display: 'block', marginBottom: '4px' }}>Aadhaar DigiLocker Link</span>
                 {user.aadhaarDigilockerUrl ? (
                   <a 
                     href={user.aadhaarDigilockerUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    style={{ color: '#3b82f6', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'underline' }}
+                    className="admin-breadcrumbs span clickable"
+                    style={{ color: 'var(--admin-primary)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px', textDecoration: 'underline' }}
                   >
                     View Aadhaar Document (DigiLocker)
                   </a>
                 ) : (
-                  <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No document linked</span>
+                  <span style={{ color: 'var(--admin-muted)', fontStyle: 'italic' }}>No document linked</span>
                 )}
               </div>
             </div>
@@ -2057,7 +2090,7 @@ function KycDetailsModal({ isOpen, user, onClose, headers, onSuccess }) {
           
           {error && <div className="admin-error" style={{ marginTop: '12px' }}>{error}</div>}
         </div>
-        <footer className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
+        <footer className="admin-modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '16px 24px', borderTop: '1px solid var(--admin-border)', background: 'rgba(249, 115, 22, 0.01)' }}>
           <button 
             type="button" 
             className="admin-secondary-btn" 
@@ -2080,7 +2113,8 @@ function KycDetailsModal({ isOpen, user, onClose, headers, onSuccess }) {
               border: 'none', 
               borderRadius: '10px', 
               fontWeight: 600,
-              cursor: 'pointer' 
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
             }}
           >
             Reject/Reopen
@@ -2098,7 +2132,8 @@ function KycDetailsModal({ isOpen, user, onClose, headers, onSuccess }) {
               border: 'none', 
               borderRadius: '10px', 
               fontWeight: 600,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)'
             }}
           >
             Approve KYC

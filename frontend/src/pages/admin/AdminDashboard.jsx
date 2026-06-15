@@ -293,7 +293,7 @@ function AdminDashboard() {
 
   if (!token) {
     return (
-      <main className="admin-page admin-login-page">
+      <main className="ce-app admin-page admin-login-page">
         <form className="admin-login-card" onSubmit={handleLogin}>
           <div className="admin-brand-icon"><LuShieldCheck /></div>
           <h1>Admin Login</h1>
@@ -328,7 +328,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="admin-layout">
+    <div className="ce-app admin-layout">
       {/* Sidebar Overlay for mobile drawer */}
       {mobileMenuOpen && (
         <div 
@@ -637,8 +637,9 @@ function AdminDashboard() {
 }
 
 function Metric({ label, value, icon }) {
+  const safeLabel = (label || '').toLowerCase().replace(/\s+/g, '-');
   return (
-    <div className="admin-metric">
+    <div className={`admin-metric metric-${safeLabel}`}>
       <div className="admin-metric-icon">{icon}</div>
       <span>{label}</span>
       <strong>{value}</strong>

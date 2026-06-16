@@ -7,7 +7,7 @@ import {
   LuMessageSquare, LuInfo, LuMapPin, LuStar, LuShare2 
 } from 'react-icons/lu';
 
-const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'http://localhost:8081/api';
+const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
 export default function ShopDetailsPage() {
   const { id } = useParams();

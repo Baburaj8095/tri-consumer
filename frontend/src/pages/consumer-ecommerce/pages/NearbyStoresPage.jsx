@@ -15,7 +15,7 @@ import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
 import '../consumerEcommerce.css';
 
-const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'http://localhost:8081/api';
+const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
 const categories = [
   { name: 'All Stores', icon: <LuStore size={24} /> },
@@ -48,18 +48,16 @@ export default function NearbyStoresPage() {
   }, []);
 
   return (
-    <Box sx={{ pb: 10, bgcolor: '#f8fafc', minHeight: '100vh' }}>
+    <div className="ce-app ce-nearby-page" style={{ paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Header */}
-      <Box sx={{ bgcolor: '#0d9488', color: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <IconButton component={Link} to="/consumer-ecommerce" sx={{ color: '#fff' }}>
-          <LuChevronLeft />
-        </IconButton>
-        <Box sx={{ flexGrow: 1 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem' }}>Near Store</Typography>
-          <Typography sx={{ fontSize: '0.8rem', opacity: 0.9 }}>Stores around Indiranagar</Typography>
-        </Box>
-        <LuStore size={24} />
-      </Box>
+      <header className="ce-compact-page-header">
+        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
+        <div>
+          <h1>Near Store</h1>
+          <p>Stores around Indiranagar</p>
+        </div>
+        <span><LuStore /></span>
+      </header>
 
       {/* Search Bar */}
       <Box sx={{ p: 2, bgcolor: '#fff', borderBottom: '1px solid #e2e8f0' }}>
@@ -79,14 +77,14 @@ export default function NearbyStoresPage() {
               sx={{ 
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, 
                 minWidth: '70px', cursor: 'pointer',
-                color: activeCat === cat.name ? '#0d9488' : '#64748b'
+                color: activeCat === cat.name ? '#f97316' : '#64748b'
               }}
             >
               <Box sx={{ 
                 width: 50, height: 50, borderRadius: '12px', border: '1px solid',
-                borderColor: activeCat === cat.name ? '#0d9488' : '#e2e8f0',
+                borderColor: activeCat === cat.name ? '#f97316' : '#e2e8f0',
                 display: 'grid', placeItems: 'center',
-                bgcolor: activeCat === cat.name ? 'rgba(13, 148, 136, 0.1)' : '#f8fafc',
+                bgcolor: activeCat === cat.name ? 'rgba(249, 115, 22, 0.1)' : '#f8fafc',
                 transition: 'all 0.2s'
               }}>
                 {cat.icon}
@@ -111,6 +109,6 @@ export default function NearbyStoresPage() {
       </Box>
 
       <BottomNav />
-    </Box>
+    </div>
   );
 }

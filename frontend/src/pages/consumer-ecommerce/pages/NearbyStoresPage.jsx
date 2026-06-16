@@ -1,35 +1,38 @@
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import {
-  LuApple,
-  LuBaby,
   LuChevronLeft,
-  LuHeartPulse,
-  LuHouse,
   LuSearch,
-  LuShirt,
-  LuShoppingCart,
-  LuSofa,
   LuStore,
-  LuZap,
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
-import { nearbyStores } from '../services/mockData.js';
 import '../consumerEcommerce.css';
 
-const nearbyCats = [
-  ['All Stores', LuHouse],
-  ['Grocery', LuShoppingCart],
-  ['Fruits & Vegetables', LuApple],
-  ['Fashion & Beauty', LuShirt],
-  ['Electronics', LuZap],
-  ['Furniture', LuSofa],
-  ['Pharmacy', LuHeartPulse],
-  ['Pet Supplies', LuBaby],
-  ['Daily Needs', LuStore],
-];
+const CAPTAIN_API_URL = 'https://api-captain.trikonektbusiness.com/api';
 
 export default function NearbyStoresPage() {
+  const [b2cShops, setB2cShops] = useState([]);
+
+  useEffect(() => {
+    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
+      .then(res => {
+        const data = res.data || [];
+        setB2cShops(data.map(shop => ({
+          id: shop.id,
+          name: shop.shop_name || shop.business_name || shop.full_name || 'B2C Merchant',
+          category: 'Retail Store',
+          rating: '4.5',
+          location: shop.city || shop.address || 'Local Area',
+          distance: 'Nearby',
+          status: 'Open now',
+          image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+        })));
+      })
+      .catch(err => console.error('Failed to load B2C merchants:', err));
+  }, []);
+
   return (
     <div className="ce-app ce-nearby-page">
       <header className="ce-compact-page-header">
@@ -42,16 +45,7 @@ export default function NearbyStoresPage() {
       </header>
 
       <main className="ce-nearby-shell">
-        <aside className="ce-nearby-rail">
-          {nearbyCats.map(([label, Icon], index) => (
-            <button key={label} className={index === 0 ? 'active' : ''}>
-              <Icon />
-              <span>{label}</span>
-            </button>
-          ))}
-        </aside>
-
-        <section className="ce-nearby-content">
+        <section className="ce-nearby-content" style={{ paddingLeft: 16 }}>
           <label className="ce-nearby-search">
             <LuSearch />
             <input placeholder="Search nearby stores" />
@@ -59,11 +53,11 @@ export default function NearbyStoresPage() {
 
           <div className="ce-nearby-heading">
             <h2>Stores near you</h2>
-            <span>{nearbyStores.length} found</span>
+            <span>{b2cShops.length} found</span>
           </div>
 
           <div className="ce-nearby-store-list">
-            {nearbyStores.map((store) => (
+            {b2cShops.map((store) => (
               <NearbyStoreCard key={store.id} store={store} />
             ))}
           </div>

@@ -1,19 +1,33 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import {
-  LuChevronLeft,
-  LuSearch,
-  LuStore,
+import { Box, Typography, InputBase, IconButton, Stack } from '@mui/material';
+import { 
+  LuChevronLeft, 
+  LuSearch, 
+  LuStore, 
+  LuShoppingCart, 
+  LuSmartphone, 
+  LuHotel, 
+  LuZap 
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
 import '../consumerEcommerce.css';
 
-const CAPTAIN_API_URL = 'https://api-captain.trikonektbusiness.com/api';
+const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'http://localhost:8081/api';
+
+const categories = [
+  { name: 'All Stores', icon: <LuStore size={24} /> },
+  { name: 'Grocery', icon: <LuShoppingCart size={24} /> },
+  { name: 'Mobile', icon: <LuSmartphone size={24} /> },
+  { name: 'Hotel', icon: <LuHotel size={24} /> },
+  { name: 'Electronics', icon: <LuZap size={24} /> }
+];
 
 export default function NearbyStoresPage() {
   const [b2cShops, setB2cShops] = useState([]);
+  const [activeCat, setActiveCat] = useState('All Stores');
 
   useEffect(() => {
     axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
@@ -34,36 +48,69 @@ export default function NearbyStoresPage() {
   }, []);
 
   return (
-    <div className="ce-app ce-nearby-page">
-      <header className="ce-compact-page-header">
-        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
-        <div>
-          <h1>Nearby Stores</h1>
-          <p>Stores around Indiranagar</p>
-        </div>
-        <span><LuStore /></span>
-      </header>
+    <Box sx={{ pb: 10, bgcolor: '#f8fafc', minHeight: '100vh' }}>
+      {/* Header */}
+      <Box sx={{ bgcolor: '#0d9488', color: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <IconButton component={Link} to="/consumer-ecommerce" sx={{ color: '#fff' }}>
+          <LuChevronLeft />
+        </IconButton>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '1.1rem' }}>Near Store</Typography>
+          <Typography sx={{ fontSize: '0.8rem', opacity: 0.9 }}>Stores around Indiranagar</Typography>
+        </Box>
+        <LuStore size={24} />
+      </Box>
 
-      <main className="ce-nearby-shell">
-        <section className="ce-nearby-content" style={{ paddingLeft: 16 }}>
-          <label className="ce-nearby-search">
-            <LuSearch />
-            <input placeholder="Search nearby stores" />
-          </label>
+      {/* Search Bar */}
+      <Box sx={{ p: 2, bgcolor: '#fff', borderBottom: '1px solid #e2e8f0' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f1f5f9', borderRadius: '12px', px: 2, py: 1 }}>
+          <LuSearch color="#64748b" size={20} />
+          <InputBase placeholder="Search nearby stores..." sx={{ ml: 1, flex: 1, fontSize: '0.9rem' }} />
+        </Box>
+      </Box>
 
-          <div className="ce-nearby-heading">
-            <h2>Stores near you</h2>
-            <span>{b2cShops.length} found</span>
-          </div>
+      {/* Categories Horizontal Scroll */}
+      <Box sx={{ bgcolor: '#fff', py: 2, borderBottom: '1px solid #e2e8f0' }}>
+        <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', px: 2, '&::-webkit-scrollbar': { display: 'none' } }}>
+          {categories.map(cat => (
+            <Box 
+              key={cat.name} 
+              onClick={() => setActiveCat(cat.name)}
+              sx={{ 
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, 
+                minWidth: '70px', cursor: 'pointer',
+                color: activeCat === cat.name ? '#0d9488' : '#64748b'
+              }}
+            >
+              <Box sx={{ 
+                width: 50, height: 50, borderRadius: '12px', border: '1px solid',
+                borderColor: activeCat === cat.name ? '#0d9488' : '#e2e8f0',
+                display: 'grid', placeItems: 'center',
+                bgcolor: activeCat === cat.name ? 'rgba(13, 148, 136, 0.1)' : '#f8fafc',
+                transition: 'all 0.2s'
+              }}>
+                {cat.icon}
+              </Box>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: activeCat === cat.name ? 700 : 500, whiteSpace: 'nowrap' }}>
+                {cat.name}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+      </Box>
 
-          <div className="ce-nearby-store-list">
-            {b2cShops.map((store) => (
-              <NearbyStoreCard key={store.id} store={store} />
-            ))}
-          </div>
-        </section>
-      </main>
+      {/* Store List */}
+      <Box sx={{ p: 2 }}>
+        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
+          Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({b2cShops.length} found)</Typography>
+        </Typography>
+
+        {b2cShops.map((store) => (
+          <NearbyStoreCard key={store.id} store={store} />
+        ))}
+      </Box>
+
       <BottomNav />
-    </div>
+    </Box>
   );
 }

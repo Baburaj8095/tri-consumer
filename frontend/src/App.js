@@ -18,6 +18,7 @@ import LoginForm from "./pages/login-registration/LoginForm";
 import RegisterForm from "./pages/login-registration/RegisterForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProfilePage from "./pages/consumer-ecommerce/pages/ProfilePage";
+import ShopDetailsPage from "./pages/consumer-ecommerce/pages/ShopDetailsPage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/consumer-ecommerce" element={<ConsumerEcommerceDashboard />} />
         <Route path="/consumer-ecommerce/delivery" element={<ConsumerEcommerceDelivery />} />
         <Route path="/consumer-ecommerce/nearby-stores" element={<ConsumerNearbyStores />} />
+        <Route path="/consumer-ecommerce/shop/:id" element={<ShopDetailsPage />} />
         <Route path="/consumer-ecommerce/near-me" element={<ConsumerNearMe />} />
         <Route path="/consumer-ecommerce/ads" element={<AdsPage />} />
         <Route path="/consumer-ecommerce/society" element={<SocietyPage />} />

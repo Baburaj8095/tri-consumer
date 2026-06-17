@@ -73,17 +73,17 @@ export default function NearbyStoreCard({ store }) {
         </Stack>
 
         {/* Action Buttons */}
-        <Stack direction="row" spacing={1} sx={{ mt: 'auto' }}>
-          <Button size="small" variant="outlined" sx={{ flex: 1, minWidth: 0, p: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488' }} onClick={(e) => { e.stopPropagation(); alert('Calling shop...'); }}>
+        <Stack direction="row" spacing={0.5} sx={{ mt: 'auto', flexWrap: 'wrap', gap: '6px' }}>
+          <Button size="small" variant="outlined" sx={{ flex: '1 1 calc(50% - 4px)', minWidth: 0, py: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488', borderRadius: '8px' }} onClick={(e) => { e.stopPropagation(); alert('Calling shop...'); }}>
             Call
           </Button>
-          <Button size="small" variant="outlined" sx={{ flex: 1, minWidth: 0, p: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488' }} onClick={(e) => { e.stopPropagation(); alert('Opening payment...'); }}>
+          <Button size="small" variant="outlined" sx={{ flex: '1 1 calc(50% - 4px)', minWidth: 0, py: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488', borderRadius: '8px' }} onClick={(e) => { e.stopPropagation(); alert('Opening payment...'); }}>
             Pay
           </Button>
-          <Button size="small" variant="outlined" sx={{ flex: 1, minWidth: 0, p: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488' }} onClick={(e) => { e.stopPropagation(); alert('Delivery options...'); }}>
+          <Button size="small" variant="outlined" sx={{ flex: '1 1 calc(50% - 4px)', minWidth: 0, py: 0.5, fontSize: '0.7rem', fontWeight: 700, textTransform: 'none', color: '#0d9488', borderColor: '#0d9488', borderRadius: '8px' }} onClick={(e) => { e.stopPropagation(); alert('Delivery options...'); }}>
             Delivery
           </Button>
-          <Button size="small" variant="contained" sx={{ flex: 1, minWidth: 0, p: 0.5, fontSize: '0.7rem', fontWeight: 800, textTransform: 'none', bgcolor: '#0d9488', color: '#fff', boxShadow: 'none' }}>
+          <Button size="small" variant="contained" sx={{ flex: '1 1 calc(50% - 4px)', minWidth: 0, py: 0.5, fontSize: '0.7rem', fontWeight: 800, textTransform: 'none', bgcolor: '#0d9488', color: '#fff', boxShadow: 'none', borderRadius: '8px', '&:hover': { bgcolor: '#0b7a70' } }}>
             View
           </Button>
         </Stack>

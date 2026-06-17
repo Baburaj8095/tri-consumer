@@ -247,6 +247,7 @@ const adDeals = [
 function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
   const carouselRef = useRef(null);
   const frameRef = useRef(null);
+  const lastActiveIndexRef = useRef(0);
 
   useEffect(() => {
     const carousel = carouselRef.current;
@@ -306,7 +307,10 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
         }
       });
 
-      onActiveChange(closestIndex);
+      if (closestIndex !== lastActiveIndexRef.current) {
+        lastActiveIndexRef.current = closestIndex;
+        onActiveChange(closestIndex);
+      }
     });
   };
 
@@ -326,8 +330,18 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
             key={deal.title}
             to="/consumer-ecommerce/delivery"
             className={`ce-promo-deal-card ce-promo-deal-card-${deal.tone}`}
-            onFocus={() => onActiveChange(index)}
-            onMouseEnter={() => onActiveChange(index)}
+            onFocus={() => {
+              if (lastActiveIndexRef.current !== index) {
+                lastActiveIndexRef.current = index;
+                onActiveChange(index);
+              }
+            }}
+            onMouseEnter={() => {
+              if (lastActiveIndexRef.current !== index) {
+                lastActiveIndexRef.current = index;
+                onActiveChange(index);
+              }
+            }}
           >
             <span className="ce-promo-shimmer" aria-hidden="true" />
             <div className="ce-promo-deal-top">

@@ -19,6 +19,10 @@ import RegisterForm from "./pages/login-registration/RegisterForm";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProfilePage from "./pages/consumer-ecommerce/pages/ProfilePage";
 import ShopDetailsPage from "./pages/consumer-ecommerce/pages/ShopDetailsPage";
+import StorePaymentPage from "./pages/consumer-ecommerce/pages/StorePaymentPage";
+import SecureCheckoutPage from "./pages/consumer-ecommerce/pages/SecureCheckoutPage";
+import UpiPaymentPage from "./pages/consumer-ecommerce/pages/UpiPaymentPage";
+import MyOrdersPage from "./pages/consumer-ecommerce/pages/MyOrdersPage";
 
 function App() {
   return (
@@ -29,6 +33,10 @@ function App() {
         <Route path="/consumer-ecommerce/delivery" element={<ConsumerEcommerceDelivery />} />
         <Route path="/consumer-ecommerce/nearby-stores" element={<ConsumerNearbyStores />} />
         <Route path="/consumer-ecommerce/shop/:id" element={<ShopDetailsPage />} />
+        <Route path="/consumer-ecommerce/shop/:id/payment" element={<StorePaymentPage />} />
+        <Route path="/consumer-ecommerce/shop/:id/checkout" element={<SecureCheckoutPage />} />
+        <Route path="/consumer-ecommerce/shop/:id/upi-payment" element={<UpiPaymentPage />} />
+        <Route path="/consumer-ecommerce/my-orders" element={<MyOrdersPage />} />
         <Route path="/consumer-ecommerce/near-me" element={<ConsumerNearMe />} />
         <Route path="/consumer-ecommerce/ads" element={<AdsPage />} />
         <Route path="/consumer-ecommerce/society" element={<SocietyPage />} />

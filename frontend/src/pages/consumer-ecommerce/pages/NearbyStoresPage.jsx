@@ -48,7 +48,7 @@ export default function NearbyStoresPage() {
   }, []);
 
   return (
-    <div className="ce-app ce-nearby-page" style={{ paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className="ce-app ce-nearby-page" style={{ paddingTop: 84, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
         <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
@@ -60,10 +60,21 @@ export default function NearbyStoresPage() {
       </header>
 
       {/* Search Bar */}
-      <Box sx={{ p: 2, bgcolor: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#f1f5f9', borderRadius: '12px', px: 2, py: 1 }}>
-          <LuSearch color="#64748b" size={20} />
-          <InputBase placeholder="Search nearby stores..." sx={{ ml: 1, flex: 1, fontSize: '0.9rem' }} />
+      <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            bgcolor: '#fff', 
+            borderRadius: '16px', 
+            border: '1px solid #e2e8f0', 
+            px: 2, 
+            py: 1.5,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+          }}
+        >
+          <LuSearch color="#f97316" size={20} />
+          <InputBase placeholder="Search nearby stores..." sx={{ ml: 1.5, flex: 1, fontSize: '0.95rem', fontWeight: 500 }} />
         </Box>
       </Box>
 

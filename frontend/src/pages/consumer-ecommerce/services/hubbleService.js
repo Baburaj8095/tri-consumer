@@ -1,45 +1,10 @@
-import { getAccessToken, storeAuth, clearAuth } from '../../../services/authStorage';
+import { getAccessToken, storeAuth, clearAuth, tryTokenRefresh } from '../../../services/authStorage';
 
 const BASE_URL = process.env.REACT_APP_API_BASE || '';
 
 /** Read the user's session token from localStorage (stored by the login flow). */
 function getToken() {
   return getAccessToken();
-}
-
-/**
- * Call the Java backend to refresh the expired access token using the stored refresh token.
- * Returns true if refresh succeeded and localStorage was updated, else false.
- */
-async function tryTokenRefresh() {
-  const refreshToken = localStorage.getItem('triConsumerRefresh');
-  if (!refreshToken) {
-    return false;
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-
-    if (!res.ok) {
-      clearAuth();
-      return false;
-    }
-
-    const json = await res.json();
-    if (json.success && json.data) {
-      storeAuth(json.data);
-      return true;
-    }
-  } catch (e) {
-    // Silently ignore and return false to trigger original 401 handling
-  }
-  return false;
 }
 
 /**

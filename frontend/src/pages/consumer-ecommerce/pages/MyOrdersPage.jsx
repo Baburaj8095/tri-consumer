@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Typography, Stack, Tabs, Tab, Card, CardContent, Chip, CircularProgress, Container } from '@mui/material';
 import { LuChevronLeft, LuStore, LuCalendar, LuHash, LuInfo } from 'react-icons/lu';
-import { getAccessToken } from '../../../services/authStorage';
+import { getAccessToken, tryTokenRefresh } from '../../../services/authStorage';
 import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
@@ -16,23 +16,45 @@ export default function MyOrdersPage() {
   const [activeTab, setActiveTab] = useState(0); // 0 = All, 1 = Orders, 2 = Giftcards, 3 = Recharges
 
   useEffect(() => {
-    const token = getAccessToken();
+    let token = getAccessToken();
     if (!token) {
       navigate('/login');
       return;
     }
 
-    axios.get(`${CAPTAIN_API_URL}/captain/offline-payments`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        setPayments(res.data || []);
-        setLoading(false);
+    const loadOrders = (authToken) => {
+      axios.get(`${CAPTAIN_API_URL}/captain/offline-payments`, {
+        headers: { Authorization: `Bearer ${authToken}` }
       })
-      .catch(err => {
-        console.error('Failed to load consumer orders:', err);
-        setLoading(false);
-      });
+        .then(res => {
+          setPayments(res.data || []);
+          setLoading(false);
+        })
+        .catch(async (err) => {
+          if (err.response?.status === 401) {
+            const refreshed = await tryTokenRefresh();
+            if (refreshed) {
+              const newToken = getAccessToken();
+              axios.get(`${CAPTAIN_API_URL}/captain/offline-payments`, {
+                headers: { Authorization: `Bearer ${newToken}` }
+              })
+                .then(retryRes => {
+                  setPayments(retryRes.data || []);
+                  setLoading(false);
+                })
+                .catch(retryErr => {
+                  console.error('Failed to load consumer orders after token refresh:', retryErr);
+                  setLoading(false);
+                });
+              return;
+            }
+          }
+          console.error('Failed to load consumer orders:', err);
+          setLoading(false);
+        });
+    };
+
+    loadOrders(token);
   }, [navigate]);
 
   const getStatusChip = (status) => {

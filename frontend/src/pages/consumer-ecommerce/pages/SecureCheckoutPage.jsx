@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Typography, Button, Container, Stack, CircularProgress } from '@mui/material';
 import { LuChevronLeft, LuStore, LuCheck } from 'react-icons/lu';
-import { getAccessToken } from '../../../services/authStorage';
+import { getAccessToken, tryTokenRefresh } from '../../../services/authStorage';
 import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
@@ -60,7 +60,7 @@ export default function SecureCheckoutPage() {
   }, [id, amount, navigate]);
 
   const handlePayNow = () => {
-    const token = getAccessToken();
+    let token = getAccessToken();
     if (!token) {
       navigate('/login');
       return;
@@ -69,24 +69,51 @@ export default function SecureCheckoutPage() {
     setPaying(true);
     setError('');
 
-    axios.post(
-      `${CAPTAIN_API_URL}/captain/offline-payments`,
-      {
-        shopId: parseInt(id),
-        amount: amount,
-        paymentMethod: paymentMethod
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    )
+    const makeRequest = (authToken) => {
+      return axios.post(
+        `${CAPTAIN_API_URL}/captain/offline-payments`,
+        {
+          shopId: parseInt(id),
+          amount: amount,
+          paymentMethod: paymentMethod
+        },
+        {
+          headers: { Authorization: `Bearer ${authToken}` }
+        }
+      );
+    };
+
+    makeRequest(token)
       .then(res => {
         const data = res.data;
         navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}`);
       })
-      .catch(err => {
+      .catch(async (err) => {
+        // If unauthorized/expired token, attempt to refresh the token and retry once
+        if (err.response?.status === 401) {
+          const refreshed = await tryTokenRefresh();
+          if (refreshed) {
+            const newToken = getAccessToken();
+            makeRequest(newToken)
+              .then(res => {
+                const data = res.data;
+                navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}`);
+              })
+              .catch(retryErr => {
+                console.error('Failed to initiate manual payment after token refresh:', retryErr);
+                setError('Session expired. Please log in again.');
+                setPaying(false);
+              });
+            return;
+          } else {
+            setError('Session expired. Please log in again.');
+            setPaying(false);
+            return;
+          }
+        }
+
         console.error('Failed to initiate manual payment:', err);
-        setError('Error processing payment request. Please try again.');
+        setError(err.response?.data?.message || 'Error processing payment request. Please try again.');
         setPaying(false);
       });
   };

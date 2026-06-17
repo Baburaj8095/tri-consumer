@@ -100,7 +100,7 @@ export default function SecureCheckoutPage() {
   }
 
   return (
-    <div className="ce-app" style={{ paddingTop: 84, paddingBottom: 160, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className="ce-app" style={{ paddingTop: 84, paddingBottom: 260, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
         <Link to={`/consumer-ecommerce/shop/${id}/payment`} aria-label="Back"><LuChevronLeft /></Link>
@@ -224,7 +224,7 @@ export default function SecureCheckoutPage() {
       {/* Bottom Summary Bar */}
       <Box sx={{ 
         position: 'fixed', 
-        bottom: 0, 
+        bottom: '88px', 
         left: 0, 
         right: 0, 
         bgcolor: '#fff', 

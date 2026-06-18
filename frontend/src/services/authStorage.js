@@ -32,9 +32,9 @@ export async function tryTokenRefresh() {
     return false;
   }
 
-  const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
   try {
-    const res = await fetch(`${CAPTAIN_API_URL}/captain/auth/refresh`, {
+    const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +48,8 @@ export async function tryTokenRefresh() {
     }
 
     const json = await res.json();
-    if (json && (json.access || json.token)) {
+    const authData = json?.data || json;
+    if (json && (authData.access || authData.token)) {
       storeAuth(json);
       return true;
     }

@@ -51,12 +51,14 @@ export default function NearbyStoresPage() {
         const data = res.data || [];
         setB2cShops(data.map(shop => ({
           id: shop.id,
+          shopId: shop.shop_id || shop.id,
           name: shop.shop_name || shop.business_name || shop.full_name || 'B2C Merchant',
           category: resolveCategoryName(shop),
           rating: '4.5',
           location: shop.city || shop.address || 'Local Area',
           distance: 'Nearby',
           status: 'Open now',
+          phone: shop.contact_number || shop.phone || '',
           image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
         })));
         const mapped = data.map(shop => resolveCategoryName(shop)).filter(Boolean);

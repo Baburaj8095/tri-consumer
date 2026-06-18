@@ -4,10 +4,11 @@ import { LuMapPin, LuStar } from 'react-icons/lu';
 
 export default function NearbyStoreCard({ store }) {
   const navigate = useNavigate();
+  const targetId = store.shopId || store.id;
 
   return (
     <Box 
-      onClick={() => navigate(`/consumer-ecommerce/shop/${store.id}`)}
+      onClick={() => navigate(`/consumer-ecommerce/shop/${targetId}`)}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -142,7 +143,7 @@ export default function NearbyStoreCard({ store }) {
             }} 
             onClick={(e) => { 
               e.stopPropagation(); 
-              navigate(`/consumer-ecommerce/shop/${store.id}/payment`);
+              navigate(`/consumer-ecommerce/shop/${targetId}/payment`);
             }}
           >
             Pay
@@ -191,7 +192,7 @@ export default function NearbyStoreCard({ store }) {
             }}
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/consumer-ecommerce/shop/${store.id}`);
+              navigate(`/consumer-ecommerce/shop/${targetId}`);
             }}
           >
             View

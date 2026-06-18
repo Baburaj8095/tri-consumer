@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Box, Typography, InputBase, IconButton, Stack } from '@mui/material';
@@ -17,17 +17,33 @@ import '../consumerEcommerce.css';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
-const categories = [
-  { name: 'All Stores', icon: <LuStore size={24} /> },
-  { name: 'Grocery', icon: <LuShoppingCart size={24} /> },
-  { name: 'Mobile', icon: <LuSmartphone size={24} /> },
-  { name: 'Hotel', icon: <LuHotel size={24} /> },
-  { name: 'Electronics', icon: <LuZap size={24} /> }
-];
+const getCategoryIcon = (name) => {
+  const value = String(name || '').toLowerCase();
+  if (value.includes('grocery') || value.includes('kirana') || value.includes('food')) return <LuShoppingCart size={24} />;
+  if (value.includes('mobile') || value.includes('phone')) return <LuSmartphone size={24} />;
+  if (value.includes('hotel') || value.includes('restaurant') || value.includes('eat')) return <LuHotel size={24} />;
+  if (value.includes('electronics') || value.includes('appliance')) return <LuZap size={24} />;
+  return <LuStore size={24} />;
+};
+
+const resolveCategoryName = (shop) => {
+  const raw = shop?.category;
+  if (raw && typeof raw === 'object') {
+    return raw.name || raw.title || raw.label || 'Retail Store';
+  }
+  return shop?.category_name || shop?.business_category || shop?.business_type || shop?.subcategory_name || (raw ? String(raw) : 'Retail Store');
+};
 
 export default function NearbyStoresPage() {
   const [b2cShops, setB2cShops] = useState([]);
   const [activeCat, setActiveCat] = useState('All Stores');
+  const [categories, setCategories] = useState([{ name: 'All Stores', icon: <LuStore size={24} /> }]);
+
+  const filteredShops = useMemo(() => {
+    if (activeCat === 'All Stores') return b2cShops;
+    const active = activeCat.toLowerCase();
+    return b2cShops.filter((shop) => String(shop.category || '').toLowerCase().includes(active));
+  }, [activeCat, b2cShops]);
 
   useEffect(() => {
     axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
@@ -36,13 +52,19 @@ export default function NearbyStoresPage() {
         setB2cShops(data.map(shop => ({
           id: shop.id,
           name: shop.shop_name || shop.business_name || shop.full_name || 'B2C Merchant',
-          category: 'Retail Store',
+          category: resolveCategoryName(shop),
           rating: '4.5',
           location: shop.city || shop.address || 'Local Area',
           distance: 'Nearby',
           status: 'Open now',
           image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
         })));
+        const mapped = data.map(shop => resolveCategoryName(shop)).filter(Boolean);
+        const uniq = Array.from(new Set(mapped));
+        setCategories([
+          { name: 'All Stores', icon: <LuStore size={24} /> },
+          ...uniq.map(name => ({ name, icon: getCategoryIcon(name) }))
+        ]);
       })
       .catch(err => console.error('Failed to load B2C merchants:', err));
   }, []);
@@ -111,10 +133,10 @@ export default function NearbyStoresPage() {
       {/* Store List */}
       <Box sx={{ p: 2 }}>
         <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
-          Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({b2cShops.length} found)</Typography>
+          Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
         </Typography>
 
-        {b2cShops.map((store) => (
+        {filteredShops.map((store) => (
           <NearbyStoreCard key={store.id} store={store} />
         ))}
       </Box>

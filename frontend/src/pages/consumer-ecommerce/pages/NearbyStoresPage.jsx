@@ -72,7 +72,7 @@ export default function NearbyStoresPage() {
       .catch(err => console.error('Failed to load B2C merchants:', err));
 
     // Fetch sponsored shops
-    axios.get(`${CAPTAIN_API_URL}/api/ads/sponsored-shops?limit=6`)
+    axios.get(`${CAPTAIN_API_URL}/api/ads/sponsored-shops?limit=6&target=CONSUMER_NEARBY_B2C`)
       .then(res => setSponsoredShops(res.data || []))
       .catch(() => {});
   }, []);

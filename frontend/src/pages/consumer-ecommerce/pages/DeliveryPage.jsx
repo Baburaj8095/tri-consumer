@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   LuBaby,
-  LuCamera,
   LuChevronLeft,
-  LuChevronRight,
   LuHeartHandshake,
   LuHouse,
   LuList,
@@ -34,10 +34,144 @@ import {
   LuBookOpen,
   LuWrench,
   LuCpu,
+  LuShoppingCart,
+  LuStore,
+  LuTag,
+  LuX,
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
-import { products } from '../services/mockData.js';
 import '../consumerEcommerce.css';
+
+const CAPTAIN_API_URL =
+  process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
+
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80';
+
+const TOP_CATS_STATIC = [
+  ['Top Picks', LuShoppingBag],
+  ['Gold & Silver', LuSparkles],
+  ['Electronics', LuSmartphone],
+  ['Daily Needs', LuShoppingBasket],
+  ['Kids & Toys', LuBaby],
+  ['Fashion & Beauty', LuShirt],
+  ['Sports', LuActivity],
+  ['Furniture', LuSofa],
+  ['More', LuList],
+];
+
+const getCatIcon = (name) => {
+  const n = String(name || '').toLowerCase();
+  if (n.includes('elect') || n.includes('gadget') || n.includes('device')) return LuSmartphone;
+  if (n.includes('fashion') || n.includes('cloth') || n.includes('shirt')) return LuShirt;
+  if (n.includes('grocer') || n.includes('daily') || n.includes('kirana')) return LuShoppingBasket;
+  if (n.includes('furniture') || n.includes('sofa') || n.includes('home')) return LuSofa;
+  if (n.includes('kid') || n.includes('toy') || n.includes('baby')) return LuBaby;
+  if (n.includes('sport') || n.includes('fitness') || n.includes('gym')) return LuActivity;
+  if (n.includes('book') || n.includes('station')) return LuBookOpen;
+  if (n.includes('gift')) return LuGift;
+  if (n.includes('car') || n.includes('auto')) return LuCar;
+  return LuTag;
+};
+
+function addToCart(product) {
+  try {
+    let cart = JSON.parse(localStorage.getItem('tri_consumer_cart') || '{"shopId":null,"shopName":"","items":[]}');
+    if (cart.shopId && String(cart.shopId) !== String(product.shop_id)) {
+      const confirmed = window.confirm(
+        `Your cart has items from "${cart.shopName}". Starting a new cart will remove them. Continue?`
+      );
+      if (!confirmed) return false;
+      cart = { shopId: product.shop_id, shopName: product.shop_name || 'Online Shop', items: [] };
+    }
+    if (!cart.shopId) {
+      cart.shopId = product.shop_id;
+      cart.shopName = product.shop_name || 'Online Shop';
+    }
+    const existing = cart.items.find((i) => i.productId === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      cart.items.push({
+        productId: product.id,
+        title: product.title,
+        price: product.price,
+        mrp: product.mrp,
+        image: product.image || product.image_url || FALLBACK_IMAGE,
+        quantity: 1,
+      });
+    }
+    localStorage.setItem('tri_consumer_cart', JSON.stringify(cart));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function ProductCard({ product, onAdd }) {
+  const navigate = useNavigate();
+  const hasDiscount = product.discount_percent && product.discount_percent > 0;
+  const img = product.image || product.image_url || FALLBACK_IMAGE;
+
+  return (
+    <div className="ce-online-product" style={{ position: 'relative', cursor: 'pointer' }}>
+      <img
+        src={img}
+        alt={product.title}
+        onClick={() => navigate(`/consumer-ecommerce/shop/${product.shop_id}`)}
+        onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
+      />
+      {hasDiscount && (
+        <span style={{
+          position: 'absolute', top: 8, left: 8,
+          background: '#ea580c', color: '#fff',
+          fontSize: '0.65rem', fontWeight: 800,
+          padding: '2px 6px', borderRadius: '4px',
+        }}>
+          {Math.round(product.discount_percent)}% OFF
+        </span>
+      )}
+      <div style={{ padding: '8px 8px 4px' }}>
+        <h3
+          style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.3,
+            overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+          onClick={() => navigate(`/consumer-ecommerce/shop/${product.shop_id}`)}
+        >
+          {product.title}
+        </h3>
+        {product.shop_name && (
+          <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>
+            <LuStore size={10} style={{ marginRight: 3, verticalAlign: 'middle' }} />
+            {product.shop_name}
+          </p>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+          <strong style={{ fontSize: '0.88rem', color: '#ea580c', fontWeight: 900 }}>
+            ₹{product.price?.toLocaleString('en-IN')}
+          </strong>
+          {hasDiscount && product.mrp > product.price && (
+            <span style={{ fontSize: '0.7rem', color: '#94a3b8', textDecoration: 'line-through' }}>
+              ₹{product.mrp?.toLocaleString('en-IN')}
+            </span>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={() => onAdd(product)}
+        style={{
+          width: 'calc(100% - 16px)', margin: '0 8px 8px',
+          padding: '7px 0', borderRadius: '8px',
+          background: 'linear-gradient(135deg, #ea580c, #f97316)',
+          color: '#fff', border: 'none', cursor: 'pointer',
+          fontWeight: 800, fontSize: '0.78rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        }}
+      >
+        <LuShoppingCart size={13} /> Add
+      </button>
+    </div>
+  );
+}
 
 const rail = [
   ['Orders', LuReceiptText],
@@ -71,76 +205,211 @@ const rail = [
   ['Courier', LuTruck],
 ];
 
-const topCats = [
-  ['Top Picks', LuShoppingBag],
-  ['Gold & Silver', LuSparkles],
-  ['Electronics', LuSmartphone],
-  ['Daily Needs', LuShoppingBag],
-  ['Kids & Toys', LuBaby],
-  ['Fashion & Beauty', LuShirt],
-  ['Sports', LuSparkles],
-  ['Furniture', LuSofa],
-  ['More', LuList],
-];
-
-function ProductMini({ product }) {
+/* ─── Skeleton card ─────────────────────────────────────────────────────────── */
+function SkeletonCard() {
   return (
-    <Link to={`/consumer-ecommerce/product/${product.id}`} className="ce-online-product">
-      <img src={product.image} alt={product.name} />
-      <h3>{product.name}</h3>
-      <strong>{product.newPrice}</strong>
-      <span>{product.discount}</span>
-    </Link>
+    <div style={{
+      borderRadius: 12, overflow: 'hidden',
+      background: '#f1f5f9', border: '1px solid #e2e8f0',
+    }}>
+      <div style={{ height: 140, background: 'linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite' }} />
+      <div style={{ padding: '8px 10px 12px' }}>
+        <div style={{ height: 12, background: '#e2e8f0', borderRadius: 6, marginBottom: 6 }} />
+        <div style={{ height: 12, background: '#e2e8f0', borderRadius: 6, width: '60%', marginBottom: 8 }} />
+        <div style={{ height: 18, background: '#fed7aa', borderRadius: 6, width: '40%' }} />
+      </div>
+    </div>
   );
 }
 
+/* ─── Empty state ────────────────────────────────────────────────────────────── */
+function EmptyState({ search, category, onClear }) {
+  return (
+    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '48px 16px' }}>
+      <LuShoppingBag size={48} style={{ color: '#cbd5e1', marginBottom: 12 }} />
+      <p style={{ fontWeight: 800, color: '#0f172a', fontSize: '1rem', margin: '0 0 6px' }}>
+        {search ? `No results for "${search}"` : category ? `No products in "${category}"` : 'No products available'}
+      </p>
+      <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 16px' }}>
+        {search || category ? 'Try a different search or category' : 'Check back soon'}
+      </p>
+      {(search || category) && (
+        <button
+          onClick={onClear}
+          style={{
+            padding: '8px 20px', borderRadius: 8,
+            background: 'linear-gradient(135deg,#ea580c,#f97316)',
+            color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer',
+          }}
+        >
+          Show all products
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
 export default function DeliveryPage() {
+  const [categories, setCategories]   = useState([]);
+  const [products, setProducts]       = useState([]);
+  const [loadingCats, setLoadingCats] = useState(true);
+  const [loadingProds, setLoadingProds] = useState(true);
+  const [activeCat, setActiveCat]     = useState('');   // '' = All
+  const [search, setSearch]           = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [cartCount, setCartCount]     = useState(0);
+  const [toast, setToast]             = useState('');
+  const searchTimerRef                = useRef(null);
+
+  /* ── cart count badge ─────────────────────────────────────────────────── */
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const c = JSON.parse(localStorage.getItem('tri_consumer_cart') || '{"items":[]}');
+        setCartCount(c.items?.reduce((s, i) => s + (i.quantity || 1), 0) || 0);
+      } catch { setCartCount(0); }
+    };
+    sync();
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
+
+  /* ── fetch categories ─────────────────────────────────────────────────── */
+  useEffect(() => {
+    setLoadingCats(true);
+    axios.get(`${CAPTAIN_API_URL}/captain/shops/online/categories`)
+      .then(r => setCategories(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setCategories([]))
+      .finally(() => setLoadingCats(false));
+  }, []);
+
+  /* ── fetch products ───────────────────────────────────────────────────── */
+  const fetchProducts = useCallback((cat, q) => {
+    setLoadingProds(true);
+    const params = new URLSearchParams({ limit: 60, offset: 0 });
+    if (cat) params.set('category', cat);
+    if (q)   params.set('search', q);
+    axios.get(`${CAPTAIN_API_URL}/captain/shops/online/products?${params}`)
+      .then(r => {
+        const arr = Array.isArray(r.data) ? r.data
+          : Array.isArray(r.data?.products) ? r.data.products
+          : Array.isArray(r.data?.results)  ? r.data.results
+          : [];
+        setProducts(arr);
+      })
+      .catch(() => setProducts([]))
+      .finally(() => setLoadingProds(false));
+  }, []);
+
+  useEffect(() => { fetchProducts(activeCat, search); }, [activeCat, search, fetchProducts]);
+
+  /* ── debounced search ─────────────────────────────────────────────────── */
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearchInput(val);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setSearch(val.trim()), 400);
+  };
+
+  /* ── add to cart ──────────────────────────────────────────────────────── */
+  const handleAdd = (product) => {
+    const ok = addToCart(product);
+    if (ok) {
+      setToast(`"${product.title}" added to cart`);
+      setCartCount(c => c + 1);
+      setTimeout(() => setToast(''), 2200);
+    }
+  };
+
+  const handleClear = () => { setActiveCat(''); setSearch(''); setSearchInput(''); };
+
+  /* ── dynamic category pills (API + static fallback merged) ───────────── */
+  const catPills = loadingCats
+    ? TOP_CATS_STATIC.map(([name]) => ({ name }))
+    : categories.length > 0
+      ? categories
+      : TOP_CATS_STATIC.map(([name]) => ({ name }));
+
+  /* ── render ───────────────────────────────────────────────────────────── */
   return (
     <div className="ce-app ce-online-page">
+      {/* shimmer keyframe */}
+      <style>{`
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .ce-cat-pill { display:inline-flex; align-items:center; gap:5px; padding:6px 14px;
+          border-radius:999px; border:1.5px solid #e2e8f0; background:#fff;
+          font-size:0.78rem; font-weight:700; color:#475569; cursor:pointer;
+          white-space:nowrap; transition:all .15s; flex-shrink:0; }
+        .ce-cat-pill:hover,.ce-cat-pill.active { border-color:#ea580c; background:#fff7ed; color:#ea580c; }
+        .ce-toast-bar { position:fixed; bottom:72px; left:50%; transform:translateX(-50%);
+          background:#0f172a; color:#fff; padding:10px 20px; border-radius:999px;
+          font-size:0.82rem; font-weight:700; z-index:9999;
+          animation:slideUp .25s ease; pointer-events:none; white-space:nowrap; }
+        @keyframes slideUp { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+      `}</style>
+
+      {/* Header */}
       <header className="ce-compact-page-header">
         <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
         <div>
           <h1>Online Shop</h1>
-          <p>Products, brands and daily deals</p>
+          <p>Products &amp; daily deals</p>
         </div>
-        <span><LuShoppingBag /></span>
+        <Link to="/consumer-ecommerce/cart" style={{ position: 'relative', color: 'inherit' }}>
+          <LuShoppingCart size={22} />
+          {cartCount > 0 && (
+            <span style={{
+              position: 'absolute', top: -6, right: -6,
+              background: '#ea580c', color: '#fff',
+              fontSize: '0.6rem', fontWeight: 900,
+              borderRadius: '50%', width: 16, height: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{cartCount > 99 ? '99+' : cartCount}</span>
+          )}
+        </Link>
       </header>
+
       <main className="ce-online-shell">
+        {/* Left rail nav */}
         <aside className="ce-online-rail">
           {rail.map(([label, Icon]) => (
-            <Link key={label} to={label === 'Tri Zone' ? '/consumer-ecommerce/tri-zone' : '/consumer-ecommerce/delivery'} className={label === 'Online Shop' ? 'active' : ''}>
+            <Link
+              key={label}
+              to={label === 'Tri Zone' ? '/consumer-ecommerce/tri-zone' : '/consumer-ecommerce/delivery'}
+              className={label === 'Online Shop' ? 'active' : ''}
+            >
               <Icon />
               <span>{label}</span>
             </Link>
           ))}
         </aside>
 
+        {/* Main content */}
         <section className="ce-online-content">
+
+          {/* Search bar */}
           <label className="ce-online-search">
             <LuSearch />
-            <input placeholder="Search for products, brands and more..." />
-            <LuCamera />
+            <input
+              placeholder="Search products, brands…"
+              value={searchInput}
+              onChange={handleSearchChange}
+            />
+            {searchInput && (
+              <button
+                onClick={() => { setSearchInput(''); setSearch(''); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+              >
+                <LuX size={16} style={{ color: '#94a3b8' }} />
+              </button>
+            )}
             <LuMic />
           </label>
 
-          <div className="ce-online-top-cats">
-            {topCats.map(([label, Icon]) => (
-              <button key={label}>
-                <Icon />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-
-          <section className="ce-online-sale-banner">
-            <div>
-              <h2>Mega Sale</h2>
-              <p>Up to 70% Off On Bestsellers</p>
-              <button>Shop Now <LuChevronRight /></button>
-            </div>
-            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=280&q=80" alt="" />
-          </section>
-
+          {/* Perks strip */}
           <div className="ce-online-perks">
             {[
               ['Free Delivery', LuTruck],
@@ -152,43 +421,91 @@ export default function DeliveryPage() {
             ))}
           </div>
 
-          <section className="ce-online-section">
-            <div className="ce-online-section-head">
-              <h2>Shop by Category</h2>
-              <Link to="/consumer-ecommerce/delivery">View all</Link>
-            </div>
-            <div className="ce-online-category-row">
-              {topCats.slice(1, 7).map(([label, Icon]) => (
-                <button key={label}><Icon /><span>{label}</span></button>
-              ))}
-            </div>
-          </section>
+          {/* Category pills */}
+          <div style={{
+            display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 6,
+            scrollbarWidth: 'none', margin: '8px 0',
+          }}>
+            <button
+              className={`ce-cat-pill${activeCat === '' ? ' active' : ''}`}
+              onClick={() => setActiveCat('')}
+            >
+              <LuShoppingBag size={13} /> All
+            </button>
+            {catPills.map((cat) => {
+              const name = typeof cat === 'string' ? cat : cat.name || cat;
+              const Icon = getCatIcon(name);
+              return (
+                <button
+                  key={name}
+                  className={`ce-cat-pill${activeCat === name ? ' active' : ''}`}
+                  onClick={() => setActiveCat(activeCat === name ? '' : name)}
+                >
+                  <Icon size={13} /> {name}
+                </button>
+              );
+            })}
+          </div>
 
-          <section className="ce-online-section">
-            <div className="ce-online-section-head">
-              <h2>Best Selling Products</h2>
-              <Link to="/consumer-ecommerce/delivery">View all</Link>
+          {/* Active filter indicator */}
+          {(activeCat || search) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0 8px', flexWrap: 'wrap' }}>
+              {activeCat && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 999,
+                  background: '#fff7ed', border: '1px solid #fed7aa',
+                  fontSize: '0.75rem', fontWeight: 700, color: '#ea580c',
+                }}>
+                  {activeCat}
+                  <LuX size={11} style={{ cursor: 'pointer' }} onClick={() => setActiveCat('')} />
+                </span>
+              )}
+              {search && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                  padding: '4px 10px', borderRadius: 999,
+                  background: '#f0fdf4', border: '1px solid #bbf7d0',
+                  fontSize: '0.75rem', fontWeight: 700, color: '#16a34a',
+                }}>
+                  "{search}"
+                  <LuX size={11} style={{ cursor: 'pointer' }} onClick={() => { setSearch(''); setSearchInput(''); }} />
+                </span>
+              )}
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>
+                {loadingProds ? '…' : `${products.length} result${products.length !== 1 ? 's' : ''}`}
+              </span>
             </div>
+          )}
+
+          {/* Product grid */}
+          <section className="ce-online-section" style={{ marginTop: 4 }}>
+            {!activeCat && !search && (
+              <div className="ce-online-section-head" style={{ marginBottom: 10 }}>
+                <h2 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 900, color: '#0f172a' }}>
+                  {loadingProds ? 'Loading products…' : `All Online Products (${products.length})`}
+                </h2>
+              </div>
+            )}
+
             <div className="ce-online-product-grid">
-              {products.slice(0, 3).map((product) => (
-                <ProductMini key={product.id} product={product} />
-              ))}
+              {loadingProds
+                ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)
+                : products.length === 0
+                  ? <EmptyState search={search} category={activeCat} onClear={handleClear} />
+                  : products.map((product) => (
+                      <ProductCard key={product.id} product={product} onAdd={handleAdd} />
+                    ))
+              }
             </div>
           </section>
 
-          <section className="ce-online-section">
-            <div className="ce-online-section-head">
-              <h2>Deals of the Day</h2>
-              <Link to="/consumer-ecommerce/delivery">View all</Link>
-            </div>
-            <div className="ce-online-product-grid compact">
-              {products.map((product) => (
-                <ProductMini key={`deal-${product.id}`} product={product} />
-              ))}
-            </div>
-          </section>
         </section>
       </main>
+
+      {/* Toast */}
+      {toast && <div className="ce-toast-bar">{toast}</div>}
+
       <BottomNav />
     </div>
   );

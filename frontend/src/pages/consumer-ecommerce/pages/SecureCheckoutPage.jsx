@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Typography, Button, Container, Stack, CircularProgress } from '@mui/material';
-import { LuChevronLeft, LuStore, LuCheck } from 'react-icons/lu';
+import { LuChevronLeft, LuStore, LuCheck, LuLock } from 'react-icons/lu';
 import { getAccessToken, tryTokenRefresh } from '../../../services/authStorage';
 import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
@@ -256,48 +256,70 @@ export default function SecureCheckoutPage() {
         right: 0, 
         bgcolor: '#fff', 
         borderTop: '1px solid #e2e8f0', 
-        p: 3, 
+        p: '16px 20px', 
         zIndex: 50,
         boxShadow: '0 -4px 16px rgba(0,0,0,0.02)'
       }}>
-        <Container maxWidth="xs">
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
-            <Box>
-              <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>
-                Total Payable
-              </Typography>
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a' }}>
-                ₹{amount.toFixed(2)}
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: 'right' }}>
-              <Typography sx={{ fontSize: '0.75rem', color: '#f97316', fontWeight: 800 }}>
-                Cashback Earned: ₹{(amount * 0.05).toFixed(2)}
-              </Typography>
-            </Box>
-          </Stack>
+        <Container maxWidth="xs" disableGutters>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between'
+          }}>
+            <Stack direction="row" alignItems="center" spacing={2.5}>
+              <Box>
+                <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>
+                  Total Payable
+                </Typography>
+                <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f172a', mt: 0.25 }}>
+                  ₹{amount.toFixed(2)}
+                </Typography>
+              </Box>
 
-          <Button
-            fullWidth
-            variant="contained"
-            disabled={paying}
-            onClick={handlePayNow}
-            sx={{
-              py: 1.75,
-              borderRadius: '12px',
-              bgcolor: '#f97316',
-              fontWeight: 800,
-              fontSize: '1rem',
-              textTransform: 'none',
-              boxShadow: 'none',
-              '&:hover': {
-                bgcolor: '#ea580c',
-                boxShadow: 'none'
-              }
-            }}
-          >
-            {paying ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Pay Now'}
-          </Button>
+              <Box sx={{ width: '1px', bgcolor: '#e2e8f0', height: '36px' }} />
+
+              <Box>
+                <Typography sx={{ fontSize: '0.75rem', color: '#22c55e', fontWeight: 700 }}>
+                  Cashback
+                </Typography>
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: '#22c55e', mt: 0.25 }}>
+                  +₹{(amount * 0.05).toFixed(2)}
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Button
+              disabled={paying}
+              onClick={handlePayNow}
+              variant="contained"
+              startIcon={paying ? null : <LuLock size={18} />}
+              sx={{
+                py: 1.5,
+                px: 3.5,
+                borderRadius: '12px',
+                bgcolor: '#f97316',
+                color: '#fff',
+                fontSize: '1rem',
+                fontWeight: 800,
+                textTransform: 'none',
+                boxShadow: 'none',
+                '&:hover': {
+                  bgcolor: '#ea580c',
+                  boxShadow: 'none'
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'rgba(249, 115, 22, 0.6)',
+                  color: '#fff'
+                }
+              }}
+            >
+              {paying ? (
+                <CircularProgress size={24} sx={{ color: '#fff' }} />
+              ) : (
+                `Pay ₹${amount.toFixed(2)}`
+              )}
+            </Button>
+          </Box>
         </Container>
       </Box>
 

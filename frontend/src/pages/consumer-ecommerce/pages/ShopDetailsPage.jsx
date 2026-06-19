@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, IconButton, Stack, Button, Divider } from '@mui/material';
+import { Box, Typography, IconButton, Stack, Button, Divider, Paper } from '@mui/material';
 import { 
   LuChevronLeft, LuPhone, LuMessageCircle, 
-  LuMessageSquare, LuInfo, LuMapPin, LuStar, LuShare2 
+  LuMessageSquare, LuInfo, LuMapPin, LuStar, LuShare2, LuShoppingBag, LuPlus, LuMinus
 } from 'react-icons/lu';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
@@ -13,30 +13,144 @@ export default function ShopDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [shop, setShop] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cart local state representation loaded from localStorage
+  const [cart, setCart] = useState(() => {
+    try {
+      const stored = localStorage.getItem('tri_consumer_cart');
+      return stored ? JSON.parse(stored) : { shopId: null, shopName: '', items: [] };
+    } catch (_) {
+      return { shopId: null, shopName: '', items: [] };
+    }
+  });
 
   useEffect(() => {
-    // We can fetch details or just use b2c merchants list and filter by ID
-    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
+    // 1. Fetch live active shop details from public endpoint
+    axios.get(`${CAPTAIN_API_URL}/captain/shops/${id}`)
       .then(res => {
-        const found = res.data?.find(s => s.id.toString() === id);
-        if (found) setShop(found);
+        setShop(res.data);
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error('Failed to fetch public store details:', err);
+        // Fallback search in b2c list
+        axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
+          .then(resB2c => {
+            const found = resB2c.data?.find(s => s.id.toString() === id);
+            if (found) {
+              setShop({
+                id: found.id,
+                shop_name: found.shop_name,
+                pincode: found.shop_pincode || found.pincode,
+                city: found.city,
+                address: found.address,
+                contact_number: found.contact_number,
+                min_order_value: found.min_order_value,
+                base_delivery_fee: found.base_delivery_fee
+              });
+            }
+          });
+      });
+
+    // 2. Fetch live product catalog
+    axios.get(`${CAPTAIN_API_URL}/captain/shops/${id}/products`)
+      .then(res => {
+        // Only display active and online delivery-eligible products
+        const onlineOnly = (res.data || []).filter(p => p.is_active && p.online_delivery);
+        setProducts(onlineOnly);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load shop products:', err);
+        setLoading(false);
+      });
   }, [id]);
 
-  if (!shop) return <Box p={4} textAlign="center">Loading...</Box>;
+  // Save cart to local storage whenever state changes
+  const saveCart = (newCart) => {
+    setCart(newCart);
+    localStorage.setItem('tri_consumer_cart', JSON.stringify(newCart));
+  };
 
-  const shopName = shop.shop_name || shop.business_name || shop.full_name || 'Store';
+  const handleAddToCart = (product) => {
+    const shopName = shop?.shop_name || 'Store';
+    
+    // Check if cart already holds items from a different shop
+    if (cart.shopId && cart.shopId.toString() !== id.toString() && cart.items.length > 0) {
+      const confirmReset = window.confirm("You have items from another store in your cart. Would you like to clear those and start fresh with this store?");
+      if (!confirmReset) {
+        return;
+      }
+      // Reset cart to this shop
+      const freshCart = {
+        shopId: parseInt(id),
+        shopName: shopName,
+        items: [{ productId: product.id, title: product.title, price: product.price, quantity: 1, image: product.image }]
+      };
+      saveCart(freshCart);
+      return;
+    }
+
+    // Insert or increment quantity
+    let updatedItems = [...cart.items];
+    const existing = updatedItems.find(item => item.productId === product.id);
+
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      updatedItems.push({
+        productId: product.id,
+        title: product.title,
+        price: product.price,
+        quantity: 1,
+        image: product.image
+      });
+    }
+
+    saveCart({
+      shopId: parseInt(id),
+      shopName: shopName,
+      items: updatedItems
+    });
+  };
+
+  const handleUpdateQty = (productId, delta) => {
+    let updatedItems = cart.items.map(item => {
+      if (item.productId === productId) {
+        return { ...item, quantity: item.quantity + delta };
+      }
+      return item;
+    }).filter(item => item.quantity > 0);
+
+    saveCart({
+      ...cart,
+      items: updatedItems
+    });
+  };
+
+  if (!shop) return <Box p={4} textAlign="center">Loading store details...</Box>;
+
+  const shopName = shop.shop_name || 'Store';
   const address = shop.address || shop.city || 'Local Area';
 
+  // Compute stats
+  const totalItemsCount = cart.shopId?.toString() === id.toString()
+    ? cart.items.reduce((sum, item) => sum + item.quantity, 0)
+    : 0;
+
+  const totalCartPrice = cart.shopId?.toString() === id.toString()
+    ? cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    : 0;
+
   return (
-    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', pb: 10 }}>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', pb: totalItemsCount > 0 ? 14 : 6 }}>
       {/* Header Bar */}
       <Box sx={{ bgcolor: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2, borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ color: '#0f172a' }}>
           <LuChevronLeft />
         </IconButton>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', flexGrow: 1 }}>{shopName}</Typography>
+        <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', flexGrow: 1, color: '#0f172a' }}>{shopName}</Typography>
         <IconButton sx={{ color: '#0f172a' }}><LuShare2 /></IconButton>
       </Box>
 
@@ -45,13 +159,14 @@ export default function ShopDetailsPage() {
         <Typography sx={{ fontWeight: 900, fontSize: '1.4rem', color: '#0f172a', mb: 0.5 }}>{shopName}</Typography>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
           <Box sx={{ bgcolor: '#10b981', color: '#fff', px: 1, py: 0.25, borderRadius: 1, fontSize: '0.8rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            4.1 <LuStar size={12} fill="#fff" />
+            4.5 <LuStar size={12} fill="#fff" />
           </Box>
-          <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>293 Ratings</Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>118 Ratings</Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700, ml: 1 }}>Online Delivery Active</Typography>
         </Stack>
 
-        <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 0.5 }}>{address} • 26 min • 8.4 km</Typography>
-        <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 2 }}>Diagnostic Centre • 25 Years in Healthcare</Typography>
+        <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 0.5 }}>{address} • Within {shop.delivery_radius_km || 5.0}  km</Typography>
+        <Typography sx={{ fontSize: '0.85rem', color: '#f97316', fontWeight: 700, mb: 2 }}>Min Order Threshold: ₹{shop.min_order_value || 0}</Typography>
 
         {/* Action Circles */}
         <Stack direction="row" justifyContent="space-around" sx={{ mb: 2 }}>
@@ -62,7 +177,7 @@ export default function ShopDetailsPage() {
             { icon: <LuInfo />, label: 'Enquiry', color: '#f59e0b' },
             { icon: <LuMapPin />, label: 'Direction', color: '#64748b' },
           ].map((action, i) => (
-            <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, cursor: 'pointer' }} onClick={() => alert(`${action.label} clicked`)}>
+            <Box key={i} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, cursor: 'pointer' }} onClick={() => alert(`${action.label} clicked for store`)}>
               <Box sx={{ width: 44, height: 44, borderRadius: '50%', border: `1px solid ${action.color}`, color: action.color, display: 'grid', placeItems: 'center', fontSize: '1.2rem', transition: 'all 0.2s', '&:hover': { bgcolor: `${action.color}15` } }}>
                 {action.icon}
               </Box>
@@ -70,24 +185,90 @@ export default function ShopDetailsPage() {
             </Box>
           ))}
         </Stack>
-
-        {/* Photos Horizontal Scroll */}
-        <Stack direction="row" spacing={1.5} sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
-          {[1,2,3].map(i => (
-            <Box key={i} sx={{ width: 140, minWidth: 140, height: 100, borderRadius: 2, overflow: 'hidden' }}>
-              <img src={`https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=280&q=80`} alt="Shop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </Box>
-          ))}
-        </Stack>
       </Box>
 
-      {/* Summary Box */}
+      {/* Dynamic Products Catalog */}
       <Box sx={{ p: 2, mt: 1 }}>
+        <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#0f172a', mb: 1.5 }}>Online Catalog</Typography>
+        
+        {loading ? (
+          <Box sx={{ py: 4, textAlign: 'center', color: '#64748b' }}>
+            Loading store products...
+          </Box>
+        ) : products.length === 0 ? (
+          <Paper sx={{ p: 3, textAlign: 'center', color: '#64748b', borderRadius: 3 }}>
+            <LuShoppingBag size={40} style={{ color: '#cbd5e1', marginBottom: 8 }} />
+            <Typography sx={{ fontWeight: 800 }}>No products available online</Typography>
+            <Typography variant="caption" sx={{ color: '#94a3b8' }}>This store doesn't have active delivery items cataloged yet.</Typography>
+          </Paper>
+        ) : (
+          <Stack spacing={1.5}>
+            {products.map(product => {
+              // Find if this item is in the cart
+              const cartItem = cart.shopId?.toString() === id.toString()
+                ? cart.items.find(item => item.productId === product.id)
+                : null;
+
+              return (
+                <Paper key={product.id} elevation={0} sx={{ p: 1.5, borderRadius: 4, border: '1px solid #e2e8f0', display: 'flex', gap: 2 }}>
+                  <img 
+                    src={product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'} 
+                    alt={product.title} 
+                    style={{ width: 90, height: 90, borderRadius: 12, objectFit: 'cover' }} 
+                  />
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>{product.title}</Typography>
+                    <Typography variant="caption" sx={{ color: '#64748b', lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', mb: 0.5 }}>
+                      {product.description || 'Fresh item direct from store deliverable to your doorstep.'}
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline' }}>
+                        <Typography sx={{ fontWeight: 800, color: '#f97316' }}>₹{product.price}</Typography>
+                        {product.mrp && product.mrp > product.price && (
+                          <Typography variant="caption" sx={{ textDecoration: 'line-through', color: '#94a3b8' }}>₹{product.mrp}</Typography>
+                        )}
+                      </Box>
+
+                      {/* ADD to Cart toggle / qty control */}
+                      {cartItem ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #ea580c', borderRadius: '8px', bgcolor: 'rgba(234, 88, 12, 0.05)' }}>
+                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, -1)} sx={{ color: '#ea580c' }}>
+                            <LuMinus size={14} />
+                          </IconButton>
+                          <Typography sx={{ fontWeight: 800, color: '#ea580c', px: 1, fontSize: '0.85rem' }}>{cartItem.quantity}</Typography>
+                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, 1)} sx={{ color: '#ea580c' }}>
+                            <LuPlus size={14} />
+                          </IconButton>
+                        </Box>
+                      ) : (
+                        <Button 
+                          onClick={() => handleAddToCart(product)}
+                          variant="outlined" 
+                          size="small" 
+                          sx={{ 
+                            textTransform: 'none', fontWeight: 800, color: '#ea580c', borderColor: '#ea580c',
+                            borderRadius: '8px', px: 2, '&:hover': { bgcolor: 'rgba(234, 88, 12, 0.05)', borderColor: '#ea580c' } 
+                          }}
+                        >
+                          ADD
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Stack>
+        )}
+      </Box>
+
+      {/* Business Details Box */}
+      <Box sx={{ p: 2 }}>
         <Box sx={{ bgcolor: '#fff', borderRadius: 3, p: 2, border: '1px solid #e2e8f0' }}>
           <Typography sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>Business Summary</Typography>
           <Typography sx={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5, mb: 1 }}>
-            Diagnostic center offering comprehensive imaging services and accredited lab facilities for accurate results.
-            <Typography component="span" sx={{ color: '#3b82f6', fontWeight: 600, ml: 1, cursor: 'pointer' }}>more</Typography>
+            Premium certified online partner with secure logistics delivery ensuring fast delivery, and authentic quality products directly to you.
           </Typography>
 
           <Divider sx={{ my: 1.5 }} />
@@ -102,19 +283,41 @@ export default function ShopDetailsPage() {
             <Box sx={{ display: 'flex', gap: 1.5 }}>
               <LuPhone size={18} color="#64748b" style={{ flexShrink: 0, marginTop: 2 }} />
               <Typography sx={{ fontSize: '0.85rem', color: '#475569', fontWeight: 500 }}>
-                {shop.phone || '080 4040 4040'}
+                {shop.contact_number || '080 4040 4040'}
               </Typography>
             </Box>
           </Stack>
         </Box>
       </Box>
 
-      {/* Sticky Bottom Actions */}
-      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, bgcolor: '#fff', p: 2, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 1 }}>
-        <Button variant="contained" sx={{ flex: 1, bgcolor: '#3b82f6', textTransform: 'none', fontWeight: 800, borderRadius: 2 }}>Call Now</Button>
-        <Button variant="contained" sx={{ flex: 1, bgcolor: '#0ea5e9', textTransform: 'none', fontWeight: 800, borderRadius: 2 }}>Enquire Now</Button>
-        <Button variant="contained" sx={{ flex: 1, bgcolor: '#22c55e', textTransform: 'none', fontWeight: 800, borderRadius: 2 }}>WhatsApp</Button>
-      </Box>
+      {/* Sliding Floating Bottom Bar for active persistent Cart */}
+      {totalItemsCount > 0 && (
+        <Box 
+          sx={{ 
+            position: 'fixed', bottom: 0, left: 0, right: 0, 
+            bgcolor: '#ea580c', color: '#fff', p: 2, 
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            borderTopLeftRadius: 16, borderTopRightRadius: 16,
+            boxShadow: '0 -4px 16px rgba(234, 88, 12, 0.25)', zIndex: 100
+          }}
+        >
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.95rem' }}>{totalItemsCount} item{totalItemsCount > 1 ? 's' : ''} added</Typography>
+            <Typography sx={{ fontWeight: 600, fontSize: '0.75rem', opacity: 0.9 }}>From {shopName}</Typography>
+          </Box>
+          <Button 
+            component={Link} 
+            to="/consumer-ecommerce/cart"
+            variant="contained" 
+            sx={{ 
+              bgcolor: '#fff', color: '#ea580c', fontWeight: 800, textTransform: 'none', px: 3, py: 1, borderRadius: 2,
+              '&:hover': { bgcolor: '#fdf2e9' }
+            }}
+          >
+            View Cart • ₹{totalCartPrice.toFixed(2)}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

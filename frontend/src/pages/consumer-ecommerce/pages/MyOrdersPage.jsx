@@ -115,7 +115,7 @@ export default function MyOrdersPage() {
       case 'COMPLETED':
         return <Chip label="Completed" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 800, borderRadius: '6px' }} />;
       case 'CANCELLED':
-        return <Chip icon={<LuXCircle size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
+        return <Chip icon={<LuCircleX size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
       default:
         return <Chip label={status} size="small" sx={{ bgcolor: 'rgba(100, 116, 139, 0.1)', color: '#64748b', fontWeight: 800, borderRadius: '6px' }} />;
     }

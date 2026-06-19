@@ -38,6 +38,7 @@ export default function NearbyStoresPage() {
   const [b2cShops, setB2cShops] = useState([]);
   const [activeCat, setActiveCat] = useState('All Stores');
   const [categories, setCategories] = useState([{ name: 'All Stores', icon: <LuStore size={24} /> }]);
+  const [sponsoredShops, setSponsoredShops] = useState([]);
 
   const filteredShops = useMemo(() => {
     if (activeCat === 'All Stores') return b2cShops;
@@ -69,6 +70,11 @@ export default function NearbyStoresPage() {
         ]);
       })
       .catch(err => console.error('Failed to load B2C merchants:', err));
+
+    // Fetch sponsored shops
+    axios.get(`${CAPTAIN_API_URL}/api/ads/sponsored-shops?limit=6`)
+      .then(res => setSponsoredShops(res.data || []))
+      .catch(() => {});
   }, []);
 
   return (
@@ -82,6 +88,47 @@ export default function NearbyStoresPage() {
         </div>
         <span><LuStore /></span>
       </header>
+
+      {/* Sponsored Shops Row */}
+      {sponsoredShops.length > 0 && (
+        <Box sx={{ px: 2, pt: 1.5, pb: 0.5 }}>
+          <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#f97316', letterSpacing: 0.5, mb: 1, textTransform: 'uppercase' }}>
+            🌟 Sponsored Stores
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1.5, overflowX: 'auto', pb: 0.5, '&::-webkit-scrollbar': { display: 'none' } }}>
+            {sponsoredShops.map(ad => (
+              <Box
+                key={ad.id}
+                sx={{
+                  minWidth: 140, maxWidth: 140, borderRadius: '12px', overflow: 'hidden',
+                  border: '2px solid rgba(249,115,22,0.25)', bgcolor: '#fff', flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(249,115,22,0.08)'
+                }}
+              >
+                <Box
+                  component="img"
+                  src={ad.image_url || ad.shop_image || 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=280&q=80'}
+                  alt={ad.title}
+                  sx={{ width: '100%', height: 72, objectFit: 'cover', display: 'block' }}
+                />
+                <Box sx={{ p: 1 }}>
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.2 }}>
+                    {ad.title || ad.shop_name}
+                  </Typography>
+                  {ad.description && (
+                    <Typography sx={{ fontSize: '0.65rem', color: '#64748b', mt: 0.25, lineHeight: 1.3 }}>
+                      {ad.description}
+                    </Typography>
+                  )}
+                  <Box sx={{ mt: 0.5, px: 0.5, py: 0.25, bgcolor: 'rgba(249,115,22,0.08)', borderRadius: '4px', display: 'inline-block' }}>
+                    <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, color: '#f97316' }}>Sponsored</Typography>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
 
       {/* Search Bar */}
       <Box sx={{ px: 2, pt: 2, pb: 1 }}>

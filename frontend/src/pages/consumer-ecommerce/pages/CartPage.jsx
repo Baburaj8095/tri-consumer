@@ -222,7 +222,7 @@ export default function CartPage() {
     }));
 
     try {
-      // Step A: Lock virtual lock lease under Spring transactional protections (Sprint 3 constraint)
+      // Step A: Lock virtual lock lease under Spring transactional protections
       await axios.post(`${CAPTAIN_API_URL}/api/orders/lease`, itemsPayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -236,21 +236,50 @@ export default function CartPage() {
         items: itemsPayload
       };
 
-      await axios.post(`${CAPTAIN_API_URL}/api/orders`, orderPayload, {
+      const orderRes = await axios.post(`${CAPTAIN_API_URL}/api/orders`, orderPayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      const orderData = orderRes.data || {};
+      const orderNumber = orderData.order_number;
+      const grandTotal = orderData.grand_total || orderData.total || 0;
+
       // Clear the local state cart
       localStorage.removeItem('tri_consumer_cart');
-      
-      // Success redirection
-      alert('Awesome! Your B2C Order has been successfully submitted to the merchant.');
-      navigate('/consumer-ecommerce/my-orders');
+
+      if (paymentMethod === 'ONLINE' && orderNumber) {
+        // Generate UPI deep-link and open it
+        const upiLink = `upi://pay?pa=trikonekt.payments@upi&pn=Trikonekt&am=${grandTotal.toFixed(2)}&tr=${orderNumber}&tn=Online%20Order%20${orderNumber}`;
+        window.location.href = upiLink;
+
+        // After returning from UPI app, poll payment status every 3 seconds for up to 2 minutes
+        let pollCount = 0;
+        const maxPolls = 40;
+        const pollInterval = setInterval(async () => {
+          pollCount++;
+          try {
+            const statusRes = await axios.get(`${CAPTAIN_API_URL}/api/payments/status/${orderNumber}`);
+            const { payment_status, order_status } = statusRes.data;
+
+            if (payment_status === 'PAID' || order_status === 'PENDING_CONFIRMATION') {
+              clearInterval(pollInterval);
+              navigate(`/consumer-ecommerce/my-orders?highlight=${orderNumber}`);
+            } else if (payment_status === 'FAILED' || pollCount >= maxPolls) {
+              clearInterval(pollInterval);
+              setErrorMessage('Payment could not be verified. Your order is saved — retry payment from My Orders.');
+              setIsPlacingOrder(false);
+              navigate(`/consumer-ecommerce/my-orders?highlight=${orderNumber}`);
+            }
+          } catch (_) { /* ignore poll errors */ }
+        }, 3000);
+      } else {
+        // COD — go straight to orders
+        navigate('/consumer-ecommerce/my-orders');
+      }
 
     } catch (err) {
       console.error('Order state placement failed:', err);
-      setErrorMessage(err.response?.data?.message || 'Failed to finish checkout lease or order placement. Some items may be out of stock.');
-    } finally {
+      setErrorMessage(err.response?.data?.message || 'Failed to finish checkout. Some items may be out of stock.');
       setIsPlacingOrder(false);
     }
   };

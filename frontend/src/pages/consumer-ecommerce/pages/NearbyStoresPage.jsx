@@ -9,10 +9,17 @@ import {
   LuShoppingCart, 
   LuSmartphone, 
   LuHotel, 
-  LuZap 
+  LuZap,
+  LuMapPin,
+  LuChevronDown,
+  LuMap,
+  LuList
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
+import MapView from '../components/MapView.jsx';
+import LocationPickerModal from '../components/LocationPickerModal.jsx';
+import { useLocation } from '../context/LocationContext.jsx';
 import '../consumerEcommerce.css';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
@@ -35,41 +42,33 @@ const resolveCategoryName = (shop) => {
 };
 
 export default function NearbyStoresPage() {
+  const { location: userLoc, showPicker, setShowPicker } = useLocation();
   const [b2cShops, setB2cShops] = useState([]);
   const [activeCat, setActiveCat] = useState('All Stores');
   const [categories, setCategories] = useState([{ name: 'All Stores', icon: <LuStore size={24} /> }]);
   const [sponsoredShops, setSponsoredShops] = useState([]);
-  const [consumerLocation, setConsumerLocation] = useState(null);
-  const [locationStatus, setLocationStatus] = useState('checking');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState('list'); // list | map
 
   const filteredShops = useMemo(() => {
-    if (activeCat === 'All Stores') return b2cShops;
-    const active = activeCat.toLowerCase();
-    return b2cShops.filter((shop) => String(shop.category || '').toLowerCase().includes(active));
-  }, [activeCat, b2cShops]);
-
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationStatus('unavailable');
-      return;
+    let shops = b2cShops;
+    if (activeCat !== 'All Stores') {
+      const active = activeCat.toLowerCase();
+      shops = shops.filter((shop) => String(shop.category || '').toLowerCase().includes(active));
     }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setConsumerLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setLocationStatus('ready');
-      },
-      () => {
-        setConsumerLocation(null);
-        setLocationStatus('denied');
-      },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
-    );
-  }, []);
+    if (searchTerm.trim() !== '') {
+      const query = searchTerm.toLowerCase();
+      shops = shops.filter((shop) => 
+        shop.name.toLowerCase().includes(query) || 
+        shop.location.toLowerCase().includes(query)
+      );
+    }
+    return shops;
+  }, [activeCat, b2cShops, searchTerm]);
 
   useEffect(() => {
-    const params = consumerLocation
-      ? `?lat=${consumerLocation.lat}&lng=${consumerLocation.lng}&radius_km=25`
+    const params = userLoc
+      ? `?lat=${userLoc.lat}&lng=${userLoc.lng}&radius_km=25`
       : '';
 
     axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c${params}`)
@@ -91,8 +90,8 @@ export default function NearbyStoresPage() {
           distanceKm: shop.distance_km,
           isDeliveryAvailable: Boolean(shop.is_delivery_available),
           deliveryUnavailableReason: shop.delivery_unavailable_reason,
-          consumerLocation,
-          locationStatus,
+          latitude: shop.latitude || shop.lat,
+          longitude: shop.longitude || shop.lng,
         })));
         const mapped = data.map(shop => resolveCategoryName(shop)).filter(Boolean);
         const uniq = Array.from(new Set(mapped));
@@ -103,20 +102,22 @@ export default function NearbyStoresPage() {
       })
       .catch(err => console.error('Failed to load B2C merchants:', err));
 
-    // Fetch sponsored shops
     axios.get(`${CAPTAIN_API_URL}/api/ads/sponsored-shops?limit=6&target=CONSUMER_NEARBY_B2C`)
       .then(res => setSponsoredShops(res.data || []))
       .catch(() => {});
-  }, [consumerLocation, locationStatus]);
+  }, [userLoc]);
 
   return (
     <div className="ce-app ce-nearby-page" style={{ paddingTop: 84, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Header */}
+      
+      {/* Header Location selector Dropdown */}
       <header className="ce-compact-page-header">
         <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
-        <div>
-          <h1>Near Store</h1>
-          <p>Stores around Indiranagar</p>
+        <div onClick={() => setShowPicker(true)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '15px' }}>
+            📍 {userLoc.area}, {userLoc.city} <LuChevronDown size={14} color="#64748b" />
+          </h1>
+          <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Stores around your area</p>
         </div>
         <span><LuStore /></span>
       </header>
@@ -177,60 +178,92 @@ export default function NearbyStoresPage() {
           }}
         >
           <LuSearch color="#f97316" size={20} />
-          <InputBase placeholder="Search nearby stores..." sx={{ ml: 1.5, flex: 1, fontSize: '0.95rem', fontWeight: 500 }} />
+          <InputBase 
+            placeholder="Search nearby stores..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ ml: 1.5, flex: 1, fontSize: '0.95rem', fontWeight: 500 }} 
+          />
         </Box>
       </Box>
 
-      {/* Categories Horizontal Scroll */}
-      <Box sx={{ bgcolor: '#fff', py: 2, borderBottom: '1px solid #e2e8f0' }}>
-        <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', px: 2, '&::-webkit-scrollbar': { display: 'none' } }}>
-          {categories.map(cat => (
-            <Box 
-              key={cat.name} 
-              onClick={() => setActiveCat(cat.name)}
-              sx={{ 
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, 
-                minWidth: '70px', cursor: 'pointer',
-                color: activeCat === cat.name ? '#f97316' : '#64748b'
-              }}
-            >
-              <Box sx={{ 
-                width: 50, height: 50, borderRadius: '12px', border: '1px solid',
-                borderColor: activeCat === cat.name ? '#f97316' : '#e2e8f0',
-                display: 'grid', placeItems: 'center',
-                bgcolor: activeCat === cat.name ? 'rgba(249, 115, 22, 0.1)' : '#f8fafc',
-                transition: 'all 0.2s'
-              }}>
-                {cat.icon}
-              </Box>
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: activeCat === cat.name ? 700 : 500, whiteSpace: 'nowrap' }}>
-                {cat.name}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
+      {/* List / Map View Toggle Bar */}
+      <Box sx={{ px: 2, mb: 1 }}>
+        <div className="map-view-toggle-bar">
+          <button 
+            className={`map-view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            <LuList size={16} /> List View
+          </button>
+          <button 
+            className={`map-view-toggle-btn ${viewMode === 'map' ? 'active' : ''}`}
+            onClick={() => setViewMode('map')}
+          >
+            <LuMap size={16} /> Map View
+          </button>
+        </div>
       </Box>
 
-      {/* Store List */}
-      <Box sx={{ p: 2 }}>
-        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
-          Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
-        </Typography>
-
-        {locationStatus !== 'ready' && (
-          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 2 }}>
-            <Typography sx={{ fontSize: '0.8rem', color: '#9a3412', fontWeight: 700 }}>
-              Set location to check delivery availability. Pay Store remains available for nearby stores.
-            </Typography>
+      {viewMode === 'map' ? (
+        <Box sx={{ p: 2 }}>
+          <MapView stores={filteredShops} />
+        </Box>
+      ) : (
+        <>
+          {/* Categories Horizontal Scroll */}
+          <Box sx={{ bgcolor: '#fff', py: 2, borderBottom: '1px solid #e2e8f0' }}>
+            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', px: 2, '&::-webkit-scrollbar': { display: 'none' } }}>
+              {categories.map(cat => (
+                <Box 
+                  key={cat.name} 
+                  onClick={() => setActiveCat(cat.name)}
+                  sx={{ 
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, 
+                    minWidth: '70px', cursor: 'pointer',
+                    color: activeCat === cat.name ? '#f97316' : '#64748b'
+                  }}
+                >
+                  <Box sx={{ 
+                    width: 50, height: 50, borderRadius: '12px', border: '1px solid',
+                    borderColor: activeCat === cat.name ? '#f97316' : '#e2e8f0',
+                    display: 'grid', placeItems: 'center',
+                    bgcolor: activeCat === cat.name ? 'rgba(249, 115, 22, 0.1)' : '#f8fafc',
+                    transition: 'all 0.2s'
+                  }}>
+                    {cat.icon}
+                  </Box>
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: activeCat === cat.name ? 700 : 500, whiteSpace: 'nowrap' }}>
+                    {cat.name}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
           </Box>
-        )}
 
-        {filteredShops.map((store) => (
-          <NearbyStoreCard key={store.id} store={store} />
-        ))}
-      </Box>
+          {/* Store List */}
+          <Box sx={{ p: 2 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
+              Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
+            </Typography>
+
+            {filteredShops.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 6, color: '#64748b' }}>
+                No shops match your criteria.
+              </Box>
+            ) : (
+              filteredShops.map((store) => (
+                <NearbyStoreCard key={store.id} store={store} />
+              ))
+            )}
+          </Box>
+        </>
+      )}
 
       <BottomNav />
+      
+      {/* Location Picker Modal */}
+      <LocationPickerModal isOpen={showPicker} onClose={() => setShowPicker(false)} />
     </div>
   );
 }

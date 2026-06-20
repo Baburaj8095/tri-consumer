@@ -15,9 +15,12 @@ import {
   LuImage,
   LuTrash2,
   LuLogOut,
+  LuChevronDown,
 } from 'react-icons/lu';
 import { consumerProfile } from '../services/mockData.js';
 import { clearAuth, getAccessToken } from '../../../services/authStorage.js';
+import { useLocation } from '../context/LocationContext.jsx';
+import LocationPickerModal from './LocationPickerModal.jsx';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
@@ -36,6 +39,7 @@ function formatWallet(value) {
 
 export default function Header() {
   const navigate = useNavigate();
+  const { location, showPicker, setShowPicker } = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [profilePic, setProfilePic] = useState(() => localStorage.getItem('triConsumerProfilePic') || '');
@@ -169,9 +173,17 @@ export default function Header() {
           >
             <LuMenu />
           </button>
-          <div className="ce-title-wrap">
-            <span className="ce-title-kicker">Trikonekt</span>
-            <h1 className="ce-title">Shop</h1>
+          <div 
+            className="ce-title-wrap" 
+            style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '2px' }}
+            onClick={() => setShowPicker(true)}
+          >
+            <span className="ce-title-kicker" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--ce-muted)' }}>
+              <LuMapPin color="#f97316" size={12} /> {location.area || 'Indiranagar'}
+            </span>
+            <h1 className="ce-title" style={{ fontSize: '14px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '2px' }}>
+              {location.city || 'Bangalore'} <LuChevronDown size={14} color="#64748b" />
+            </h1>
           </div>
           <div className="ce-header-actions">
             <button className="ce-icon-btn ce-icon-btn-sm" aria-label="Wallet">
@@ -355,6 +367,8 @@ export default function Header() {
           </div>
         </div>
       )}
+
+      <LocationPickerModal isOpen={showPicker} onClose={() => setShowPicker(false)} />
     </>
   );
 }

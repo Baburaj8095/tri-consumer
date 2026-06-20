@@ -31,6 +31,8 @@ import {
   LuShoppingBag
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
+import { useLocation } from '../context/LocationContext.jsx';
+import LocationPickerModal from '../components/LocationPickerModal.jsx';
 import '../consumerEcommerce.css';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
@@ -76,7 +78,15 @@ const filters = ['All', 'Open Now', 'Top Rated', 'Free Delivery'];
 
 export default function NearMePage() {
   const navigate = useNavigate();
-  const [selectedCity, setSelectedCity] = useState(cities[0]);
+  const { location, showPicker, setShowPicker, saveLocation } = useLocation();
+  const selectedCity = { name: location.city };
+  const setSelectedCity = (city) => {
+    saveLocation({
+      ...location,
+      city: city.name,
+      formattedAddress: `${location.area || 'Indiranagar'}, ${city.name}`
+    });
+  };
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -257,9 +267,9 @@ export default function NearMePage() {
               <h1 style={{ fontWeight: 900 }}>Nearby Marketplace</h1>
               <p>Everything around you</p>
             </div>
-            <button type="button" className="ce-nearme-wire-location">
+            <button type="button" className="ce-nearme-wire-location" onClick={() => setShowPicker(true)}>
               <LuMapPin />
-              {selectedCity.name}
+              {location.area}, {location.city}
               <LuChevronDown />
             </button>
           </header>
@@ -369,6 +379,7 @@ export default function NearMePage() {
       </Link>
 
       <BottomNav />
+      <LocationPickerModal isOpen={showPicker} onClose={() => setShowPicker(false)} />
     </div>
   );
 }

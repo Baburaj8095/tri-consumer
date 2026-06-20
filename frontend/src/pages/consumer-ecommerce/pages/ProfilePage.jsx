@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import {
   LuChevronLeft,
@@ -17,6 +17,14 @@ import {
   LuCheck,
   LuWallet,
   LuHash,
+  LuBell,
+  LuShoppingBag,
+  LuTruck,
+  LuClock,
+  LuHeart,
+  LuInfo,
+  LuFileText,
+  LuShield,
 } from 'react-icons/lu';
 import { getAccessToken, clearAuth } from '../../../services/authStorage';
 import '../consumerEcommerce.css';
@@ -187,10 +195,10 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="pf-page">
+    <div className="pf-page" style={{ paddingBottom: '90px' }}>
 
       {/* ── Gradient Hero Banner ── */}
-      <div className="pf-hero-banner">
+      <div className="pf-hero-banner" style={{ paddingBottom: '20px' }}>
         {/* Top bar inside banner */}
         <div className="pf-banner-topbar">
           <button className="pf-banner-back" onClick={() => navigate('/consumer-ecommerce')} aria-label="Go back">
@@ -221,7 +229,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Name + badge */}
-        <h2 className="pf-banner-name">{displayName}</h2>
+        <h2 className="pf-banner-name" style={{ marginTop: '8px' }}>{displayName}</h2>
         <div className="pf-prime-badge">⭐ Prime Consumer Member</div>
       </div>
 
@@ -268,39 +276,137 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* ── Settings Section ── */}
-      <div className="pf-section">
-        <p className="pf-section-title">Account</p>
-        <div className="pf-settings-group">
-          <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}>
-            <div className="pf-settings-icon pf-settings-icon--purple"><LuUser size={17} /></div>
-            <span>Edit Profile</span>
-            <LuChevronRight size={15} className="pf-chevron" />
-          </button>
-          <div className="pf-settings-divider" />
-          <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('password'); }}>
-            <div className="pf-settings-icon pf-settings-icon--blue"><LuLock size={17} /></div>
-            <span>Change Password</span>
-            <LuChevronRight size={15} className="pf-chevron" />
-          </button>
+      {/* ── QUICK ACTIONS ── */}
+      <h3 className="pf-menu-section-header" style={{ marginTop: '16px' }}>Quick Actions</h3>
+      <div className="pf-quick-actions">
+        <Link to="/orders" className="pf-quick-card">
+          <LuShoppingBag />
+          <span>My Orders</span>
+        </Link>
+        <Link to="/track-order/1" className="pf-quick-card">
+          <LuTruck />
+          <span>Track Order</span>
+        </Link>
+        <div className="pf-quick-card" onClick={() => alert('Saved Addresses is under development.')}>
+          <LuMapPin />
+          <span>Saved Addresses</span>
+        </div>
+        <div className="pf-quick-card" onClick={() => alert('Wallet History statement is under development.')}>
+          <LuClock />
+          <span>Wallet History</span>
         </div>
       </div>
 
-      <div className="pf-section">
-        <p className="pf-section-title">More</p>
-        <div className="pf-settings-group">
-          <button className="pf-settings-row" onClick={() => { setIsSuccess(false); setActiveModal('refer'); }}>
-            <div className="pf-settings-icon pf-settings-icon--orange"><LuGift size={17} /></div>
-            <span>Refer Friends &amp; Businesses</span>
-            <LuChevronRight size={15} className="pf-chevron" />
-          </button>
-          <div className="pf-settings-divider" />
-          <button className="pf-settings-row" onClick={() => setActiveModal('contact')}>
-            <div className="pf-settings-icon pf-settings-icon--green"><LuPhone size={17} /></div>
-            <span>Contact Support</span>
-            <LuChevronRight size={15} className="pf-chevron" />
-          </button>
-        </div>
+      {/* ── ACCOUNT SECTION ── */}
+      <h3 className="pf-menu-section-header">Account</h3>
+      <div className="pf-settings-group" style={{ margin: '0 16px 16px' }}>
+        <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('edit'); }}>
+          <div className="pf-settings-icon pf-settings-icon--purple"><LuUser size={17} /></div>
+          <span>Edit Profile</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => { setErrorMsg(''); setActiveModal('password'); }}>
+          <div className="pf-settings-icon pf-settings-icon--blue"><LuLock size={17} /></div>
+          <span>Change Password</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('KYC Verification is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--green"><LuCheck size={17} /></div>
+          <span>KYC Verification</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Notification settings are under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--purple"><LuBell size={17} /></div>
+          <span>Notification Settings</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+      </div>
+
+      {/* ── ORDERS SECTION ── */}
+      <h3 className="pf-menu-section-header">Orders</h3>
+      <div className="pf-settings-group" style={{ margin: '0 16px 16px' }}>
+        <Link to="/orders" className="pf-settings-row" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="pf-settings-icon pf-settings-icon--purple"><LuShoppingBag size={17} /></div>
+          <span>My Orders</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </Link>
+        <div className="pf-settings-divider" />
+        <Link to="/track-order/1" className="pf-settings-row" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div className="pf-settings-icon pf-settings-icon--blue"><LuTruck size={17} /></div>
+          <span>Track Order</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </Link>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Returns & Refunds info is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--orange"><LuClock size={17} /></div>
+          <span>Returns &amp; Refunds</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Wishlist is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--green"><LuHeart size={17} /></div>
+          <span>Wishlist</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+      </div>
+
+      {/* ── WALLET SECTION ── */}
+      <h3 className="pf-menu-section-header">Wallet</h3>
+      <div className="pf-settings-group" style={{ margin: '0 16px 16px' }}>
+        <button className="pf-settings-row" onClick={() => alert('Wallet Transactions statement is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--purple"><LuWallet size={17} /></div>
+          <span>Wallet Transactions</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Reward Points detail is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--blue"><LuGift size={17} /></div>
+          <span>Reward Points</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Cashback History is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--orange"><LuGift size={17} /></div>
+          <span>Cashback History</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+      </div>
+
+      {/* ── MORE SECTION ── */}
+      <h3 className="pf-menu-section-header">More</h3>
+      <div className="pf-settings-group" style={{ margin: '0 16px 16px' }}>
+        <button className="pf-settings-row" onClick={() => { setIsSuccess(false); setActiveModal('refer'); }}>
+          <div className="pf-settings-icon pf-settings-icon--orange"><LuGift size={17} /></div>
+          <span>Refer Friends &amp; Businesses</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => setActiveModal('contact')}>
+          <div className="pf-settings-icon pf-settings-icon--green"><LuPhone size={17} /></div>
+          <span>Contact Support</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('FAQ section is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--purple"><LuInfo size={17} /></div>
+          <span>FAQ</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Terms of Service is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--blue"><LuFileText size={17} /></div>
+          <span>Terms</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
+        <div className="pf-settings-divider" />
+        <button className="pf-settings-row" onClick={() => alert('Privacy Policy is under development.')}>
+          <div className="pf-settings-icon pf-settings-icon--green"><LuShield size={17} /></div>
+          <span>Privacy Policy</span>
+          <LuChevronRight size={15} className="pf-chevron" />
+        </button>
       </div>
 
       {/* ── Logout ── */}

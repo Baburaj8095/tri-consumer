@@ -23,8 +23,9 @@ import {
   LuUtensils,
   LuSparkles,
 } from 'react-icons/lu';
+import { useLocation } from '../context/LocationContext.jsx';
+import LocationPickerModal from '../components/LocationPickerModal.jsx';
 import Header from '../components/Header.jsx';
-import LocationSelectorModal from '../components/LocationSelectorModal.jsx';
 import DealsSection from '../components/DealsSection.jsx';
 import GiftCardsSection from '../components/GiftCardsSection.jsx';
 import AdsCarousel from '../components/AdsCarousel.jsx';
@@ -420,7 +421,7 @@ function ProductHorizontalCard({ product, index }) {
 }
 
 export default function App() {
-  const cityModal = useModal();
+  const { location, showPicker, setShowPicker } = useLocation();
   const [activePromoIndex, setActivePromoIndex] = useState(0);
   const [activeAdIndex, setActiveAdIndex] = useState(0);
   const [ambientColors, setAmbientColors] = useState(promoDeals[0].ambient);
@@ -455,9 +456,9 @@ export default function App() {
           </Link>
 
           <div className="ce-commerce-location">
-            <button type="button" onClick={cityModal.open}>
+            <button type="button" onClick={() => setShowPicker(true)}>
               <LuMapPin />
-              <span>Deliver to Baburaj - {consumerProfile.city} {consumerProfile.pinCode}</span>
+              <span>Deliver to {location.area}, {location.city} {location.pincode}</span>
               <LuChevronDown />
             </button>
             <Link to="/consumer-ecommerce/join-prime">
@@ -612,7 +613,7 @@ export default function App() {
           {/* <AdsCarousel /> */}
         </section>
       </main>
-      <LocationSelectorModal isOpen={cityModal.isOpen} onClose={cityModal.close} />
+      <LocationPickerModal isOpen={showPicker} onClose={() => setShowPicker(false)} />
       <BottomNav />
     </div>
   );

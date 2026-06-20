@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Box, Typography, Stack, Tabs, Tab, Card, CardContent, Chip, CircularProgress, Container, Button } from '@mui/material';
 import { 
   LuChevronLeft, LuStore, LuCalendar, LuHash, LuInfo, 
-  LuShoppingBag, LuTruck, LuXCircle, LuTimer 
+  LuShoppingBag, LuTruck, LuX, LuTimer 
 } from 'react-icons/lu';
 import { getAccessToken, tryTokenRefresh } from '../../../services/authStorage';
 import BottomNav from '../components/BottomNav.jsx';
@@ -132,7 +132,7 @@ export default function MyOrdersPage() {
       case 'COMPLETED':
         return <Chip label="Completed" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 800, borderRadius: '6px' }} />;
       case 'CANCELLED':
-        return <Chip icon={<LuXCircle size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
+        return <Chip icon={<LuX size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
       default:
         return <Chip label={status} size="small" sx={{ bgcolor: 'rgba(100, 116, 139, 0.1)', color: '#64748b', fontWeight: 800, borderRadius: '6px' }} />;
     }
@@ -555,6 +555,7 @@ export default function MyOrdersPage() {
     </div>
   );
 }
+
 
 
 

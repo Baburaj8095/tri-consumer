@@ -13024,7 +13024,7 @@ body.ce-menu-open .ce-nearby-rail {
   background: #fff;
   border-bottom: 1px solid var(--ce-border);
   position: sticky;
-  top: 84px;
+  top: 2px;
   z-index: 30;
   display: flex;
   overflow-x: auto;

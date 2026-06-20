@@ -207,17 +207,17 @@ export default function OrdersPage() {
   }, [normalizedOrders, activeTab]);
 
   return (
-    <div className="ce-app" style={{ paddingTop: '72px', paddingBottom: '80px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+    <div className="ce-app" style={{ paddingTop: '84px', paddingBottom: '80px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
         <button onClick={() => navigate('/consumer-ecommerce/profile')} aria-label="Back" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
           <LuChevronLeft size={24} />
         </button>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0 }}>My Orders</h1>
-          <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>Your transaction history &amp; tracks</p>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>My Orders</h1>
+          <p style={{ fontSize: '12px', margin: 0 }}>Your transaction history &amp; tracks</p>
         </div>
-        <span style={{ color: '#f97316' }}><LuShoppingBag size={22} /></span>
+        <span><LuShoppingBag size={22} /></span>
       </header>
 
       {/* Tabs */}

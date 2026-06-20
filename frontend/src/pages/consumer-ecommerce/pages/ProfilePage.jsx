@@ -195,7 +195,7 @@ export default function ProfilePage() {
     .toUpperCase();
 
   return (
-    <div className="pf-page" style={{ paddingBottom: '90px' }}>
+    <div className="ce-app pf-page" style={{ paddingBottom: '90px' }}>
 
       {/* ── Gradient Hero Banner ── */}
       <div className="pf-hero-banner" style={{ paddingBottom: '20px' }}>

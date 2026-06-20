@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Typography, IconButton, Stack, Button, Divider, Paper } from '@mui/material';
 import { 
@@ -12,9 +12,15 @@ const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-ca
 export default function ShopDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const isNearbyDeliveryMode = searchParams.get('mode') === 'nearby-delivery';
+  const nearbyLat = searchParams.get('lat');
+  const nearbyLng = searchParams.get('lng');
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [shopError, setShopError] = useState(false);
 
   // Cart local state representation loaded from localStorage
   const [cart, setCart] = useState(() => {
@@ -27,36 +33,35 @@ export default function ShopDetailsPage() {
   });
 
   useEffect(() => {
-    // 1. Fetch live active shop details from public endpoint
-    axios.get(`${CAPTAIN_API_URL}/captain/shops/${id}`)
+    const locationQuery = nearbyLat && nearbyLng ? `?lat=${nearbyLat}&lng=${nearbyLng}` : '';
+    const shopUrl = isNearbyDeliveryMode
+      ? `${CAPTAIN_API_URL}/captain/consumer/nearby-shops/${id}${locationQuery}`
+      : `${CAPTAIN_API_URL}/captain/consumer/shops/${id}`;
+    const productsUrl = isNearbyDeliveryMode
+      ? `${CAPTAIN_API_URL}/captain/consumer/nearby-shops/${id}/delivery-products${locationQuery}`
+      : `${CAPTAIN_API_URL}/captain/consumer/shops/${id}/products`;
+
+    // 1. Fetch consumer-safe B2C online-enabled shop details
+    setShopError(false);
+    axios.get(shopUrl)
       .then(res => {
-        setShop(res.data);
+        const data = res.data;
+        if (isNearbyDeliveryMode && data && data.is_delivery_available === false) {
+          throw new Error(data.delivery_unavailable_reason || 'Nearby delivery unavailable');
+        }
+        setShop(data);
       })
       .catch(err => {
-        console.error('Failed to fetch public store details:', err);
-        // Fallback search in b2c list
-        axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
-          .then(resB2c => {
-            const found = resB2c.data?.find(s => s.id.toString() === id);
-            if (found) {
-              setShop({
-                id: found.id,
-                shop_name: found.shop_name,
-                pincode: found.shop_pincode || found.pincode,
-                city: found.city,
-                address: found.address,
-                contact_number: found.contact_number,
-                min_order_value: found.min_order_value,
-                base_delivery_fee: found.base_delivery_fee
-              });
-            }
-          });
+        console.error('Failed to fetch consumer-safe online store details:', err);
+        setShopError(true);
+        setShop(null);
       });
 
-    // 2. Fetch live product catalog
-    axios.get(`${CAPTAIN_API_URL}/captain/shops/${id}/products`)
+    // 2. Fetch consumer-safe online product catalog
+    axios.get(productsUrl)
       .then(res => {
-        // Only display active and online delivery-eligible products
+        // Backend already enforces B2C, active, in-stock, online-delivery products.
+        // Keep this frontend guard as a defensive fallback for older deployments.
         const onlineOnly = (res.data || []).filter(p => p.is_active && p.online_delivery);
         setProducts(onlineOnly);
         setLoading(false);
@@ -65,7 +70,7 @@ export default function ShopDetailsPage() {
         console.error('Failed to load shop products:', err);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, isNearbyDeliveryMode, nearbyLat, nearbyLng]);
 
   // Save cart to local storage whenever state changes
   const saveCart = (newCart) => {
@@ -86,6 +91,9 @@ export default function ShopDetailsPage() {
       const freshCart = {
         shopId: parseInt(id),
         shopName: shopName,
+        orderChannel: isNearbyDeliveryMode ? 'NEARBY_DELIVERY' : 'ONLINE_DELIVERY',
+        latitude: nearbyLat ? Number(nearbyLat) : null,
+        longitude: nearbyLng ? Number(nearbyLng) : null,
         items: [{ productId: product.id, title: product.title, price: product.price, quantity: 1, image: product.image }]
       };
       saveCart(freshCart);
@@ -111,6 +119,9 @@ export default function ShopDetailsPage() {
     saveCart({
       shopId: parseInt(id),
       shopName: shopName,
+      orderChannel: isNearbyDeliveryMode ? 'NEARBY_DELIVERY' : 'ONLINE_DELIVERY',
+      latitude: nearbyLat ? Number(nearbyLat) : null,
+      longitude: nearbyLng ? Number(nearbyLng) : null,
       items: updatedItems
     });
   };
@@ -128,6 +139,22 @@ export default function ShopDetailsPage() {
       items: updatedItems
     });
   };
+
+  if (shopError) {
+    return (
+      <Box p={4} textAlign="center">
+        <Typography sx={{ fontWeight: 900, color: '#0f172a', mb: 1 }}>
+          Store not available for home delivery
+        </Typography>
+        <Typography sx={{ color: '#64748b', mb: 2 }}>
+          This store may be inactive, offline-only, outside your delivery radius, or unavailable for consumer delivery shopping.
+        </Typography>
+        <Button variant="contained" onClick={() => navigate(-1)} sx={{ textTransform: 'none', fontWeight: 800 }}>
+          Go Back
+        </Button>
+      </Box>
+    );
+  }
 
   if (!shop) return <Box p={4} textAlign="center">Loading store details...</Box>;
 
@@ -162,7 +189,9 @@ export default function ShopDetailsPage() {
             4.5 <LuStar size={12} fill="#fff" />
           </Box>
           <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>118 Ratings</Typography>
-          <Typography sx={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700, ml: 1 }}>Online Delivery Active</Typography>
+          <Typography sx={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700, ml: 1 }}>
+            {isNearbyDeliveryMode ? 'Nearby Delivery Active' : 'Online Delivery Active'}
+          </Typography>
         </Stack>
 
         <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 0.5 }}>{address} • Within {shop.delivery_radius_km || 5.0}  km</Typography>

@@ -23,6 +23,8 @@ export default function SecureCheckoutPage() {
   const params = new URLSearchParams(location.search);
   const amountStr = params.get('amount') || '0';
   const amount = parseFloat(amountStr);
+  const onlineOrderId = params.get('onlineOrderId') || params.get('online_order_id');
+  const isDeliveryOrderPayment = Boolean(onlineOrderId);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -75,7 +77,8 @@ export default function SecureCheckoutPage() {
         {
           shopId: parseInt(id),
           amount: amount,
-          paymentMethod: paymentMethod
+          paymentMethod: paymentMethod,
+          ...(onlineOrderId ? { online_order_id: parseInt(onlineOrderId) } : {})
         },
         {
           headers: { Authorization: `Bearer ${authToken}` }
@@ -86,7 +89,7 @@ export default function SecureCheckoutPage() {
     makeRequest(token)
       .then(res => {
         const data = res.data;
-        navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}`);
+        navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}${onlineOrderId ? `&onlineOrderId=${onlineOrderId}` : ''}`);
       })
       .catch(async (err) => {
         // If unauthorized/expired token, attempt to refresh the token and retry once
@@ -97,7 +100,7 @@ export default function SecureCheckoutPage() {
             makeRequest(newToken)
               .then(res => {
                 const data = res.data;
-                navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}`);
+                navigate(`/consumer-ecommerce/shop/${id}/upi-payment?amount=${amount}&refId=${data.refId || data.ref_id}${onlineOrderId ? `&onlineOrderId=${onlineOrderId}` : ''}`);
               })
               .catch(retryErr => {
                 console.error('Failed to initiate manual payment after token refresh:', retryErr);
@@ -130,10 +133,10 @@ export default function SecureCheckoutPage() {
     <div className="ce-app" style={{ paddingTop: 84, paddingBottom: 260, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
-        <Link to={`/consumer-ecommerce/shop/${id}/payment`} aria-label="Back"><LuChevronLeft /></Link>
+        <Link to={isDeliveryOrderPayment ? '/consumer-ecommerce/my-orders' : `/consumer-ecommerce/shop/${id}/payment`} aria-label="Back"><LuChevronLeft /></Link>
         <div>
           <h1>Secure Checkout</h1>
-          <p>Choose your payment method</p>
+          <p>{isDeliveryOrderPayment ? 'Settle delivered order via Pay Store' : 'Choose your payment method'}</p>
         </div>
         <span><LuStore /></span>
       </header>
@@ -175,6 +178,11 @@ export default function SecureCheckoutPage() {
                 <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600, mt: 0.5 }}>
                   {shop.category} • {shop.location}
                 </Typography>
+                {isDeliveryOrderPayment && (
+                  <Typography sx={{ fontSize: '0.75rem', color: '#ea580c', fontWeight: 800, mt: 0.5 }}>
+                    Delivery Order #{onlineOrderId}
+                  </Typography>
+                )}
               </Box>
             </Stack>
           </Box>
@@ -205,10 +213,10 @@ export default function SecureCheckoutPage() {
           >
             <Box>
               <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem' }}>
-                Manual Payment (Pay Offline)
+                {isDeliveryOrderPayment ? 'Pay Store Manual Settlement' : 'Manual Payment (Pay Offline)'}
               </Typography>
               <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, mt: 0.5 }}>
-                Pay cash at counter or scan merchant UPI QR
+                {isDeliveryOrderPayment ? 'Uses the same existing offline Pay Store approval flow' : 'Pay cash at counter or scan merchant UPI QR'}
               </Typography>
             </Box>
             {paymentMethod === 'MANUAL' && (

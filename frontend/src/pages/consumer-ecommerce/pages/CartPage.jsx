@@ -34,6 +34,7 @@ export default function CartPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('ONLINE'); // COD or ONLINE
+  const isNearbyDeliveryOrder = cart.orderChannel === 'NEARBY_DELIVERY';
 
   // Address modal/form toggle & state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -91,6 +92,9 @@ export default function CartPage() {
     const payload = {
       shop_id: currentCart.shopId,
       address_id: addressId || null,
+      order_channel: currentCart.orderChannel || 'ONLINE_DELIVERY',
+      latitude: currentCart.latitude || null,
+      longitude: currentCart.longitude || null,
       items: currentCart.items.map(it => ({
         product_id: it.productId,
         quantity: it.quantity
@@ -227,11 +231,16 @@ export default function CartPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      const effectivePaymentMethod = cart.orderChannel === 'NEARBY_DELIVERY' ? 'COD' : paymentMethod;
+
       // Step B: Post the final verified CreateOrderRequest payload
       const orderPayload = {
         shop_id: cart.shopId,
         address_id: selectedAddressId,
-        payment_method: paymentMethod,
+        order_channel: cart.orderChannel || 'ONLINE_DELIVERY',
+        latitude: cart.latitude || null,
+        longitude: cart.longitude || null,
+        payment_method: effectivePaymentMethod,
         notes: notes || '',
         items: itemsPayload
       };
@@ -247,7 +256,7 @@ export default function CartPage() {
       // Clear the local state cart
       localStorage.removeItem('tri_consumer_cart');
 
-      if (paymentMethod === 'ONLINE' && orderNumber) {
+      if (effectivePaymentMethod === 'ONLINE' && orderNumber) {
         // Generate UPI deep-link and open it
         const upiLink = `upi://pay?pa=trikonekt.payments@upi&pn=Trikonekt&am=${grandTotal.toFixed(2)}&tr=${orderNumber}&tn=Online%20Order%20${orderNumber}`;
         window.location.href = upiLink;
@@ -273,7 +282,7 @@ export default function CartPage() {
           } catch (_) { /* ignore poll errors */ }
         }, 3000);
       } else {
-        // COD — go straight to orders
+        // COD / Near Store delivery — go straight to orders. Near Store delivery is paid after completion via Pay Store.
         navigate('/consumer-ecommerce/my-orders');
       }
 
@@ -639,26 +648,37 @@ export default function CartPage() {
           <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 900, color: '#0f172a' }}>
              Payment Options
           </h3>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {['ONLINE', 'COD'].map(method => (
-              <div 
-                key={method}
-                onClick={() => setPaymentMethod(method)}
-                style={{
-                  flex: 1, border: '1.5px solid', cursor: 'pointer', padding: '12px', borderRadius: '12px', textAlign: 'center', transition: 'all 0.1s',
-                  borderColor: paymentMethod === method ? '#ea580c' : '#cbd5e1',
-                  backgroundColor: paymentMethod === method ? 'rgba(234,88,12,0.03)' : '#fff'
-                }}
-              >
-                <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}>
-                  {method === 'ONLINE' ? 'Pay Online (Razorpay)' : 'Cash on Delivery (COD)'}
-                </div>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', display: 'block' }}>
-                  {method === 'ONLINE' ? 'Seamless UPI, Cards' : 'Pay when parcel arrives'}
-                </span>
+          {isNearbyDeliveryOrder ? (
+            <div style={{ border: '1.5px solid #ea580c', backgroundColor: 'rgba(234,88,12,0.03)', padding: '12px', borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b' }}>
+                Pay after delivery via Pay Store
               </div>
-            ))}
-          </div>
+              <span style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '4px', display: 'block', lineHeight: 1.4 }}>
+                Your nearby store delivery order will be placed now. Once the merchant marks it delivered, pay using the same existing offline Pay Store flow from My Orders.
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {['ONLINE', 'COD'].map(method => (
+                <div 
+                  key={method}
+                  onClick={() => setPaymentMethod(method)}
+                  style={{
+                    flex: 1, border: '1.5px solid', cursor: 'pointer', padding: '12px', borderRadius: '12px', textAlign: 'center', transition: 'all 0.1s',
+                    borderColor: paymentMethod === method ? '#ea580c' : '#cbd5e1',
+                    backgroundColor: paymentMethod === method ? 'rgba(234,88,12,0.03)' : '#fff'
+                  }}
+                >
+                  <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}>
+                    {method === 'ONLINE' ? 'Pay Online (Razorpay)' : 'Cash on Delivery (COD)'}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', display: 'block' }}>
+                    {method === 'ONLINE' ? 'Seamless UPI, Cards' : 'Pay when parcel arrives'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* 5. Bill Details Section */}
@@ -729,7 +749,7 @@ export default function CartPage() {
             <span>Checking Stocks...</span>
           ) : (
             <>
-              Proceed to Pay <FaArrowLeft style={{ transform: 'rotate(180deg)' }} />
+              {isNearbyDeliveryOrder ? 'Place Delivery Order' : 'Proceed to Pay'} <FaArrowLeft style={{ transform: 'rotate(180deg)' }} />
             </>
           )}
         </button>
@@ -738,4 +758,6 @@ export default function CartPage() {
     </div>
   );
 }
+
+
 

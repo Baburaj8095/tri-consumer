@@ -90,6 +90,23 @@ export default function MyOrdersPage() {
     }
   };
 
+  const isOrderPaid = (item) => String(item.paymentStatus || item.payment_status || '').toUpperCase() === 'PAID';
+  const getOfflinePaymentId = (item) => item.offlinePaymentId || item.offline_payment_id;
+  const isNearbyDeliveryOrder = (item) => String(item.orderChannel || item.order_channel || '').toUpperCase() === 'NEARBY_DELIVERY';
+
+  const handlePayDeliveryOrder = (item) => {
+    const amount = Number(item.grandTotal || item.grand_total || item.total || 0);
+    if (!item.shopId && !item.shop_id) {
+      alert('Shop information is missing for this order. Please refresh and try again.');
+      return;
+    }
+    if (!amount || amount < 10) {
+      alert('Invalid delivery order amount. Please contact support.');
+      return;
+    }
+    navigate(`/consumer-ecommerce/shop/${item.shopId || item.shop_id}/checkout?amount=${amount}&onlineOrderId=${item.id}`);
+  };
+
   const getOfflineStatusChip = (status) => {
     const stat = (status || '').toUpperCase();
     if (stat === 'APPROVED' || stat === 'ACCEPTED' || stat === 'SUCCESS') {
@@ -115,7 +132,7 @@ export default function MyOrdersPage() {
       case 'COMPLETED':
         return <Chip label="Completed" size="small" sx={{ bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontWeight: 800, borderRadius: '6px' }} />;
       case 'CANCELLED':
-        return <Chip icon={<LuCircleX size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
+        return <Chip icon={<LuXCircle size={14} style={{ color: '#ef4444' }} />} label="Cancelled" size="small" sx={{ bgcolor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', fontWeight: 800, borderRadius: '6px' }} />;
       default:
         return <Chip label={status} size="small" sx={{ bgcolor: 'rgba(100, 116, 139, 0.1)', color: '#64748b', fontWeight: 800, borderRadius: '6px' }} />;
     }
@@ -351,6 +368,21 @@ export default function MyOrdersPage() {
                           </Typography>
                         </Box>
 
+                        {isNearbyDeliveryOrder(item) && item.status === 'COMPLETED' && !isOrderPaid(item) && !getOfflinePaymentId(item) && (
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            onClick={() => handlePayDeliveryOrder(item)}
+                            sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px', bgcolor: '#f97316', boxShadow: 'none' }}
+                          >
+                            Pay Store
+                          </Button>
+                        )}
+
+                        {isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) && (
+                          <Chip label="Pay approval pending" size="small" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 800, borderRadius: '6px' }} />
+                        )}
+
                         {item.status === 'PENDING_CONFIRMATION' && (
                           <Button 
                             variant="outlined" 
@@ -458,6 +490,21 @@ export default function MyOrdersPage() {
                       </Typography>
                     </Box>
 
+                    {isNearbyDeliveryOrder(item) && item.status === 'COMPLETED' && !isOrderPaid(item) && !getOfflinePaymentId(item) && (
+                      <Button 
+                        variant="contained" 
+                        size="small"
+                        onClick={() => handlePayDeliveryOrder(item)}
+                        sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px', bgcolor: '#f97316', boxShadow: 'none' }}
+                      >
+                        Pay Store
+                      </Button>
+                    )}
+
+                    {isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) && (
+                      <Chip label="Pay approval pending" size="small" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 800, borderRadius: '6px' }} />
+                    )}
+
                     {item.status === 'PENDING_CONFIRMATION' && (
                       <Button 
                         variant="outlined" 
@@ -508,4 +555,6 @@ export default function MyOrdersPage() {
     </div>
   );
 }
+
+
 

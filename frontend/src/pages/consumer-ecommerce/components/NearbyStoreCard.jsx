@@ -6,6 +6,36 @@ export default function NearbyStoreCard({ store }) {
   const navigate = useNavigate();
   const targetId = store.shopId || store.id;
 
+  const deliveryLabel = (() => {
+    if (!store.homeDeliveryEnabled) return 'No Home Delivery';
+    if (store.deliveryUnavailableReason === 'SET_LOCATION') return 'Set location';
+    if (store.deliveryUnavailableReason === 'TOO_FAR') return 'Too Far';
+    if (store.isDeliveryAvailable) return 'Delivery';
+    return 'Delivery';
+  })();
+
+  const handleDeliveryClick = (e) => {
+    e.stopPropagation();
+    if (!store.homeDeliveryEnabled) {
+      alert('This shop does not provide home delivery. You can still use Pay Store.');
+      return;
+    }
+    if (store.deliveryUnavailableReason === 'SET_LOCATION') {
+      alert('Set your location to check delivery availability. You can still use Pay Store.');
+      return;
+    }
+    if (store.deliveryUnavailableReason === 'TOO_FAR') {
+      alert('This shop is outside your local delivery radius. You can still use Pay Store if applicable.');
+      return;
+    }
+
+    const loc = store.consumerLocation;
+    const query = loc?.lat && loc?.lng
+      ? `?mode=nearby-delivery&lat=${loc.lat}&lng=${loc.lng}`
+      : '?mode=nearby-delivery';
+    navigate(`/consumer-ecommerce/shop/${targetId}${query}`);
+  };
+
   return (
     <Box 
       onClick={() => navigate(`/consumer-ecommerce/shop/${targetId}`)}
@@ -95,6 +125,9 @@ export default function NearbyStoreCard({ store }) {
           <Box sx={{ bgcolor: 'rgba(249, 115, 22, 0.1)', color: '#f97316', px: 1.5, py: 0.5, borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800 }}>
             5% Cashback on Offline Pay
           </Box>
+          <Box sx={{ bgcolor: store.isDeliveryAvailable ? 'rgba(16,185,129,0.1)' : 'rgba(100,116,139,0.1)', color: store.isDeliveryAvailable ? '#059669' : '#64748b', px: 1.5, py: 0.5, borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800 }}>
+            {store.isDeliveryAvailable ? 'Delivery Available' : deliveryLabel}
+          </Box>
         </Stack>
 
         {/* 4-Button Footer Row */}
@@ -165,12 +198,9 @@ export default function NearbyStoreCard({ store }) {
                 bgcolor: 'rgba(249,115,22,0.04)'
               }
             }} 
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              alert('Standard delivery: 30-45 mins to your location.');
-            }}
+            onClick={handleDeliveryClick}
           >
-            Delivery
+            {deliveryLabel}
           </Button>
           <Button 
             size="medium" 

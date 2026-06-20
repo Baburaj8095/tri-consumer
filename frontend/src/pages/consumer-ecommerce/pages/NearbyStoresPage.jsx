@@ -39,6 +39,8 @@ export default function NearbyStoresPage() {
   const [activeCat, setActiveCat] = useState('All Stores');
   const [categories, setCategories] = useState([{ name: 'All Stores', icon: <LuStore size={24} /> }]);
   const [sponsoredShops, setSponsoredShops] = useState([]);
+  const [consumerLocation, setConsumerLocation] = useState(null);
+  const [locationStatus, setLocationStatus] = useState('checking');
 
   const filteredShops = useMemo(() => {
     if (activeCat === 'All Stores') return b2cShops;
@@ -47,7 +49,30 @@ export default function NearbyStoresPage() {
   }, [activeCat, b2cShops]);
 
   useEffect(() => {
-    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
+    if (!navigator.geolocation) {
+      setLocationStatus('unavailable');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setConsumerLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationStatus('ready');
+      },
+      () => {
+        setConsumerLocation(null);
+        setLocationStatus('denied');
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    );
+  }, []);
+
+  useEffect(() => {
+    const params = consumerLocation
+      ? `?lat=${consumerLocation.lat}&lng=${consumerLocation.lng}&radius_km=25`
+      : '';
+
+    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c${params}`)
       .then(res => {
         const data = res.data || [];
         setB2cShops(data.map(shop => ({
@@ -57,10 +82,17 @@ export default function NearbyStoresPage() {
           category: resolveCategoryName(shop),
           rating: '4.5',
           location: shop.city || shop.address || 'Local Area',
-          distance: 'Nearby',
+          distance: shop.distance_km != null ? `${shop.distance_km} Km` : 'Nearby',
           status: 'Open now',
           phone: shop.contact_number || shop.phone || '',
-          image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+          image: shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+          homeDeliveryEnabled: Boolean(shop.home_delivery_enabled),
+          deliveryRadiusKm: Math.min(Number(shop.delivery_radius_km) || 5, 25),
+          distanceKm: shop.distance_km,
+          isDeliveryAvailable: Boolean(shop.is_delivery_available),
+          deliveryUnavailableReason: shop.delivery_unavailable_reason,
+          consumerLocation,
+          locationStatus,
         })));
         const mapped = data.map(shop => resolveCategoryName(shop)).filter(Boolean);
         const uniq = Array.from(new Set(mapped));
@@ -75,7 +107,7 @@ export default function NearbyStoresPage() {
     axios.get(`${CAPTAIN_API_URL}/api/ads/sponsored-shops?limit=6&target=CONSUMER_NEARBY_B2C`)
       .then(res => setSponsoredShops(res.data || []))
       .catch(() => {});
-  }, []);
+  }, [consumerLocation, locationStatus]);
 
   return (
     <div className="ce-app ce-nearby-page" style={{ paddingTop: 84, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -184,6 +216,14 @@ export default function NearbyStoresPage() {
         <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
           Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
         </Typography>
+
+        {locationStatus !== 'ready' && (
+          <Box sx={{ mb: 2, p: 1.5, bgcolor: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 2 }}>
+            <Typography sx={{ fontSize: '0.8rem', color: '#9a3412', fontWeight: 700 }}>
+              Set location to check delivery availability. Pay Store remains available for nearby stores.
+            </Typography>
+          </Box>
+        )}
 
         {filteredShops.map((store) => (
           <NearbyStoreCard key={store.id} store={store} />

@@ -326,12 +326,8 @@ export default function DeliveryPage() {
 
   const handleClear = () => { setActiveCat(''); setSearch(''); setSearchInput(''); };
 
-  /* ── dynamic category pills (API + static fallback merged) ───────────── */
-  const catPills = loadingCats
-    ? TOP_CATS_STATIC.map(([name]) => ({ name }))
-    : categories.length > 0
-      ? categories
-      : TOP_CATS_STATIC.map(([name]) => ({ name }));
+  /* ── dynamic category pills (API categories only) ─────────────────────── */
+  const catPills = loadingCats ? [] : categories;
 
   /* ── render ───────────────────────────────────────────────────────────── */
   return (

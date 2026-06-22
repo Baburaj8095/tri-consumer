@@ -1,6 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { adBanners as mockAds } from '../services/mockData.js';
+
+const CAPTAIN_API_URL =
+  process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
 export default function AdsCarousel() {
   const trackRef = useRef(null);
@@ -8,12 +12,27 @@ export default function AdsCarousel() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setAds(mockAds);
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
+    axios.get(`${CAPTAIN_API_URL}/api/ads/banners?limit=10&target=CONSUMER_ONLINE_B2C`)
+      .then(res => {
+        const fetchedAds = Array.isArray(res.data) ? res.data : [];
+        if (fetchedAds.length > 0) {
+          setAds(fetchedAds.map(ad => ({
+            id: ad.id,
+            title: ad.title || 'Promoted',
+            brand: ad.description || 'Sponsored',
+            image: ad.image_url || ad.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=700&q=80',
+            targetUrl: ad.target_url || null
+          })));
+        } else {
+          setAds(mockAds);
+        }
+      })
+      .catch(() => {
+        setAds(mockAds);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   useEffect(() => {

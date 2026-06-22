@@ -49,11 +49,7 @@ export function LocationProvider({ children }) {
   const [recentLocations, setRecentLocations] = useState(() => {
     try {
       const saved = localStorage.getItem('triConsumerRecentLocations');
-      return saved ? JSON.parse(saved) : [
-        { ...DEFAULT_LOCATION, id: '1' },
-        { ...DEFAULT_LOCATION, area: 'Whitefield', pincode: '560066', formattedAddress: 'Whitefield, Bangalore', id: '2' },
-        { ...DEFAULT_LOCATION, area: 'Koramangala', pincode: '560034', formattedAddress: 'Koramangala, Bangalore', id: '3' }
-      ];
+      return saved ? JSON.parse(saved) : [];
     } catch (_) {
       return [];
     }
@@ -108,7 +104,8 @@ export function LocationProvider({ children }) {
         const context = feature.context || [];
         
         let area = feature.text || '';
-        let city = 'Bangalore';
+        let city = '';
+        let district = '';
         let state = 'Karnataka';
         let country = 'India';
         let pincode = '';
@@ -118,6 +115,8 @@ export function LocationProvider({ children }) {
             pincode = item.text;
           } else if (item.id.startsWith('place')) {
             city = item.text;
+          } else if (item.id.startsWith('district')) {
+            district = item.text;
           } else if (item.id.startsWith('region')) {
             state = item.text;
           } else if (item.id.startsWith('country')) {
@@ -127,17 +126,19 @@ export function LocationProvider({ children }) {
           }
         });
 
-        if (!area || area.toLowerCase() === city.toLowerCase()) {
-          area = feature.text || 'Indiranagar';
+        const finalCity = city || district || area || 'Bangalore';
+
+        if (!area || area.toLowerCase() === finalCity.toLowerCase()) {
+          area = feature.text || 'Selected Area';
         }
 
-        const formattedAddress = `${area}, ${city}`;
+        const formattedAddress = `${area}, ${finalCity}`;
 
         return {
           lat,
           lng,
           area,
-          city,
+          city: finalCity,
           state,
           country,
           pincode,
@@ -162,7 +163,7 @@ export function LocationProvider({ children }) {
     };
   };
 
-  const getGPSLocation = () => {
+  const getGPSLocation = (forceRefresh = false) => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error('Geolocation not supported'));
@@ -177,7 +178,7 @@ export function LocationProvider({ children }) {
             const distance = calculateDistance(location?.lat, location?.lng, latitude, longitude);
             const isRecent = location?.lastUpdated && (Date.now() - location.lastUpdated < 30 * 24 * 60 * 60 * 1000);
             
-            if (distance !== null && distance < 0.1 && isRecent) {
+            if (!forceRefresh && distance !== null && distance < 0.1 && isRecent) {
               resolve(location);
               return;
             }
@@ -232,17 +233,21 @@ export function LocationProvider({ children }) {
         const results = data.features.map((feature) => {
           const context = feature.context || [];
           let city = '';
+          let district = '';
           let pincode = '';
           context.forEach((item) => {
             if (item.id.startsWith('place')) city = item.text;
+            if (item.id.startsWith('district')) district = item.text;
             if (item.id.startsWith('postcode')) pincode = item.text;
           });
+          
+          const finalCity = city || district || feature.text || 'Bangalore';
           
           return {
             id: feature.id,
             formattedAddress: feature.place_name,
             area: feature.text,
-            city: city || 'Bangalore',
+            city: finalCity,
             pincode: pincode,
             lat: feature.center[1],
             lng: feature.center[0]

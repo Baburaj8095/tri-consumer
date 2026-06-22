@@ -47,7 +47,7 @@ export default function LocationPickerModal({ isOpen, onClose }) {
 
   const handleUseCurrentLocation = async () => {
     try {
-      await getGPSLocation();
+      await getGPSLocation(true);
       onClose();
     } catch (err) {
       alert('Could not obtain current location. Please choose manually.');

@@ -132,21 +132,23 @@ export default function NearbyStoreCard({ store }) {
         </Stack>
 
         {/* 4-Button Footer Row (Equal width, height, same spacing) */}
-        <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
+        <Stack direction="row" spacing={0.5} sx={{ width: '100%' }}>
           <Button 
             size="small" 
             variant="outlined" 
             startIcon={<LuPhone size={12} />}
             sx={{ 
               flex: 1, 
+              minWidth: 0,
               height: '38px',
-              fontSize: '0.75rem', 
+              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
               fontWeight: 700, 
               textTransform: 'none', 
               color: '#f97316', 
               borderColor: '#f97316', 
               borderRadius: '8px',
-              px: 0.5,
+              px: 0,
+              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
               '&:hover': {
                 borderColor: '#ea580c',
                 bgcolor: 'rgba(249,115,22,0.04)'
@@ -162,14 +164,16 @@ export default function NearbyStoreCard({ store }) {
             startIcon={<LuNavigation size={12} />}
             sx={{ 
               flex: 1, 
+              minWidth: 0,
               height: '38px',
-              fontSize: '0.75rem', 
+              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
               fontWeight: 700, 
               textTransform: 'none', 
               color: '#f97316', 
               borderColor: '#f97316', 
               borderRadius: '8px',
-              px: 0.5,
+              px: 0,
+              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
               '&:hover': {
                 borderColor: '#ea580c',
                 bgcolor: 'rgba(249,115,22,0.04)'
@@ -185,14 +189,16 @@ export default function NearbyStoreCard({ store }) {
             startIcon={<LuWallet size={12} />}
             sx={{ 
               flex: 1, 
+              minWidth: 0,
               height: '38px',
-              fontSize: '0.75rem', 
+              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
               fontWeight: 700, 
               textTransform: 'none', 
               color: '#f97316', 
               borderColor: '#f97316', 
               borderRadius: '8px',
-              px: 0.5,
+              px: 0,
+              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
               '&:hover': {
                 borderColor: '#ea580c',
                 bgcolor: 'rgba(249,115,22,0.04)'
@@ -208,15 +214,17 @@ export default function NearbyStoreCard({ store }) {
             startIcon={<LuEye size={12} />}
             sx={{ 
               flex: 1, 
+              minWidth: 0,
               height: '38px',
-              fontSize: '0.75rem', 
+              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
               fontWeight: 800, 
               textTransform: 'none', 
               bgcolor: '#f97316', 
               color: '#fff', 
               boxShadow: 'none', 
               borderRadius: '8px', 
-              px: 0.5,
+              px: 0,
+              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
               '&:hover': { 
                 bgcolor: '#ea580c',
                 boxShadow: 'none'

@@ -17,7 +17,7 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
   return d;
 }
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoiYmFidXJhaiIsImEiOiJjbHpia2I5YTIwMDFrMmpzNmtxM3d2N280In0.yourmocktoken';
+const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_API_KEY || '';
 
 // Default Location (Bangalore / Indiranagar)
 const DEFAULT_LOCATION = {
@@ -34,6 +34,9 @@ const DEFAULT_LOCATION = {
 const LocationContext = createContext();
 
 export function LocationProvider({ children }) {
+  const searchQueryCache = React.useRef({});
+  const [mapboxToken, setMapboxToken] = useState(process.env.REACT_APP_MAPBOX_API_KEY || '');
+  
   const [location, setLocationState] = useState(() => {
     try {
       const saved = localStorage.getItem('triConsumerLocation');
@@ -64,18 +67,30 @@ export function LocationProvider({ children }) {
     if (!saved) {
       setShowPrompt(true);
     }
+
+    // Fetch Mapbox config from Java backend configuration endpoint
+    fetch('/api/location/config')
+      .then(res => res.ok ? res.json() : null)
+      .then(json => {
+        const key = json?.data?.mapboxApiKey || json?.mapboxApiKey;
+        if (key) {
+          setMapboxToken(key);
+        }
+      })
+      .catch(err => console.error('Failed to load Mapbox config from backend:', err));
   }, []);
 
   const saveLocation = (loc) => {
-    setLocationState(loc);
-    localStorage.setItem('triConsumerLocation', JSON.stringify(loc));
+    const locWithTime = { ...loc, lastUpdated: loc.lastUpdated || Date.now() };
+    setLocationState(locWithTime);
+    localStorage.setItem('triConsumerLocation', JSON.stringify(locWithTime));
 
     // Update recents
     setRecentLocations((prev) => {
       const filtered = prev.filter(
         (x) => x.area?.toLowerCase() !== loc.area?.toLowerCase() || x.city?.toLowerCase() !== loc.city?.toLowerCase()
       );
-      const updated = [{ ...loc, id: String(Date.now()) }, ...filtered].slice(0, 5);
+      const updated = [{ ...locWithTime, id: String(Date.now()) }, ...filtered].slice(0, 5);
       localStorage.setItem('triConsumerRecentLocations', JSON.stringify(updated));
       return updated;
     });
@@ -83,7 +98,8 @@ export function LocationProvider({ children }) {
 
   const reverseGeocode = async (lat, lng) => {
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&country=IN&limit=1`;
+      const token = mapboxToken || MAPBOX_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&country=IN&limit=1`;
       const response = await fetch(url);
       const data = await response.json();
       
@@ -125,7 +141,8 @@ export function LocationProvider({ children }) {
           state,
           country,
           pincode,
-          formattedAddress
+          formattedAddress,
+          lastUpdated: Date.now()
         };
       }
     } catch (err) {
@@ -140,7 +157,8 @@ export function LocationProvider({ children }) {
       state: 'Karnataka',
       country: 'India',
       pincode: '560038',
-      formattedAddress: 'Indiranagar, Bangalore'
+      formattedAddress: 'Indiranagar, Bangalore',
+      lastUpdated: Date.now()
     };
   };
 
@@ -155,6 +173,15 @@ export function LocationProvider({ children }) {
         async (position) => {
           const { latitude, longitude } = position.coords;
           try {
+            // Check if current cached location is within 100 meters (0.1 KM) and has a valid timestamp (30 days)
+            const distance = calculateDistance(location?.lat, location?.lng, latitude, longitude);
+            const isRecent = location?.lastUpdated && (Date.now() - location.lastUpdated < 30 * 24 * 60 * 60 * 1000);
+            
+            if (distance !== null && distance < 0.1 && isRecent) {
+              resolve(location);
+              return;
+            }
+
             const loc = await reverseGeocode(latitude, longitude);
             saveLocation(loc);
             resolve(loc);
@@ -186,15 +213,23 @@ export function LocationProvider({ children }) {
     setShowPicker(true);
   };
 
-  const searchLocations = async (query) => {
-    if (!query || query.trim().length < 2) return [];
+  const searchLocations = async (query, signal) => {
+    const trimmed = (query || '').trim().toLowerCase();
+    if (!trimmed || trimmed.length < 3) return [];
+
+    // Check cache
+    if (searchQueryCache.current[trimmed]) {
+      return searchQueryCache.current[trimmed];
+    }
+
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&country=IN&limit=5&autocomplete=true`;
-      const response = await fetch(url);
+      const token = mapboxToken || MAPBOX_TOKEN;
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&country=IN&limit=5&autocomplete=true`;
+      const response = await fetch(url, { signal });
       const data = await response.json();
       
       if (data && data.features) {
-        return data.features.map((feature) => {
+        const results = data.features.map((feature) => {
           const context = feature.context || [];
           let city = '';
           let pincode = '';
@@ -213,9 +248,15 @@ export function LocationProvider({ children }) {
             lng: feature.center[0]
           };
         });
+
+        // Save to cache
+        searchQueryCache.current[trimmed] = results;
+        return results;
       }
     } catch (err) {
-      console.error('Error fetching Mapbox autocomplete:', err);
+      if (err.name !== 'AbortError') {
+        console.error('Error fetching Mapbox autocomplete:', err);
+      }
     }
 
     const mockSuggestions = [

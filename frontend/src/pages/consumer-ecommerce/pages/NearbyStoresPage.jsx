@@ -17,7 +17,6 @@ import {
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
-import MapView from '../components/MapView.jsx';
 import LocationPickerModal from '../components/LocationPickerModal.jsx';
 import { useLocation } from '../context/LocationContext.jsx';
 import '../consumerEcommerce.css';
@@ -48,7 +47,6 @@ export default function NearbyStoresPage() {
   const [categories, setCategories] = useState([{ name: 'All Stores', icon: <LuStore size={24} /> }]);
   const [sponsoredShops, setSponsoredShops] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('list'); // list | map
 
   const filteredShops = useMemo(() => {
     let shops = b2cShops;
@@ -187,78 +185,21 @@ export default function NearbyStoresPage() {
         </Box>
       </Box>
 
-      {/* List / Map View Toggle Bar */}
-      <Box sx={{ px: 2, mb: 1 }}>
-        <div className="map-view-toggle-bar">
-          <button 
-            className={`map-view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-            onClick={() => setViewMode('list')}
-          >
-            <LuList size={16} /> List View
-          </button>
-          <button 
-            className={`map-view-toggle-btn ${viewMode === 'map' ? 'active' : ''}`}
-            onClick={() => setViewMode('map')}
-          >
-            <LuMap size={16} /> Map View
-          </button>
-        </div>
+      <Box sx={{ p: 2 }}>
+        <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
+          Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
+        </Typography>
+
+        {filteredShops.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 6, color: '#64748b' }}>
+            No shops match your criteria.
+          </Box>
+        ) : (
+          filteredShops.map((store) => (
+            <NearbyStoreCard key={store.id} store={store} />
+          ))
+        )}
       </Box>
-
-      {viewMode === 'map' ? (
-        <Box sx={{ p: 2 }}>
-          <MapView stores={filteredShops} />
-        </Box>
-      ) : (
-        <>
-          {/* Categories Horizontal Scroll */}
-          <Box sx={{ bgcolor: '#fff', py: 2, borderBottom: '1px solid #e2e8f0' }}>
-            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', px: 2, '&::-webkit-scrollbar': { display: 'none' } }}>
-              {categories.map(cat => (
-                <Box 
-                  key={cat.name} 
-                  onClick={() => setActiveCat(cat.name)}
-                  sx={{ 
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, 
-                    minWidth: '70px', cursor: 'pointer',
-                    color: activeCat === cat.name ? '#f97316' : '#64748b'
-                  }}
-                >
-                  <Box sx={{ 
-                    width: 50, height: 50, borderRadius: '12px', border: '1px solid',
-                    borderColor: activeCat === cat.name ? '#f97316' : '#e2e8f0',
-                    display: 'grid', placeItems: 'center',
-                    bgcolor: activeCat === cat.name ? 'rgba(249, 115, 22, 0.1)' : '#f8fafc',
-                    transition: 'all 0.2s'
-                  }}>
-                    {cat.icon}
-                  </Box>
-                  <Typography sx={{ fontSize: '0.75rem', fontWeight: activeCat === cat.name ? 700 : 500, whiteSpace: 'nowrap' }}>
-                    {cat.name}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Box>
-
-          {/* Store List */}
-          <Box sx={{ p: 2 }}>
-            <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', mb: 2, color: '#0f172a' }}>
-              Stores near you <Typography component="span" sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>({filteredShops.length} found)</Typography>
-            </Typography>
-
-            {filteredShops.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 6, color: '#64748b' }}>
-                No shops match your criteria.
-              </Box>
-            ) : (
-              filteredShops.map((store) => (
-                <NearbyStoreCard key={store.id} store={store} />
-              ))
-            )}
-          </Box>
-        </>
-      )}
 
       <BottomNav />
       

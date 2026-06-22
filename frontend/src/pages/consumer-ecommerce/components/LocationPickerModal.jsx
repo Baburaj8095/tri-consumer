@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LuMapPin, LuX, LuSearch, LuClock } from 'react-icons/lu';
 import { useLocation } from '../context/LocationContext';
 
+
 export default function LocationPickerModal({ isOpen, onClose }) {
   const {
     location,
@@ -16,24 +17,30 @@ export default function LocationPickerModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!searchQuery || searchQuery.trim().length < 2) {
+    if (!searchQuery || searchQuery.trim().length < 3) {
       setSearchResults([]);
       return;
     }
 
+    const controller = new AbortController();
     const delayDebounce = setTimeout(async () => {
       setLoading(true);
       try {
-        const results = await searchLocations(searchQuery);
+        const results = await searchLocations(searchQuery, controller.signal);
         setSearchResults(results);
       } catch (err) {
-        console.error(err);
+        if (err.name !== 'AbortError') {
+          console.error(err);
+        }
       } finally {
         setLoading(false);
       }
     }, 500);
 
-    return () => clearTimeout(delayDebounce);
+    return () => {
+      clearTimeout(delayDebounce);
+      controller.abort();
+    };
   }, [searchQuery, searchLocations]);
 
   if (!isOpen) return null;

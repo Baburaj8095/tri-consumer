@@ -256,8 +256,8 @@ export default function NearMePage() {
   return (
     <div className="ce-app ce-nearme-wire" style={{ pb: '100px' }}>
       <main className="ce-nearme-wire-shell">
-        {/* Reusable Hero Header style matching Home (without quick services) */}
-        <Header mode="home" showQuickServices={false} onSearch={(val) => setSearchTerm(val)} />
+        {/* Reusable Hero Header style matching other modules (Compact) */}
+        <Header mode="compact" onSearch={(val) => setSearchTerm(val)} />
 
         <Box sx={{ maxWidth: '430px', margin: '0 auto', width: '100%' }}>
           

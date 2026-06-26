@@ -30,7 +30,7 @@ import { consumerProfile } from '../services/mockData.js';
 import { clearAuth, getAccessToken } from '../../../services/authStorage.js';
 import { useLocation } from '../context/LocationContext.jsx';
 import LocationPickerModal from './LocationPickerModal.jsx';
-import { Box, Stack, IconButton, Typography } from '@mui/material';
+import { Box, Stack, IconButton, Typography, Button } from '@mui/material';
 import TriIcon from '../../../components/ui/TriIcon';
 import SearchBar from './SearchBar';
 
@@ -193,144 +193,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
     return () => window.removeEventListener('storage', syncCart);
   }, []);
 
-  if (mode === 'compact') {
-    return (
-      <>
-        <Box
-          component="header"
-          sx={{
-            background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
-            pt: 2.5,
-            pb: 2.5,
-            px: 2,
-            color: '#FFFFFF',
-            boxShadow: '0 4px 20px rgba(255, 122, 0, 0.15)',
-            borderBottomLeftRadius: '24px',
-            borderBottomRightRadius: '24px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1090,
-            maxWidth: '430px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100%',
-          }}
-        >
-          {/* Row 1: Back + Title + Actions */}
-          <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ overflow: 'hidden', flex: 1 }}>
-              <IconButton
-                onClick={() => (onBack ? onBack() : navigate(-1))}
-                sx={{
-                  color: '#FFFFFF',
-                  bgcolor: 'rgba(255,255,255,0.16)',
-                  backdropFilter: 'blur(4px)',
-                  width: 38,
-                  height: 38,
-                  borderRadius: '12px',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.26)' }
-                }}
-              >
-                <TriIcon name="arrow_back" size={20} />
-              </IconButton>
-              <Box sx={{ overflow: 'hidden' }}>
-                <Typography sx={{ fontSize: '18px', fontWeight: 700, lineHeight: 1.2, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }} noWrap>
-                  {title || 'Online Shop'}
-                </Typography>
-                {subtitle && (
-                  <Typography sx={{ fontSize: '11px', fontWeight: 500, color: 'rgba(255,255,255,0.8)', fontFamily: '"Inter", sans-serif' }} noWrap>
-                    {subtitle}
-                  </Typography>
-                )}
-              </Box>
-            </Stack>
-
-            <Stack direction="row" spacing={1}>
-              <IconButton
-                component={Link}
-                to="/consumer-ecommerce/delivery"
-                sx={{
-                  color: '#FF7A00',
-                  bgcolor: '#FFFFFF',
-                  width: 38,
-                  height: 38,
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                  '&:hover': { bgcolor: 'grey.50' }
-                }}
-              >
-                <TriIcon name="search" size={20} />
-              </IconButton>
-              <IconButton
-                component={Link}
-                to="/consumer-ecommerce/cart"
-                sx={{
-                  color: '#FF7A00',
-                  bgcolor: '#FFFFFF',
-                  width: 38,
-                  height: 38,
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                  position: 'relative',
-                  '&:hover': { bgcolor: 'grey.50' }
-                }}
-              >
-                <TriIcon name="shopping_bag" size={20} />
-                {cartCount > 0 && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: -4,
-                      right: -4,
-                      bgcolor: '#EF4444',
-                      color: '#FFFFFF',
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      borderRadius: '50%',
-                      width: 17,
-                      height: 17,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px solid #FFFFFF',
-                    }}
-                  >
-                    {cartCount}
-                  </Box>
-                )}
-              </IconButton>
-            </Stack>
-          </Stack>
-
-          {/* Row 2: Deliver to location dropdown */}
-          <Box
-            onClick={() => setShowPicker(true)}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              mt: 1.5,
-              cursor: 'pointer',
-              bgcolor: 'rgba(255, 255, 255, 0.16)',
-              borderRadius: '12px',
-              py: 0.8,
-              px: 1.5,
-              border: '1px solid rgba(255,255,255,0.18)',
-              transition: 'background 0.2s',
-              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.24)' }
-            }}
-          >
-            <TriIcon name="location_on" size={16} sx={{ color: '#FFFFFF' }} />
-            <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#FFFFFF', flex: 1, fontFamily: '"Inter", sans-serif' }} noWrap>
-              Delivering to: <span style={{ fontWeight: 700 }}>{location.area || 'Indiranagar'}</span>, {location.city || 'Bangalore'}
-            </Typography>
-            <TriIcon name="arrow_drop_down" size={16} sx={{ color: '#FFFFFF' }} />
-          </Box>
-        </Box>
-        <LocationPickerModal isOpen={showPicker} onClose={() => setShowPicker(false)} />
-      </>
-    );
-  }
+  const isCompact = mode === 'compact';
 
   return (
     <>
@@ -338,30 +201,49 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
         component="header"
         sx={{
           background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
-          pt: 3,
-          pb: 3,
+          pt: isCompact ? 2 : 3,
+          pb: isCompact ? 2 : 3,
           px: 2,
           color: '#FFFFFF',
-          boxShadow: '0 8px 30px rgba(255, 122, 0, 0.15)',
+          boxShadow: isCompact ? '0 4px 20px rgba(255, 122, 0, 0.12)' : '0 8px 30px rgba(255, 122, 0, 0.15)',
           borderBottomLeftRadius: '24px',
           borderBottomRightRadius: '24px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 2, // 16px consistent spacing (8-point system)
+          gap: isCompact ? 1.5 : 2, // 12px vs 16px gap
           maxWidth: '430px',
           margin: '0 auto',
           width: '100%',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1090,
         }}
       >
         {/* Row 1: Profile + Greeting + User Name and Right Action Icons */}
         <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={1.2} alignItems="center">
+            {onBack && (
+              <IconButton
+                onClick={onBack}
+                sx={{
+                  color: '#FFFFFF',
+                  bgcolor: 'rgba(255,255,255,0.16)',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '10px',
+                  mr: 0.5,
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.26)' }
+                }}
+              >
+                <TriIcon name="arrow_back" size={18} />
+              </IconButton>
+            )}
             {/* Avatar */}
             <Box 
               onClick={() => setIsMenuOpen(true)}
               sx={{ 
-                width: 48, 
-                height: 48, 
+                width: isCompact ? 38 : 48, 
+                height: isCompact ? 38 : 48, 
                 borderRadius: '50%', 
                 overflow: 'hidden', 
                 border: '2px solid #FFFFFF',
@@ -378,22 +260,22 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               {profilePic ? (
                 <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <TriIcon name="person" size={24} color="#FF7A00" />
+                <TriIcon name="person" size={isCompact ? 20 : 24} color="#FF7A00" />
               )}
             </Box>
             {/* Greeting & Name */}
             <Box>
-              <Typography sx={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px', lineHeight: 1.2 }}>
+              <Typography sx={{ fontSize: isCompact ? '9px' : '11px', fontWeight: 600, color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px', lineHeight: 1.2 }}>
                 {greeting}
               </Typography>
-              <Typography sx={{ fontSize: '16px', fontWeight: 700, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.3 }}>
+              <Typography sx={{ fontSize: isCompact ? '13px' : '16px', fontWeight: 700, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.3 }}>
                 {displayProfile.name}
               </Typography>
             </Box>
           </Stack>
 
           {/* Right Action Icons: Wallet, Notification, Messages, Cart */}
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={isCompact ? 0.8 : 1} alignItems="center">
             {/* Wallet Button */}
             <Box 
               onClick={() => navigate('/consumer-ecommerce/wallet')}
@@ -402,17 +284,17 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 alignItems: 'center', 
                 gap: 0.5, 
                 bgcolor: 'rgba(255,255,255,0.16)', 
-                px: 1.2, 
-                py: 0.6, 
-                borderRadius: '12px', 
+                px: isCompact ? 1.0 : 1.2, 
+                py: isCompact ? 0.4 : 0.6, 
+                borderRadius: '10px', 
                 cursor: 'pointer',
                 transition: 'transform 0.15s',
                 '&:active': { transform: 'scale(0.95)' },
-                height: 38
+                height: isCompact ? 32 : 38
               }}
             >
-              <TriIcon name="account_balance_wallet" size={20} color="#FFFFFF" />
-              <Typography sx={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }}>
+              <TriIcon name="account_balance_wallet" size={isCompact ? 16 : 20} color="#FFFFFF" />
+              <Typography sx={{ fontSize: isCompact ? '11px' : '12px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }}>
                 {displayProfile.walletBalance.replace('Rs. ', '₹')}
               </Typography>
             </Box>
@@ -422,13 +304,13 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: 38,
-                height: 38,
-                borderRadius: '12px',
+                width: isCompact ? 32 : 38,
+                height: isCompact ? 32 : 38,
+                borderRadius: '10px',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="notifications" size={22} />
+              <TriIcon name="notifications" size={isCompact ? 18 : 22} />
             </IconButton>
 
             {/* Messages Button */}
@@ -436,13 +318,13 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: 38,
-                height: 38,
-                borderRadius: '12px',
+                width: isCompact ? 32 : 38,
+                height: isCompact ? 32 : 38,
+                borderRadius: '10px',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="chat_bubble" size={22} />
+              <TriIcon name="chat_bubble" size={isCompact ? 18 : 22} />
             </IconButton>
 
             {/* Cart Button */}
@@ -452,27 +334,27 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: 38,
-                height: 38,
-                borderRadius: '12px',
+                width: isCompact ? 32 : 38,
+                height: isCompact ? 32 : 38,
+                borderRadius: '10px',
                 position: 'relative',
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="shopping_bag" size={22} />
+              <TriIcon name="shopping_bag" size={isCompact ? 18 : 22} />
               {cartCount > 0 && (
                 <Box
                   sx={{
                     position: 'absolute',
-                    top: -3,
-                    right: -3,
+                    top: -2,
+                    right: -2,
                     bgcolor: '#EF4444',
                     color: '#FFFFFF',
                     fontSize: '9px',
                     fontWeight: 700,
                     borderRadius: '50%',
-                    width: 17,
-                    height: 17,
+                    width: 16,
+                    height: 16,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -491,30 +373,65 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
           onClick={() => setShowPicker(true)}
           sx={{
             cursor: 'pointer',
-            mt: 0.5,
+            mt: isCompact ? 0 : 0.5,
             display: 'flex',
             flexDirection: 'column',
-            gap: 0.2
+            gap: 0.1
           }}
         >
-          <Typography sx={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          <Typography sx={{ fontSize: isCompact ? '8px' : '10px', fontWeight: 600, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
             Deliver To
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <TriIcon name="location_on" size={18} sx={{ color: '#FFFFFF' }} />
-            <Typography sx={{ fontSize: '14px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }} noWrap>
+            <TriIcon name="location_on" size={isCompact ? 15 : 18} sx={{ color: '#FFFFFF' }} />
+            <Typography sx={{ fontSize: isCompact ? '12.5px' : '14px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }} noWrap>
               {location.area || 'Indiranagar'}, {location.city || 'Bangalore'}
             </Typography>
-            <TriIcon name="arrow_drop_down" size={20} sx={{ color: '#FFFFFF' }} />
+            <TriIcon name="arrow_drop_down" size={isCompact ? 16 : 20} sx={{ color: '#FFFFFF' }} />
           </Stack>
         </Box>
 
-        {/* Row 3: Reusable Search Component */}
-        <SearchBar 
-          variant="light"
-          onSearch={(val) => onSearch ? onSearch(val) : navigate(`/consumer-ecommerce/delivery?q=${encodeURIComponent(val)}`)}
-          onCameraClick={() => navigate('/consumer-ecommerce/scanner')}
-        />
+        {/* Row 3: Reusable Search Component (with Join Prime option next to search in home mode) */}
+        {!isCompact ? (
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Box sx={{ flex: 1 }}>
+              <SearchBar 
+                variant="light"
+                onSearch={onSearch}
+                onCameraClick={() => navigate('/consumer-ecommerce/scanner')}
+              />
+            </Box>
+            <Button 
+              component={Link}
+              to="/consumer-ecommerce/join-prime"
+              sx={{
+                bgcolor: '#FFF5E6',
+                color: '#FF7A00',
+                fontSize: '11px',
+                fontWeight: 800,
+                whiteSpace: 'nowrap',
+                px: 1.5,
+                height: 42,
+                borderRadius: '18px',
+                border: '1.5px solid #FF7A00',
+                boxShadow: '0 2px 8px rgba(255, 122, 0, 0.1)',
+                textTransform: 'none',
+                fontFamily: '"Inter", sans-serif',
+                '&:hover': {
+                  bgcolor: '#FFEFE0'
+                }
+              }}
+            >
+              👑 Join Prime
+            </Button>
+          </Stack>
+        ) : (
+          <SearchBar 
+            variant="light"
+            onSearch={onSearch}
+            onCameraClick={() => navigate('/consumer-ecommerce/scanner')}
+          />
+        )}
 
         {/* Row 4: Quick Services */}
         {showQuickServices && (

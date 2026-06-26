@@ -96,8 +96,7 @@ export default function DeliveryPage() {
 
   return (
     <TriAppShell bottomNavIndex={3}>
-      {/* Reusable Hero Header style matching Home (without quick services) */}
-      <Header mode="home" showQuickServices={false} onSearch={(val) => setSearch(val)} />
+      <Header mode="compact" onSearch={(val) => setSearch(val)} />
 
       {/* Main Content Area in Single Scrollable Container */}
       <Box 
@@ -105,12 +104,10 @@ export default function DeliveryPage() {
           display: 'flex',
           flexDirection: 'column',
           flex: 1, 
-          height: 'calc(100vh - 170px - 68px)', // Dynamically adjusts for the taller header
           maxWidth: '430px', 
           width: '100%', 
           margin: '0 auto', 
           bgcolor: '#FFFFFF',
-          overflowY: 'auto',
           pb: 10
         }}
       >

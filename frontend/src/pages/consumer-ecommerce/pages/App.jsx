@@ -438,7 +438,7 @@ export default function App() {
       : '';
     axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c${params}`)
       .then(res => {
-        setB2cShops(res.data ? res.data.slice(0, 3) : []);
+        setB2cShops(res.data ? res.data.slice(0, 5) : []);
       })
       .catch(err => console.error('Failed to load B2C merchants in App:', err));
   }, [location]);
@@ -455,7 +455,7 @@ export default function App() {
       <Header />
       <main className="ce-commerce-main" style={{ paddingTop: 0 }}>
         {/* We start directly with the Explore Nearby link and Live Deals to connect naturally with the header */}
-        <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
+        <Box sx={{ px: 2, pt: 3, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
           <Link to="/consumer-ecommerce/near-me" className="ce-commerce-explore" style={{ margin: 0, borderRadius: '20px' }}>
             <span><LuGrid2X2 /></span>
             <div>
@@ -464,89 +464,6 @@ export default function App() {
             </div>
             <LuArrowRight />
           </Link>
-
-          {/* Join Tri Prime Premium Banner */}
-          <Box
-            sx={{
-              background: 'linear-gradient(135deg, #FFF5E6 0%, #FFFAF0 100%)',
-              borderRadius: '20px', // Card radius token
-              p: 2.5,
-              border: '1.5px solid #FFE0B2',
-              position: 'relative',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 1.5,
-              boxShadow: '0 4px 15px rgba(255, 122, 0, 0.05)',
-              mt: 0.5
-            }}
-          >
-            <Box sx={{ maxWidth: '65%' }}>
-              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5 }}>
-                <TriIcon name="sparkles" size={18} color="#FF7A00" />
-                <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                  Join Tri Prime
-                </Typography>
-              </Stack>
-              <Typography sx={{ fontSize: '18px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', mb: 1, lineHeight: 1.2 }}>
-                Unlock Premium Super App Perks
-              </Typography>
-              <Stack spacing={0.8}>
-                {[
-                  '10% instant wallet cashback',
-                  'Free delivery on all orders',
-                  'Premium member-only offers',
-                  'Early access to weekly sales'
-                ].map((benefit) => (
-                  <Stack key={benefit} direction="row" spacing={0.8} alignItems="center">
-                    <TriIcon name="check_circle" size={16} color="#22C55E" />
-                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#475569', fontFamily: '"Inter", sans-serif' }}>
-                      {benefit}
-                    </Typography>
-                  </Stack>
-                ))}
-              </Stack>
-            </Box>
-
-            <Box
-              sx={{
-                position: 'absolute',
-                right: 16,
-                bottom: 16,
-                width: 110,
-                height: 110,
-                opacity: 0.95,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <TriIcon name="workspace_premium" size={90} color="#FF7A00" />
-            </Box>
-
-            <Link
-              to="/consumer-ecommerce/join-prime"
-              style={{
-                backgroundColor: '#FF7A00',
-                color: '#FFFFFF',
-                fontWeight: 800,
-                fontSize: '13px',
-                padding: '10px 24px',
-                borderRadius: '12px',
-                width: 'fit-content',
-                textDecoration: 'none',
-                textAlign: 'center',
-                boxShadow: '0 4px 10px rgba(255, 122, 0, 0.2)',
-                display: 'inline-block',
-                marginTop: '4px',
-                transition: 'background 0.2s',
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#E06B00'}
-              onMouseOut={(e) => e.target.style.backgroundColor = '#FF7A00'}
-            >
-              Join Now
-            </Link>
-          </Box>
 
           <PromoDealCarousel
             title="Live deals for you"
@@ -656,8 +573,8 @@ export default function App() {
 
           {/* Nearby Stores Preview Section */}
           {b2cShops.length > 0 && (
-            <section className="ce-content-section" style={{ padding: '0 16px', marginBottom: '24px' }}>
-              <div className="ce-section-heading-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <section className="ce-content-section" style={{ padding: '0 16px', marginBottom: '16px' }}>
+              <div className="ce-section-heading-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div>
                   <h2 className="ce-section-title">Nearby Stores</h2>
                   <p className="ce-section-subtitle">Top verified stores near you</p>
@@ -666,7 +583,7 @@ export default function App() {
                   View All
                 </Link>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: '8px', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
                 {b2cShops.map((shop) => {
                   const resolvedShop = {
                     id: shop.id,
@@ -683,7 +600,9 @@ export default function App() {
                     longitude: shop.longitude || shop.lng,
                   };
                   return (
-                    <NearbyStoreCard key={shop.id} store={resolvedShop} />
+                    <Box key={shop.id} sx={{ minWidth: '280px', maxWidth: '300px', flexShrink: 0 }}>
+                      <NearbyStoreCard store={resolvedShop} sx={{ mb: 0 }} />
+                    </Box>
                   );
                 })}
               </div>

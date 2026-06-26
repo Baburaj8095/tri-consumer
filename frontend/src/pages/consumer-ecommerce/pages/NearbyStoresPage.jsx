@@ -134,7 +134,7 @@ export default function NearbyStoresPage() {
     <div className="ce-app ce-nearby-page" style={{ paddingTop: 0, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
       
       {/* Header Location selector Dropdown */}
-      <Header mode="home" showQuickServices={false} onSearch={(val) => setSearchTerm(val)} />
+      <Header mode="compact" onSearch={(val) => setSearchTerm(val)} />
 
       {/* Main Responsive Body Container (Centered on desktop to match Header/Nav) */}
       <div style={{ maxWidth: 430, margin: '0 auto', width: '100%' }}>
@@ -149,7 +149,7 @@ export default function NearbyStoresPage() {
                 <Box
                   key={ad.id}
                   sx={{
-                    minWidth: 140, maxWidth: 140, borderRadius: '12px', overflow: 'hidden',
+                    minWidth: 140, maxWidth: 140, borderRadius: '20px', overflow: 'hidden',
                     border: '2px solid rgba(249,115,22,0.25)', bgcolor: '#fff', flexShrink: 0,
                     boxShadow: '0 4px 12px rgba(249,115,22,0.08)'
                   }}

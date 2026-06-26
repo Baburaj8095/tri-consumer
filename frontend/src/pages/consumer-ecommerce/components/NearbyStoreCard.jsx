@@ -4,7 +4,7 @@ import { Box, Typography, Stack, Button } from '@mui/material';
 import { useLocation, calculateDistance } from '../context/LocationContext';
 import TriIcon from '../../../components/ui/TriIcon';
 
-export default function NearbyStoreCard({ store }) {
+export default function NearbyStoreCard({ store, sx = {} }) {
   const navigate = useNavigate();
   const { location: userLoc } = useLocation();
   const targetId = store.shopId || store.id;
@@ -55,7 +55,8 @@ export default function NearbyStoreCard({ store }) {
           borderColor: '#FF7A00',
           boxShadow: '0 12px 28px rgba(255, 122, 0, 0.08)',
           transform: 'translateY(-2px)'
-        }
+        },
+        ...sx
       }}
     >
       {/* Top: Image Section */}

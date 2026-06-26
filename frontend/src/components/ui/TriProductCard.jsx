@@ -61,6 +61,7 @@ export default function TriProductCard({
         display: 'flex', 
         flexDirection: 'column', 
         height: '100%',
+        width: '100%',
         bgcolor: '#FFFFFF',
         borderRadius: '20px', // Standardized: 20px card radius
         border: '1px solid #F1F5F9',

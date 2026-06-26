@@ -165,6 +165,8 @@ export default function TriZonePage() {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    width: '85px',
+                    mx: 'auto',
                     height: '92px',
                     bgcolor: '#FFFFFF',
                     borderRadius: '20px',

@@ -166,23 +166,51 @@ export default function Header() {
     <>
       <header className="ce-header">
         <div className="ce-header-inner">
-          <button 
-            className="ce-icon-btn" 
-            onClick={() => navigate('/consumer-ecommerce/profile')} 
-            aria-label="Open profile"
-          >
-            <LuMenu />
-          </button>
           <div 
-            className="ce-title-wrap" 
-            style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '2px' }}
+            className="ce-icon-btn ce-profile-trigger" 
+            onClick={() => setIsMenuOpen(true)} 
+            aria-label="Open profile menu"
+            style={{ 
+              padding: 0, 
+              width: '36px', 
+              height: '36px', 
+              borderRadius: '50%', 
+              overflow: 'hidden',
+              border: '2px solid rgba(255,255,255,0.8)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: '#f8fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {profilePic ? (
+              <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <LuUser color="#64748b" />
+            )}
+          </div>
+          <div 
+            className="ce-title-wrap ce-premium-location" 
+            style={{ 
+              cursor: 'pointer', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              gap: '2px', 
+              background: 'rgba(255,255,255,0.6)', 
+              backdropFilter: 'blur(12px)',
+              padding: '6px 12px',
+              borderRadius: '16px',
+              border: '1px solid rgba(255,255,255,0.8)',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+            }}
             onClick={() => setShowPicker(true)}
           >
-            <span className="ce-title-kicker" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--ce-muted)' }}>
+            <span className="ce-title-kicker" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--ce-muted)', fontWeight: 600 }}>
               <LuMapPin color="#f97316" size={12} /> {location.area || 'Indiranagar'}
             </span>
-            <h1 className="ce-title" style={{ fontSize: '14px', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '2px' }}>
-              {location.city || 'Bangalore'} <LuChevronDown size={14} color="#64748b" />
+            <h1 className="ce-title" style={{ fontSize: '14px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '4px', color: '#0f172a' }}>
+              {location.city || 'Bangalore'} <LuChevronDown size={14} color="#f97316" />
             </h1>
           </div>
           <div className="ce-header-actions">

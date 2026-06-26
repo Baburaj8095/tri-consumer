@@ -171,9 +171,9 @@ export default function ShopDetailsPage() {
     : 0;
 
   return (
-    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', pb: totalItemsCount > 0 ? 14 : 6 }}>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', pb: totalItemsCount > 0 ? 14 : 6, maxWidth: '480px', margin: '0 auto', boxShadow: '0 0 20px rgba(0,0,0,0.05)', position: 'relative' }}>
       {/* Header Bar */}
-      <Box sx={{ bgcolor: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2, borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Box sx={{ bgcolor: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2, borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10, maxWidth: '480px', mx: 'auto' }}>
         <IconButton onClick={() => navigate(-1)} sx={{ color: '#0f172a' }}>
           <LuChevronLeft />
         </IconButton>
@@ -243,6 +243,8 @@ export default function ShopDetailsPage() {
                   <img 
                     src={product.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'} 
                     alt={product.title} 
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: 90, height: 90, borderRadius: 12, objectFit: 'cover' }} 
                   />
                   <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -327,7 +329,8 @@ export default function ShopDetailsPage() {
             bgcolor: '#ea580c', color: '#fff', p: 2, 
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             borderTopLeftRadius: 16, borderTopRightRadius: 16,
-            boxShadow: '0 -4px 16px rgba(234, 88, 12, 0.25)', zIndex: 100
+            boxShadow: '0 -4px 16px rgba(234, 88, 12, 0.25)', zIndex: 100,
+            maxWidth: '480px', mx: 'auto'
           }}
         >
           <Box>

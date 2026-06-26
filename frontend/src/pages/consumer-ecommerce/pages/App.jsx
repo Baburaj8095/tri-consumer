@@ -293,7 +293,7 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
       window.cancelAnimationFrame(frameRef.current);
     }
 
-    frameRef.current = window.requestAnimationFrame(() => {
+    frameRef.current = window.setTimeout(() => {
       const cards = Array.from(carousel.querySelectorAll('.ce-promo-deal-card'));
       const carouselCenter = carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
       let closestIndex = 0;
@@ -313,7 +313,7 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
         lastActiveIndexRef.current = closestIndex;
         onActiveChange(closestIndex);
       }
-    });
+    }, 150); // Debounce by 150ms to prevent rapid state churn during fast scrolling
   };
 
   return (
@@ -360,7 +360,7 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
 
             <div className="ce-promo-product-stage" aria-hidden="true">
               {deal.images.map((image, imageIndex) => (
-                <img key={image} src={image} alt="" className={`ce-promo-product-${imageIndex + 1}`} />
+                <img key={image} src={image} alt="" className={`ce-promo-product-${imageIndex + 1}`} loading="lazy" decoding="async" />
               ))}
               <span>Hot</span>
             </div>
@@ -384,7 +384,7 @@ function ProductDealCard({ product, index }) {
   return (
     <Link to={`/consumer-ecommerce/product/${product.id}`} className="ce-commerce-product-card">
       <div className="ce-commerce-image-wrap">
-        <img src={product.image} alt={product.name} />
+        <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
         <span className="ce-commerce-discount">{product.discount}</span>
       </div>
       <div className="ce-commerce-product-body">
@@ -408,7 +408,7 @@ function ProductHorizontalCard({ product, index }) {
   return (
     <Link to={`/consumer-ecommerce/product/${product.id}`} className="ce-commerce-horizontal-product">
       <div className="ce-commerce-image-wrap">
-        <img src={product.image} alt={product.name} />
+        <img src={product.image} alt={product.name} loading="lazy" decoding="async" />
         <span className="ce-commerce-discount">{product.discount}</span>
       </div>
       <h3>{product.name}</h3>

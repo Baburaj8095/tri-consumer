@@ -2,19 +2,37 @@ import React from 'react';
 import { Box, Stack, Typography, Grid, Button, InputBase, IconButton } from '@mui/material';
 import BottomNav from '../components/BottomNav.jsx';
 import TriIcon from '../../../components/ui/TriIcon.jsx';
+import giftBoxPromo from '../../../images/gift_box_promo.png';
 import '../consumerEcommerce.css';
 
-// Exactly 9 Services for a clean 3x3 grid (equal size/height)
-const services = [
-  { title: 'Top Picks', desc: 'Recommended choice', icon: 'thumb_up' },
-  { title: 'Tri Services', desc: 'Local logistics', icon: 'local_shipping' },
-  { title: 'Daily Needs', desc: 'Grocery essentials', icon: 'shopping_basket' },
-  { title: 'Finance', desc: 'Business & pay', icon: 'business_center' },
-  { title: 'Community', desc: 'Society forums', icon: 'favorite' },
-  { title: 'Tri Pay', desc: 'Secure payments', icon: 'payments' },
-  { title: 'Tri Delivery', desc: 'Fast delivery', icon: 'local_shipping' },
-  { title: 'Tri Eat', desc: 'Order food', icon: 'restaurant' },
-  { title: 'Tri Travel', desc: 'Book tickets', icon: 'directions_bus' },
+const recentlyUsed = [
+  { name: 'Tri Pay', icon: 'wallet', color: '#FF7A00', bg: '#FFEFE0' },
+  { name: 'Tri Delivery', icon: 'local_shipping', color: '#16A34A', bg: '#E8F5E9' },
+  { name: 'Hotels', icon: 'hotel', color: '#0284C7', bg: '#E0F2FE' },
+  { name: 'Restaurants', icon: 'restaurant', color: '#DB2777', bg: '#FCE4EC' },
+  { name: 'Finance', icon: 'payments', color: '#7C3AED', bg: '#F3E8FF' }
+];
+
+const topPicks = [
+  { title: 'Tri Pay', desc: 'Secure payments', icon: 'wallet', color: '#FF7A00' },
+  { title: 'Tri Services', desc: 'Local services', icon: 'build', color: '#16A34A' },
+  { title: 'Daily Needs', desc: 'Essentials', icon: 'shopping_basket', color: '#0284C7' },
+  { title: 'Finance', desc: 'Business & pay', icon: 'payments', color: '#7C3AED' },
+  { title: 'Community', desc: 'Society forums', icon: 'favorite', color: '#DC2626' },
+  { title: 'Tri Delivery', desc: 'Fast delivery', icon: 'local_shipping', color: '#FF7A00' },
+  { title: 'Tri Eat', desc: 'Order food', icon: 'restaurant', color: '#16A34A' },
+  { title: 'Tri Travel', desc: 'Book tickets', icon: 'flight', color: '#0284C7' },
+  { title: 'Tri Health', desc: 'Health services', icon: 'medical_services', color: '#16A34A' },
+  { title: 'Tri Education', desc: 'Learn & grow', icon: 'school', color: '#7C3AED' },
+  { title: 'Government', desc: 'Govt. services', icon: 'account_balance', color: '#FF7A00' },
+  { title: 'More Services', desc: 'Explore more', icon: 'more_horiz', color: '#475569' }
+];
+
+const popularServices = [
+  { name: 'Hotels', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=280&q=80' },
+  { name: 'Salons', image: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=280&q=80' },
+  { name: 'Restaurants', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=280&q=80' },
+  { name: 'Travel', image: 'https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=280&q=80' }
 ];
 
 export default function TriZonePage() {
@@ -24,9 +42,9 @@ export default function TriZonePage() {
   };
 
   return (
-    <div className="ce-app ce-zone-page" style={{ paddingTop: 0, minHeight: '100vh', backgroundColor: '#F8F9FB', paddingBottom: '90px' }}>
+    <div className="ce-app ce-zone-page" style={{ paddingTop: 0, minHeight: '100vh', backgroundColor: '#F8F9FB', paddingBottom: '100px' }}>
       
-      {/* Custom Header matching screenshot */}
+      {/* Header exactly matching right screen in screenshot */}
       <Box
         sx={{
           background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
@@ -34,15 +52,15 @@ export default function TriZonePage() {
           pb: 3,
           px: 2.5,
           color: '#FFFFFF',
-          borderBottomLeftRadius: '24px',
-          borderBottomRightRadius: '24px',
-          boxShadow: '0 6px 20px rgba(255, 122, 0, 0.12)',
+          borderBottomLeftRadius: '32px',
+          borderBottomRightRadius: '32px',
+          boxShadow: '0 8px 30px rgba(255, 122, 0, 0.15)',
           maxWidth: '430px',
           margin: '0 auto',
           width: '100%',
         }}
       >
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2.5 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
           <Box>
             <Typography sx={{ fontSize: '20px', fontWeight: 800, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.2 }}>
               Tri Zone
@@ -51,7 +69,7 @@ export default function TriZonePage() {
               Everything you need, in one place
             </Typography>
           </Box>
-          <IconButton sx={{ color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.12)', width: 38, height: 38, borderRadius: '10px' }}>
+          <IconButton sx={{ color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.15)', width: 36, height: 36, borderRadius: '50%' }}>
             <TriIcon name="notifications" size={20} />
           </IconButton>
         </Stack>
@@ -77,29 +95,82 @@ export default function TriZonePage() {
       {/* Main Grid Container */}
       <Box sx={{ maxWidth: '430px', margin: '0 auto', width: '100%', px: 2, pt: 3.5, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
         
-        {/* Section: All Services Headline */}
+        {/* Recently Used Section */}
         <Box>
-          <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', mb: 2 }}>
-            All Services
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+              Recently Used
+            </Typography>
+            <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}>
+              View all
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={1.5} sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+            {recentlyUsed.map((item) => (
+              <Box
+                key={item.name}
+                onClick={(e) => handleCardClick(e, item.name)}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  minWidth: '76px',
+                  bgcolor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '16px',
+                  p: 1.2,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'all 0.15s',
+                  '&:active': { transform: 'scale(0.95)' }
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    bgcolor: item.bg,
+                    color: item.color,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 1
+                  }}
+                >
+                  <TriIcon name={item.icon} size={20} />
+                </Box>
+                <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#334155', textAlign: 'center', fontFamily: '"Inter", sans-serif', whiteSpace: 'nowrap' }}>
+                  {item.name}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+
+        {/* Top Picks Section (3x4 equal grid) */}
+        <Box>
+          <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+            Top Picks
           </Typography>
 
-          {/* Unified 3x3 Grid: 3 columns, 9 equal square cards */}
           <Grid container spacing={1.5}>
-            {services.map((service) => (
-              <Grid item xs={4} key={service.title}>
+            {topPicks.map((pick) => (
+              <Grid item xs={3} key={pick.title}>
                 <Box
-                  onClick={(e) => handleCardClick(e, service.title)}
+                  onClick={(e) => handleCardClick(e, pick.title)}
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    height: '115px',
+                    height: '92px',
                     bgcolor: '#FFFFFF',
-                    borderRadius: '20px', // Standard: 20px Card Radius
+                    borderRadius: '20px',
                     border: '1px solid #E2E8F0',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
                     transition: 'all 0.15s ease-in-out',
                     '&:hover': {
                       borderColor: '#FF7A00',
@@ -108,19 +179,106 @@ export default function TriZonePage() {
                     '&:active': { transform: 'scale(0.95)' }
                   }}
                 >
-                  <Box sx={{ color: '#FF7A00', mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <TriIcon name={service.icon} size={24} />
+                  <Box sx={{ color: pick.color, mb: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <TriIcon name={pick.icon} size={22} />
                   </Box>
-                  <Typography sx={{ fontSize: '12px', fontWeight: 800, color: '#334155', textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, lineHeight: 1.2 }}>
-                    {service.title}
+                  <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#1E293B', textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, lineHeight: 1.1 }}>
+                    {pick.title}
                   </Typography>
-                  <Typography sx={{ fontSize: '9px', color: '#94A3B8', fontWeight: 600, textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, mt: 0.2, lineHeight: 1.2 }}>
-                    {service.desc}
+                  <Typography sx={{ fontSize: '7.5px', color: '#94A3B8', fontWeight: 600, textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, mt: 0.2, lineHeight: 1.1 }}>
+                    {pick.desc}
                   </Typography>
                 </Box>
               </Grid>
             ))}
           </Grid>
+        </Box>
+
+        {/* Promo Banner Card */}
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #FFF9F5 0%, #FFF0E6 100%)',
+            borderRadius: '24px',
+            p: 2.2,
+            border: '1.5px solid #FFEBE0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 6px 18px rgba(255, 122, 0, 0.04)'
+          }}
+        >
+          <Box sx={{ flex: 1, pr: 1.5 }}>
+            <Stack direction="row" alignItems="baseline" spacing={0.5}>
+              <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }}>
+                Get up to
+              </Typography>
+              <Typography sx={{ fontSize: '17px', fontWeight: 900, color: '#FF7A00', fontFamily: '"Inter", sans-serif' }}>
+                25% OFF
+              </Typography>
+            </Stack>
+            <Typography sx={{ fontSize: '11px', color: '#64748B', fontFamily: '"Inter", sans-serif', fontWeight: 600, mb: 1.5 }}>
+              on selected services
+            </Typography>
+            <Button
+              sx={{
+                bgcolor: '#FF7A00',
+                color: '#FFFFFF',
+                fontSize: '11px',
+                fontWeight: 800,
+                px: 2,
+                py: 0.6,
+                borderRadius: '12px',
+                textTransform: 'none',
+                fontFamily: '"Inter", sans-serif',
+                boxShadow: '0 4px 12px rgba(255, 122, 0, 0.2)',
+                '&:hover': { bgcolor: '#E06A00' }
+              }}
+            >
+              Explore Offers
+            </Button>
+          </Box>
+          <Box
+            component="img"
+            src={giftBoxPromo}
+            alt="Promo Offer"
+            sx={{ width: 100, height: 100, objectFit: 'contain' }}
+          />
+        </Box>
+
+        {/* Popular Services Section */}
+        <Box sx={{ mb: 4 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+            <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+              Popular Services
+            </Typography>
+            <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}>
+              View all
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+            {popularServices.map((service) => (
+              <Box
+                key={service.name}
+                sx={{
+                  minWidth: '130px',
+                  bgcolor: '#FFFFFF',
+                  borderRadius: '20px',
+                  border: '1px solid #E2E8F0',
+                  p: 1,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                  flexShrink: 0,
+                  cursor: 'pointer'
+                }}
+              >
+                <Box sx={{ width: '100%', height: '80px', borderRadius: '14px', overflow: 'hidden', mb: 1 }}>
+                  <Box component="img" src={service.image} alt={service.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </Box>
+                <Typography sx={{ fontSize: '12px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', px: 0.5 }} noWrap>
+                  {service.name}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
         </Box>
 
       </Box>

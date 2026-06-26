@@ -13,7 +13,7 @@ export default function TriProductCard({
   const [wishlist, setWishlist] = useState(false);
   const [quantity, setQuantity] = useState(0);
 
-  const hasDiscount = product.discount_percent && product.discount_percent > 0;
+  const hasDiscount = Boolean(product.discount_percent && product.discount_percent > 0);
   const img = product.image || product.image_url || FALLBACK_IMAGE;
 
   // Resolve product weight/unit

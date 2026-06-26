@@ -203,7 +203,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
           background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
           pt: isCompact ? 2 : 3,
           pb: isCompact ? 2 : 3,
-          px: 2,
+          px: 1.5,
           color: '#FFFFFF',
           boxShadow: isCompact ? '0 4px 20px rgba(255, 122, 0, 0.12)' : '0 8px 30px rgba(255, 122, 0, 0.15)',
           borderBottomLeftRadius: '24px',
@@ -220,8 +220,8 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
         }}
       >
         {/* Row 1: Profile + Greeting + User Name and Right Action Icons */}
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1.2} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flexShrink: 1 }}>
             {onBack && (
               <IconButton
                 onClick={onBack}
@@ -232,6 +232,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                   height: 32,
                   borderRadius: '10px',
                   mr: 0.5,
+                  flexShrink: 0,
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.26)' }
                 }}
               >
@@ -242,8 +243,8 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
             <Box 
               onClick={() => setIsMenuOpen(true)}
               sx={{ 
-                width: isCompact ? 38 : 48, 
-                height: isCompact ? 38 : 48, 
+                width: isCompact ? 36 : 42, 
+                height: isCompact ? 36 : 42, 
                 borderRadius: '50%', 
                 overflow: 'hidden', 
                 border: '2px solid #FFFFFF',
@@ -254,47 +255,49 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 alignItems: 'center',
                 justifyContent: 'center',
                 transition: 'transform 0.15s ease',
-                '&:active': { transform: 'scale(0.95)' }
+                '&:active': { transform: 'scale(0.95)' },
+                flexShrink: 0
               }}
             >
               {profilePic ? (
                 <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <TriIcon name="person" size={isCompact ? 20 : 24} color="#FF7A00" />
+                <TriIcon name="person" size={isCompact ? 18 : 22} color="#FF7A00" />
               )}
             </Box>
             {/* Greeting & Name */}
-            <Box>
-              <Typography sx={{ fontSize: isCompact ? '9px' : '11px', fontWeight: 600, color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px', lineHeight: 1.2 }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography sx={{ fontSize: isCompact ? '8.5px' : '10px', fontWeight: 600, color: 'rgba(255,255,255,0.75)', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px', lineHeight: 1.2 }}>
                 {greeting}
               </Typography>
-              <Typography sx={{ fontSize: isCompact ? '13px' : '16px', fontWeight: 700, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.3 }}>
+              <Typography sx={{ fontSize: isCompact ? '12px' : '14px', fontWeight: 700, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.3 }} noWrap>
                 {displayProfile.name}
               </Typography>
             </Box>
           </Stack>
 
           {/* Right Action Icons: Wallet, Notification, Messages, Cart */}
-          <Stack direction="row" spacing={isCompact ? 0.8 : 1} alignItems="center">
+          <Stack direction="row" spacing={0.6} alignItems="center" sx={{ flexShrink: 0 }}>
             {/* Wallet Button */}
             <Box 
               onClick={() => navigate('/consumer-ecommerce/wallet')}
               sx={{ 
                 display: 'flex', 
                 alignItems: 'center', 
-                gap: 0.5, 
+                gap: 0.3, 
                 bgcolor: 'rgba(255,255,255,0.16)', 
-                px: isCompact ? 1.0 : 1.2, 
-                py: isCompact ? 0.4 : 0.6, 
+                px: 0.8, 
+                py: 0.4, 
                 borderRadius: '10px', 
                 cursor: 'pointer',
                 transition: 'transform 0.15s',
                 '&:active': { transform: 'scale(0.95)' },
-                height: isCompact ? 32 : 38
+                height: 32,
+                flexShrink: 0
               }}
             >
-              <TriIcon name="account_balance_wallet" size={isCompact ? 16 : 20} color="#FFFFFF" />
-              <Typography sx={{ fontSize: isCompact ? '11px' : '12px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }}>
+              <TriIcon name="account_balance_wallet" size={16} color="#FFFFFF" />
+              <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#FFFFFF', fontFamily: '"Inter", sans-serif' }}>
                 {displayProfile.walletBalance.replace('Rs. ', '₹')}
               </Typography>
             </Box>
@@ -304,13 +307,14 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: isCompact ? 32 : 38,
-                height: isCompact ? 32 : 38,
+                width: 32,
+                height: 32,
                 borderRadius: '10px',
+                flexShrink: 0,
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="notifications" size={isCompact ? 18 : 22} />
+              <TriIcon name="notifications" size={18} />
             </IconButton>
 
             {/* Messages Button */}
@@ -318,13 +322,14 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: isCompact ? 32 : 38,
-                height: isCompact ? 32 : 38,
+                width: 32,
+                height: 32,
                 borderRadius: '10px',
+                flexShrink: 0,
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="chat_bubble" size={isCompact ? 18 : 22} />
+              <TriIcon name="chat_bubble" size={18} />
             </IconButton>
 
             {/* Cart Button */}
@@ -334,14 +339,15 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
-                width: isCompact ? 32 : 38,
-                height: isCompact ? 32 : 38,
+                width: 32,
+                height: 32,
                 borderRadius: '10px',
                 position: 'relative',
+                flexShrink: 0,
                 '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
               }}
             >
-              <TriIcon name="shopping_bag" size={isCompact ? 18 : 22} />
+              <TriIcon name="shopping_bag" size={18} />
               {cartCount > 0 && (
                 <Box
                   sx={{
@@ -353,8 +359,8 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                     fontSize: '9px',
                     fontWeight: 700,
                     borderRadius: '50%',
-                    width: 16,
-                    height: 16,
+                    width: 15,
+                    height: 15,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

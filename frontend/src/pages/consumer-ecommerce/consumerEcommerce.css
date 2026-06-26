@@ -5604,8 +5604,8 @@ body,
 .ce-promo-deal-card {
   position: relative;
   flex: 0 0 min(58vw, 267px);
-  height: 380px;
-  border-radius: 18px;
+  height: 430px; /* Increased from 380px to prevent cropped feeling */
+  border-radius: 20px; /* Conforming to card border radius token */
   color: #FFFFFF;
   text-decoration: none;
   overflow: hidden;
@@ -5613,7 +5613,7 @@ body,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px;
+  padding: 16px; /* Increased from 12px for better padding spacing */
   isolation: isolate;
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
 }
@@ -5779,18 +5779,18 @@ body,
 }
 
 .ce-promo-product-1 {
-  width: 128px;
-  height: 112px;
-  border-radius: 21px;
+  width: 146px; /* Increased from 128px */
+  height: 130px; /* Increased from 112px */
+  border-radius: 20px;
   left: 76px;
   top: -4px;
   z-index: 3;
 }
 
 .ce-promo-product-2 {
-  width: 98px;
-  height: 88px;
-  border-radius: 18px;
+  width: 114px; /* Increased from 98px */
+  height: 104px; /* Increased from 88px */
+  border-radius: 20px;
   left: 1px;
   top: 43px;
   transform: rotate(-8deg);
@@ -5799,9 +5799,9 @@ body,
 }
 
 .ce-promo-product-3 {
-  width: 94px;
-  height: 86px;
-  border-radius: 18px;
+  width: 110px; /* Increased from 94px */
+  height: 100px; /* Increased from 86px */
+  border-radius: 20px;
   right: -10px;
   top: 48px;
   transform: rotate(8deg);
@@ -7667,7 +7667,7 @@ body,
 .ce-nearme-map-float {
   position: fixed;
   left: 50%;
-  bottom: 94px;
+  bottom: 120px; /* Moved higher from 94px to avoid bottom nav overlap */
   z-index: 45;
   transform: translateX(-50%);
   min-height: 46px;

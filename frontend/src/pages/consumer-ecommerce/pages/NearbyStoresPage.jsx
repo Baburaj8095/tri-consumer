@@ -134,7 +134,7 @@ export default function NearbyStoresPage() {
     <div className="ce-app ce-nearby-page" style={{ paddingTop: 0, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
       
       {/* Header Location selector Dropdown */}
-      <Header mode="compact" title="Nearby Stores" subtitle="Stores around your area" />
+      <Header mode="home" showQuickServices={false} onSearch={(val) => setSearchTerm(val)} />
 
       {/* Main Responsive Body Container (Centered on desktop to match Header/Nav) */}
       <div style={{ maxWidth: 430, margin: '0 auto', width: '100%' }}>
@@ -179,29 +179,7 @@ export default function NearbyStoresPage() {
           </Box>
         )}
 
-        {/* Search Bar */}
-        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              bgcolor: '#fff', 
-              borderRadius: '16px', 
-              border: '1px solid #e2e8f0', 
-              px: 2, 
-              py: 1.5,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-            }}
-          >
-            <LuSearch color="#f97316" size={20} />
-            <InputBase 
-              placeholder="Search nearby stores..." 
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              sx={{ ml: 1.5, flex: 1, fontSize: '0.95rem', fontWeight: 500 }} 
-            />
-          </Box>
-        </Box>
+
 
         {/* Category filter pills */}
         <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1, overflowX: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}>

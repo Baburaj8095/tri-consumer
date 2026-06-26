@@ -99,9 +99,28 @@ const theme = createTheme({
         root: {
           borderRadius: tokens.radius.md,
           boxShadow: 'none',
+          textTransform: 'none',
+          fontWeight: 700,
           transition: `all ${tokens.motion.button}ms ease`,
           '&:hover': {
             boxShadow: 'none',
+          },
+        },
+        containedPrimary: {
+          backgroundColor: '#FF7A00',
+          color: '#FFFFFF',
+          '&:hover': {
+            backgroundColor: '#E06B00',
+          },
+        },
+        outlinedPrimary: {
+          borderColor: '#FF7A00',
+          color: '#FF7A00',
+          borderWidth: '1.5px',
+          '&:hover': {
+            borderColor: '#E06B00',
+            borderWidth: '1.5px',
+            backgroundColor: '#FFEFE0',
           },
         },
       },

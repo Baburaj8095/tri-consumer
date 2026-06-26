@@ -104,12 +104,7 @@ export default function ConsumerScannerPage() {
 
   return (
     <Box className="ce-app ce-scanner-shell" sx={{ minHeight: "100vh", bgcolor: UI.bg, color: UI.onPrimary, pb: "92px" }}>
-      <Header 
-        mode="compact" 
-        title="Scan QR" 
-        subtitle="Scan any UPI or Trikonekt QR" 
-        onBack={() => navigate("/consumer-ecommerce")} 
-      />
+      <Header mode="home" showQuickServices={false} />
 
       <Box sx={{ px: 2, py: 2.5, maxWidth: 640, mx: "auto" }}>
         <Stack spacing={2}>

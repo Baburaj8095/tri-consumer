@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, Stack, Button, Chip } from '@mui/material';
-import { LuMapPin, LuStar, LuPhone, LuNavigation, LuWallet, LuEye } from 'react-icons/lu';
+import { Box, Typography, Stack, Button } from '@mui/material';
 import { useLocation, calculateDistance } from '../context/LocationContext';
+import TriIcon from '../../../components/ui/TriIcon';
 
 export default function NearbyStoreCard({ store }) {
   const navigate = useNavigate();
@@ -43,23 +43,23 @@ export default function NearbyStoreCard({ store }) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: '#fff',
-        borderRadius: '16px',
-        border: '1px solid #e2e8f0',
+        bgcolor: '#FFFFFF',
+        borderRadius: '20px', // Standardized: 20px Card Radius
+        border: '1px solid #E2E8F0',
         overflow: 'hidden',
         mb: 3,
         cursor: 'pointer',
-        transition: 'all 0.25s ease',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+        transition: 'all 0.2s ease-in-out',
+        boxShadow: '0 10px 30px rgba(255, 122, 0, 0.04), 0 2px 8px rgba(0,0,0,0.02)', // Soft premium shadow
         '&:hover': {
-          borderColor: '#f97316',
-          boxShadow: '0 8px 24px rgba(249,115,22,0.1)',
+          borderColor: '#FF7A00',
+          boxShadow: '0 12px 28px rgba(255, 122, 0, 0.08)',
           transform: 'translateY(-2px)'
         }
       }}
     >
       {/* Top: Image Section */}
-      <Box sx={{ width: '100%', height: 160, overflow: 'hidden', position: 'relative', bgcolor: '#f1f5f9' }}>
+      <Box sx={{ width: '100%', height: 160, overflow: 'hidden', position: 'relative', bgcolor: '#F8F9FB' }}>
         <img 
           src={store.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80'} 
           alt={store.name} 
@@ -71,13 +71,14 @@ export default function NearbyStoreCard({ store }) {
           top: 12, 
           right: 12, 
           bgcolor: 'rgba(15, 23, 42, 0.8)', 
-          color: '#fff', 
+          color: '#FFFFFF', 
           px: 1.5, 
           py: 0.5, 
           borderRadius: '20px', 
-          fontSize: '0.7rem', 
+          fontSize: '11px', 
           fontWeight: 800,
-          backdropFilter: 'blur(4px)'
+          backdropFilter: 'blur(4px)',
+          fontFamily: '"Inter", sans-serif'
         }}>
           {displayDistance}
         </Box>
@@ -86,72 +87,71 @@ export default function NearbyStoreCard({ store }) {
       {/* Bottom: Details & Actions */}
       <Box sx={{ p: 2 }}>
         {/* Name and Rating */}
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a', lineHeight: 1.2 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1, gap: 1 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: '16px', color: '#1E293B', lineHeight: 1.3, fontFamily: '"Inter", sans-serif' }}>
             {store.name}
           </Typography>
-          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', px: 1, py: 0.25, borderRadius: '6px' }}>
-            <LuStar size={12} style={{ fill: '#d97706' }} />
-            <Typography sx={{ fontSize: '0.75rem', fontWeight: 800 }}>{store.rating || '4.5'}</Typography>
+          <Stack direction="row" alignItems="center" spacing={0.3} sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#D97706', px: 1, py: 0.25, borderRadius: '8px', flexShrink: 0 }}>
+            <TriIcon name="star" size={14} sx={{ fill: '#D97706', color: '#D97706' }} />
+            <Typography sx={{ fontSize: '11px', fontWeight: 800, fontFamily: '"Inter", sans-serif' }}>{store.rating || '4.5'}</Typography>
           </Stack>
         </Stack>
 
         {/* Category & Status */}
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-          <Typography sx={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>
+          <Typography sx={{ fontSize: '12px', color: '#64748B', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
             {store.category || 'Retail Store'}
           </Typography>
-          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#cbd5e1' }} />
-          <Typography sx={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>
-            Open Now
+          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#CBD5E1' }} />
+          <Typography sx={{ fontSize: '12px', color: '#22C55E', fontWeight: 700, fontFamily: '"Inter", sans-serif' }}>
+            {store.status || 'Open Now'}
           </Typography>
         </Stack>
 
         {/* Location / Area display */}
-        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1.5, color: '#64748b' }}>
-          <LuMapPin size={14} color="#f97316" />
-          <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1.5, color: '#64748B' }}>
+          <TriIcon name="location_on" size={14} color="#FF7A00" />
+          <Typography sx={{ fontSize: '12px', fontWeight: 500, fontFamily: '"Inter", sans-serif', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {store.location || 'Indiranagar, Bangalore'}
           </Typography>
         </Stack>
 
         {/* Cashback Badge & Tags */}
         <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-          <Box sx={{ bgcolor: 'rgba(249, 115, 22, 0.1)', color: '#f97316', px: 1, py: 0.5, borderRadius: '6px', fontSize: '0.68rem', fontWeight: 800 }}>
+          <Box sx={{ bgcolor: 'rgba(255, 122, 0, 0.08)', color: '#FF7A00', px: 1, py: 0.5, borderRadius: '8px', fontSize: '10px', fontWeight: 800, fontFamily: '"Inter", sans-serif' }}>
             5% Cashback
           </Box>
-          <Box sx={{ bgcolor: '#f1f5f9', color: '#475569', px: 1, py: 0.5, borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700 }}>
+          <Box sx={{ bgcolor: '#F8F9FB', color: '#475569', px: 1, py: 0.5, borderRadius: '8px', fontSize: '10px', fontWeight: 700, fontFamily: '"Inter", sans-serif' }}>
             Home Delivery
           </Box>
-          <Box sx={{ bgcolor: '#f1f5f9', color: '#475569', px: 1, py: 0.5, borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700 }}>
+          <Box sx={{ bgcolor: '#F8F9FB', color: '#475569', px: 1, py: 0.5, borderRadius: '8px', fontSize: '10px', fontWeight: 700, fontFamily: '"Inter", sans-serif' }}>
             Pickup
-          </Box>
-          <Box sx={{ bgcolor: '#f1f5f9', color: '#475569', px: 1, py: 0.5, borderRadius: '6px', fontSize: '0.68rem', fontWeight: 700 }}>
-            Offline Pay
           </Box>
         </Stack>
 
-        {/* 4-Button Footer Row (Equal width, height, same spacing) */}
-        <Stack direction="row" spacing={0.5} sx={{ width: '100%' }}>
+        {/* 4-Button Footer Row (Standardized with 2 variants: Primary contained, Secondary outlined, 38px height) */}
+        <Stack direction="row" spacing={0.8} sx={{ width: '100%' }}>
           <Button 
             size="small" 
             variant="outlined" 
-            startIcon={<LuPhone size={12} />}
+            startIcon={<TriIcon name="call" size={14} />}
             sx={{ 
               flex: 1, 
               minWidth: 0,
               height: '38px',
-              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
+              fontSize: '11px', 
               fontWeight: 700, 
               textTransform: 'none', 
-              color: '#f97316', 
-              borderColor: '#f97316', 
-              borderRadius: '8px',
+              color: '#FF7A00', 
+              borderColor: '#FF7A00', 
+              borderWidth: '1.5px',
+              borderRadius: '12px',
               px: 0,
-              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
+              '& .MuiButton-startIcon': { mr: 0.3, ml: 0 },
               '&:hover': {
-                borderColor: '#ea580c',
-                bgcolor: 'rgba(249,115,22,0.04)'
+                borderColor: '#E06B00',
+                borderWidth: '1.5px',
+                bgcolor: 'rgba(255, 122, 0, 0.04)'
               }
             }} 
             onClick={handleCallClick}
@@ -161,47 +161,51 @@ export default function NearbyStoreCard({ store }) {
           <Button 
             size="small" 
             variant="outlined" 
-            startIcon={<LuNavigation size={12} />}
+            startIcon={<TriIcon name="near_me" size={14} />}
             sx={{ 
               flex: 1, 
               minWidth: 0,
               height: '38px',
-              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
+              fontSize: '11px', 
               fontWeight: 700, 
               textTransform: 'none', 
-              color: '#f97316', 
-              borderColor: '#f97316', 
-              borderRadius: '8px',
+              color: '#FF7A00', 
+              borderColor: '#FF7A00', 
+              borderWidth: '1.5px',
+              borderRadius: '12px',
               px: 0,
-              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
+              '& .MuiButton-startIcon': { mr: 0.3, ml: 0 },
               '&:hover': {
-                borderColor: '#ea580c',
-                bgcolor: 'rgba(249,115,22,0.04)'
+                borderColor: '#E06B00',
+                borderWidth: '1.5px',
+                bgcolor: 'rgba(255, 122, 0, 0.04)'
               }
             }} 
             onClick={handleDirectionsClick}
           >
-            Directions
+            Go
           </Button>
           <Button 
             size="small" 
             variant="outlined" 
-            startIcon={<LuWallet size={12} />}
+            startIcon={<TriIcon name="account_balance_wallet" size={14} />}
             sx={{ 
               flex: 1, 
               minWidth: 0,
               height: '38px',
-              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
+              fontSize: '11px', 
               fontWeight: 700, 
               textTransform: 'none', 
-              color: '#f97316', 
-              borderColor: '#f97316', 
-              borderRadius: '8px',
+              color: '#FF7A00', 
+              borderColor: '#FF7A00', 
+              borderWidth: '1.5px',
+              borderRadius: '12px',
               px: 0,
-              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
+              '& .MuiButton-startIcon': { mr: 0.3, ml: 0 },
               '&:hover': {
-                borderColor: '#ea580c',
-                bgcolor: 'rgba(249,115,22,0.04)'
+                borderColor: '#E06B00',
+                borderWidth: '1.5px',
+                bgcolor: 'rgba(255, 122, 0, 0.04)'
               }
             }} 
             onClick={handlePayClick}
@@ -211,22 +215,22 @@ export default function NearbyStoreCard({ store }) {
           <Button 
             size="small" 
             variant="contained" 
-            startIcon={<LuEye size={12} />}
+            startIcon={<TriIcon name="visibility" size={14} />}
             sx={{ 
               flex: 1, 
               minWidth: 0,
               height: '38px',
-              fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
+              fontSize: '11px', 
               fontWeight: 800, 
               textTransform: 'none', 
-              bgcolor: '#f97316', 
-              color: '#fff', 
+              bgcolor: '#FF7A00', 
+              color: '#FFFFFF', 
               boxShadow: 'none', 
-              borderRadius: '8px', 
+              borderRadius: '12px', 
               px: 0,
-              '& .MuiButton-startIcon': { mr: 0.5, ml: 0 },
+              '& .MuiButton-startIcon': { mr: 0.3, ml: 0 },
               '&:hover': { 
-                bgcolor: '#ea580c',
+                bgcolor: '#E06B00',
                 boxShadow: 'none'
               } 
             }}

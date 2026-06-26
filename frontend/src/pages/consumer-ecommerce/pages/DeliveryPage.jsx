@@ -7,6 +7,7 @@ import { LuSlidersHorizontal, LuChevronDown, LuLayoutGrid, LuSearch } from 'reac
 import TriAppShell from '../../../components/ui/TriAppShell';
 import Header from '../components/Header';
 import TriProductCard from '../../../components/ui/TriProductCard';
+import TriIcon from '../../../components/ui/TriIcon';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80';
@@ -95,124 +96,86 @@ export default function DeliveryPage() {
 
   return (
     <TriAppShell bottomNavIndex={3}>
-      {/* Orange Gradient Compact Header */}
-      <Header mode="compact" title="Online Shop" subtitle="Products & daily deals" />
+      {/* Reusable Hero Header style matching Home (without quick services) */}
+      <Header mode="home" showQuickServices={false} onSearch={(val) => setSearch(val)} />
 
-      {/* Main Content Area: Left Category Sidebar + Right Product Area */}
+      {/* Main Content Area in Single Scrollable Container */}
       <Box 
         sx={{ 
-          display: 'flex', 
+          display: 'flex',
+          flexDirection: 'column',
           flex: 1, 
-          height: 'calc(100vh - 108px - 68px)', // Screen height minus header and bottom navigation
+          height: 'calc(100vh - 170px - 68px)', // Dynamically adjusts for the taller header
           maxWidth: '430px', 
           width: '100%', 
           margin: '0 auto', 
           bgcolor: '#FFFFFF',
-          overflow: 'hidden'
+          overflowY: 'auto',
+          pb: 10
         }}
       >
-        {/* Left Sidebar Categories */}
-        <Box 
-          sx={{ 
-            width: '84px', 
-            bgcolor: '#F8F9FB', 
-            borderRight: '1px solid #F1F5F9',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            py: 2,
-            gap: 2,
-            flexShrink: 0
-          }}
-        >
-          {sidebarCategories.map((c) => {
-            const isSelected = activeCat.toLowerCase() === c.name.toLowerCase();
-            return (
-              <Box
-                key={c.name}
-                onClick={() => { setActiveCat(c.name); setSearch(''); }}
-                sx={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  px: 0.5
-                }}
-              >
-                {/* Active Category Vertical Line */}
-                {isSelected && (
+        {/* Row 1: Horizontal Scroll Categories */}
+        <Box sx={{ px: 2, pt: 2, pb: 1, bgcolor: '#FFFFFF', flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', gap: 2.2, overflowX: 'auto', '&::-webkit-scrollbar': { display: 'none' }, pb: 1 }}>
+            {sidebarCategories.map((c) => {
+              const isSelected = activeCat.toLowerCase() === c.name.toLowerCase();
+              return (
+                <Box
+                  key={c.name}
+                  onClick={() => { setActiveCat(c.name); setSearch(''); }}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    transition: 'transform 0.15s ease-in-out',
+                    '&:active': { transform: 'scale(0.95)' }
+                  }}
+                >
                   <Box 
                     sx={{ 
-                      position: 'absolute', 
-                      left: 0, 
-                      top: '15%', 
-                      height: '70%', 
-                      width: '4px', 
-                      bgcolor: '#FF7A00',
-                      borderTopRightRadius: '4px',
-                      borderBottomRightRadius: '4px'
-                    }} 
-                  />
-                )}
-
-                {/* Category Circle Image */}
-                <Box 
-                  sx={{ 
-                    width: '54px', 
-                    height: '54px', 
-                    borderRadius: '50%', 
-                    overflow: 'hidden', 
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: isSelected ? '#FFEFE0' : '#FFFFFF',
-                    border: isSelected ? '1.5px solid #FF7A00' : '1px solid #E2E8F0',
-                    transition: 'all 0.2s',
-                    mb: 0.8
-                  }}
-                >
-                  <Box 
-                    component="img"
-                    src={c.image}
-                    alt={c.name}
-                    sx={{ width: '38px', height: '38px', objectFit: 'contain' }}
-                    onError={(e) => { e.target.style.display = 'none'; }}
-                  />
+                      width: '60px', 
+                      height: '60px', 
+                      borderRadius: '50%', 
+                      overflow: 'hidden', 
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: isSelected ? '#FFEFE0' : '#F8F9FB',
+                      border: isSelected ? '2px solid #FF7A00' : '1px solid #E2E8F0',
+                      boxShadow: isSelected ? '0 4px 12px rgba(255, 122, 0, 0.12)' : 'none',
+                      mb: 0.8,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Box 
+                      component="img"
+                      src={c.image}
+                      alt={c.name}
+                      sx={{ width: '40px', height: '40px', objectFit: 'contain' }}
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  </Box>
+                  <Typography 
+                    sx={{ 
+                      fontSize: '11px', 
+                      fontWeight: isSelected ? 800 : 600, 
+                      color: isSelected ? '#FF7A00' : '#475569',
+                      textAlign: 'center',
+                      fontFamily: '"Inter", sans-serif'
+                    }}
+                  >
+                    {c.name}
+                  </Typography>
                 </Box>
-
-                {/* Category Label */}
-                <Typography 
-                  sx={{ 
-                    fontSize: '11px', 
-                    fontWeight: isSelected ? 700 : 500, 
-                    color: isSelected ? '#FF7A00' : '#475569',
-                    textAlign: 'center',
-                    lineHeight: 1.2,
-                    fontFamily: '"Inter", sans-serif'
-                  }}
-                >
-                  {c.name}
-                </Typography>
-              </Box>
-            );
-          })}
+              );
+            })}
+          </Box>
         </Box>
 
-        {/* Right Main Product Area */}
-        <Box 
-          sx={{ 
-            flex: 1, 
-            overflowY: 'auto',
-            p: 1.5,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1.5
-          }}
-        >
-          {/* Horizontal Filters Row */}
+        {/* Row 2: Filter Chips */}
+        <Box sx={{ px: 2, pb: 1.5, flexShrink: 0 }}>
           <Stack 
             direction="row" 
             spacing={1} 
@@ -220,15 +183,13 @@ export default function DeliveryPage() {
             sx={{ 
               overflowX: 'auto', 
               pb: 0.5, 
-              flexShrink: 0,
               '&::-webkit-scrollbar': { display: 'none' } 
             }}
           >
             <Button
               variant="outlined"
               size="small"
-              startIcon={<LuSlidersHorizontal size={13} />}
-              endIcon={<LuChevronDown size={12} />}
+              startIcon={<TriIcon name="tune" size={16} />}
               sx={{ 
                 borderRadius: '12px', 
                 borderColor: '#E2E8F0', 
@@ -236,20 +197,20 @@ export default function DeliveryPage() {
                 fontSize: '12px', 
                 fontWeight: 600,
                 textTransform: 'none',
-                py: 0.5,
-                px: 1.5,
+                py: 0.6,
+                px: 2,
                 bgcolor: '#FFFFFF',
                 flexShrink: 0
               }}
             >
               Filters
             </Button>
-            {['Sort', 'Category', 'Brand', 'Price'].map(filterName => (
+            {['Sort', 'Category', 'Price', 'Brand'].map(filterName => (
               <Button
                 key={filterName}
                 variant="outlined"
                 size="small"
-                endIcon={<LuChevronDown size={12} />}
+                endIcon={<TriIcon name="arrow_drop_down" size={16} />}
                 sx={{ 
                   borderRadius: '12px', 
                   borderColor: '#E2E8F0', 
@@ -257,8 +218,8 @@ export default function DeliveryPage() {
                   fontSize: '12px', 
                   fontWeight: 600,
                   textTransform: 'none',
-                  py: 0.5,
-                  px: 1.5,
+                  py: 0.6,
+                  px: 2,
                   bgcolor: '#FFFFFF',
                   flexShrink: 0
                 }}
@@ -266,76 +227,74 @@ export default function DeliveryPage() {
                 {filterName}
               </Button>
             ))}
-            <IconButton 
-              size="small"
-              sx={{ 
-                border: '1px solid #E2E8F0', 
-                borderRadius: '12px', 
-                p: 0.6,
-                color: '#475569',
-                bgcolor: '#FFFFFF'
-              }}
-            >
-              <LuLayoutGrid size={15} />
-            </IconButton>
           </Stack>
+        </Box>
 
-          {/* Promotion Offer Banner */}
+        {/* Row 3: Offer Banner (Taller: 150px) */}
+        <Box sx={{ px: 2, pb: 2, flexShrink: 0 }}>
           <Box
             sx={{
               background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
               borderRadius: '20px',
-              p: 2,
+              p: 2.5,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              border: '1px solid #FED7AA',
+              border: '1.5px solid #FED7AA',
               position: 'relative',
               overflow: 'hidden',
-              flexShrink: 0
+              height: 150,
+              boxShadow: '0 4px 15px rgba(255, 122, 0, 0.05)'
             }}
           >
-            <Box sx={{ flex: 1, zIndex: 1 }}>
-              <Typography sx={{ fontSize: '16px', fontWeight: 800, color: '#9A3412', fontFamily: '"Inter", sans-serif', lineHeight: 1.2 }}>
+            <Box sx={{ flex: 1.2, zIndex: 1 }}>
+              <Typography sx={{ fontSize: '18px', fontWeight: 800, color: '#9A3412', fontFamily: '"Inter", sans-serif', lineHeight: 1.2 }}>
                 Fresh seasonal fruits
               </Typography>
-              <Typography sx={{ fontSize: '11px', color: '#C2410C', fontFamily: '"Inter", sans-serif', mt: 0.5, mb: 1.2 }}>
+              <Typography sx={{ fontSize: '12px', color: '#C2410C', fontFamily: '"Inter", sans-serif', mt: 0.8, mb: 2 }}>
                 Nutritional goodness in every bite
               </Typography>
-              <Box
+              <Button
+                variant="contained"
                 sx={{
                   bgcolor: '#FF7A00',
                   color: '#FFFFFF',
-                  borderRadius: '8px',
-                  px: 1.8,
-                  py: 0.6,
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  display: 'inline-block',
-                  cursor: 'pointer',
+                  borderRadius: '12px',
+                  px: 2.5,
+                  py: 0.8,
+                  fontSize: '12px',
+                  fontWeight: 800,
                   boxShadow: '0 4px 12px rgba(255, 122, 0, 0.25)',
-                  fontFamily: '"Inter", sans-serif'
+                  '&:hover': { bgcolor: '#E06B00' }
                 }}
               >
                 Shop Now
-              </Box>
+              </Button>
             </Box>
             <Box 
               component="img"
-              src="https://images.unsplash.com/photo-1610832958506-ee5633619144?auto=format&fit=crop&w=150&q=80"
+              src="https://images.unsplash.com/photo-1610832958506-ee5633619144?auto=format&fit=crop&w=280&q=80"
               alt="Fruits basket"
-              sx={{ width: '90px', height: '90px', objectFit: 'contain', zIndex: 1 }}
+              sx={{ 
+                height: '110px', 
+                width: '110px', 
+                objectFit: 'contain',
+                zIndex: 1,
+              }}
+              onError={(e) => { e.target.style.display = 'none'; }}
             />
           </Box>
+        </Box>
 
-          {/* Product Grid Area */}
+        {/* Row 4: Product Grid Area */}
+        <Box sx={{ px: 2, pb: 4 }}>
           {loading ? (
-            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center', py: 10 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 10 }}>
               <CircularProgress sx={{ color: '#FF7A00' }} />
             </Box>
           ) : products.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
-              <LuSearch size={40} style={{ color: '#CBD5E1', marginBottom: 12 }} />
+              <TriIcon name="search_off" size={48} color="#CBD5E1" sx={{ mb: 1.5 }} />
               <Typography sx={{ fontSize: '15px', fontWeight: 700, color: '#334155', mb: 0.5, fontFamily: '"Inter", sans-serif' }}>
                 No products found
               </Typography>
@@ -344,7 +303,7 @@ export default function DeliveryPage() {
               </Typography>
             </Box>
           ) : (
-            <Grid container spacing={1.5}>
+            <Grid container spacing={2}>
               {products.map(product => (
                 <Grid item xs={6} key={product.id}>
                   <TriProductCard 

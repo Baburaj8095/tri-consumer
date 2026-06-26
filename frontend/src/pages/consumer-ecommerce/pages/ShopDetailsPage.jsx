@@ -172,18 +172,52 @@ export default function ShopDetailsPage() {
 
   return (
     <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', pb: totalItemsCount > 0 ? 14 : 6, maxWidth: '480px', margin: '0 auto', boxShadow: '0 0 20px rgba(0,0,0,0.05)', position: 'relative' }}>
-      {/* Header Bar */}
-      <Box sx={{ bgcolor: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 2, borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10, maxWidth: '480px', mx: 'auto' }}>
-        <IconButton onClick={() => navigate(-1)} sx={{ color: '#0f172a' }}>
-          <LuChevronLeft />
-        </IconButton>
-        <Typography sx={{ fontWeight: 900, fontSize: '1.1rem', flexGrow: 1, color: '#0f172a' }}>{shopName}</Typography>
-        <IconButton sx={{ color: '#0f172a' }}><LuShare2 /></IconButton>
+      {/* Cover Image Container */}
+      <Box sx={{ position: 'relative', width: '100%', height: 200, overflow: 'hidden' }}>
+        <Box 
+          component="img"
+          src={shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'} 
+          alt={shopName} 
+          sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%)' }} />
+        
+        {/* Absolute Header Overlay */}
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ position: 'absolute', top: 0, left: 0, right: 0, p: 2, zIndex: 10 }}>
+          <IconButton 
+            onClick={() => navigate(-1)} 
+            sx={{ 
+              color: '#FFFFFF', 
+              bgcolor: 'rgba(15, 23, 42, 0.4)', 
+              backdropFilter: 'blur(4px)',
+              '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.6)' } 
+            }}
+          >
+            <LuChevronLeft />
+          </IconButton>
+          <IconButton 
+            sx={{ 
+              color: '#FFFFFF', 
+              bgcolor: 'rgba(15, 23, 42, 0.4)', 
+              backdropFilter: 'blur(4px)',
+              '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.6)' } 
+            }}
+            onClick={() => alert('Shared store details!')}
+          >
+            <LuShare2 />
+          </IconButton>
+        </Stack>
+
+        {/* Floating Store Title */}
+        <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}>
+          <Typography sx={{ color: '#FFFFFF', fontWeight: 900, fontSize: '1.4rem', textShadow: '0 2px 4px rgba(0,0,0,0.5)', fontFamily: '"Inter", sans-serif' }}>
+            {shopName}
+          </Typography>
+        </Box>
       </Box>
 
       {/* Main Info */}
       <Box sx={{ p: 2, bgcolor: '#fff' }}>
-        <Typography sx={{ fontWeight: 900, fontSize: '1.4rem', color: '#0f172a', mb: 0.5 }}>{shopName}</Typography>
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
           <Box sx={{ bgcolor: '#10b981', color: '#fff', px: 1, py: 0.25, borderRadius: 1, fontSize: '0.8rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 0.5 }}>
             4.5 <LuStar size={12} fill="#fff" />
@@ -195,7 +229,7 @@ export default function ShopDetailsPage() {
         </Stack>
 
         <Typography sx={{ fontSize: '0.85rem', color: '#475569', mb: 0.5 }}>{address} • Within {shop.delivery_radius_km || 5.0}  km</Typography>
-        <Typography sx={{ fontSize: '0.85rem', color: '#f97316', fontWeight: 700, mb: 2 }}>Min Order Threshold: ₹{shop.min_order_value || 0}</Typography>
+        <Typography sx={{ fontSize: '0.85rem', color: '#FF7A00', fontWeight: 700, mb: 2 }}>Min Order Threshold: ₹{shop.min_order_value || 0}</Typography>
 
         {/* Action Circles */}
         <Stack direction="row" justifyContent="space-around" sx={{ mb: 2 }}>
@@ -263,12 +297,12 @@ export default function ShopDetailsPage() {
 
                       {/* ADD to Cart toggle / qty control */}
                       {cartItem ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #ea580c', borderRadius: '8px', bgcolor: 'rgba(234, 88, 12, 0.05)' }}>
-                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, -1)} sx={{ color: '#ea580c' }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #FF7A00', borderRadius: '8px', bgcolor: 'rgba(255, 122, 0, 0.05)' }}>
+                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, -1)} sx={{ color: '#FF7A00' }}>
                             <LuMinus size={14} />
                           </IconButton>
-                          <Typography sx={{ fontWeight: 800, color: '#ea580c', px: 1, fontSize: '0.85rem' }}>{cartItem.quantity}</Typography>
-                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, 1)} sx={{ color: '#ea580c' }}>
+                          <Typography sx={{ fontWeight: 800, color: '#FF7A00', px: 1, fontSize: '0.85rem' }}>{cartItem.quantity}</Typography>
+                          <IconButton size="small" onClick={() => handleUpdateQty(product.id, 1)} sx={{ color: '#FF7A00' }}>
                             <LuPlus size={14} />
                           </IconButton>
                         </Box>
@@ -276,10 +310,11 @@ export default function ShopDetailsPage() {
                         <Button 
                           onClick={() => handleAddToCart(product)}
                           variant="outlined" 
+                          color="primary"
                           size="small" 
                           sx={{ 
-                            textTransform: 'none', fontWeight: 800, color: '#ea580c', borderColor: '#ea580c',
-                            borderRadius: '8px', px: 2, '&:hover': { bgcolor: 'rgba(234, 88, 12, 0.05)', borderColor: '#ea580c' } 
+                            fontWeight: 800,
+                            borderRadius: '8px', px: 2 
                           }}
                         >
                           ADD
@@ -326,10 +361,10 @@ export default function ShopDetailsPage() {
         <Box 
           sx={{ 
             position: 'fixed', bottom: 0, left: 0, right: 0, 
-            bgcolor: '#ea580c', color: '#fff', p: 2, 
+            bgcolor: '#FF7A00', color: '#fff', p: 2, 
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             borderTopLeftRadius: 16, borderTopRightRadius: 16,
-            boxShadow: '0 -4px 16px rgba(234, 88, 12, 0.25)', zIndex: 100,
+            boxShadow: '0 -4px 16px rgba(255, 122, 0, 0.25)', zIndex: 100,
             maxWidth: '480px', mx: 'auto'
           }}
         >
@@ -342,7 +377,7 @@ export default function ShopDetailsPage() {
             to="/consumer-ecommerce/cart"
             variant="contained" 
             sx={{ 
-              bgcolor: '#fff', color: '#ea580c', fontWeight: 800, textTransform: 'none', px: 3, py: 1, borderRadius: 2,
+              bgcolor: '#fff', color: '#FF7A00', fontWeight: 800, textTransform: 'none', px: 3, py: 1, borderRadius: 2,
               '&:hover': { bgcolor: '#fdf2e9' }
             }}
           >

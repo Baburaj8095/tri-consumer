@@ -13,6 +13,7 @@ import TriCard from '../../../components/ui/TriCard';
 import TriButton from '../../../components/ui/TriButton';
 import TriEmptyState from '../../../components/ui/TriEmptyState';
 import TriAddressCard from '../../../components/ui/TriAddressCard';
+import TriIcon from '../../../components/ui/TriIcon';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
@@ -226,25 +227,53 @@ export default function CartPage() {
             const validatedItem = validation?.items?.find(it => it.product_id === item.productId);
             const isAvailable = validatedItem ? validatedItem.isAvailable : true;
             return (
-              <TriCard key={item.productId} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box component="img" src={item.image} alt={item.title} sx={{ width: 64, height: 64, borderRadius: 2, objectFit: 'cover' }} />
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" fontWeight={800}>{item.title}</Typography>
-                  <Typography variant="h5" color="primary.main">₹{item.price}</Typography>
-                  {validatedItem && validatedItem.message !== "In Stock" && (
-                    <Typography variant="caption" color={isAvailable ? 'success.main' : 'error.main'} fontWeight={700}>
-                      {validatedItem.message}
+              <TriCard key={item.productId} sx={{ p: 1.5, borderRadius: '20px' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box component="img" src={item.image} alt={item.title} sx={{ width: 60, height: 60, borderRadius: '12px', objectFit: 'cover', flexShrink: 0 }} />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: '14px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }} noWrap>
+                      {item.title}
                     </Typography>
-                  )}
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: 'background.default', borderRadius: 2, p: 0.5 }}>
-                  <IconButton onClick={() => item.quantity > 1 ? handleUpdateQty(item.productId, -1) : handleRemoveProduct(item.productId)} size="small">
-                    {item.quantity > 1 ? <FaMinus size={12} /> : <FaTrash size={12} color="#ef4444" />}
-                  </IconButton>
-                  <Typography variant="h5" sx={{ width: 20, textAlign: 'center' }}>{item.quantity}</Typography>
-                  <IconButton onClick={() => handleUpdateQty(item.productId, 1)} size="small" disabled={!isAvailable}>
-                    <FaPlus size={12} />
-                  </IconButton>
+                    <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#FF7A00', fontFamily: '"Inter", sans-serif', mt: 0.2 }}>
+                      ₹{item.price}
+                    </Typography>
+                    {validatedItem && validatedItem.message !== "In Stock" && (
+                      <Typography sx={{ fontSize: '10px', color: isAvailable ? '#22C55E' : '#EF4444', fontWeight: 700, fontFamily: '"Inter", sans-serif', mt: 0.2 }} noWrap>
+                        {validatedItem.message}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flexShrink: 0 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ bgcolor: '#F8F9FB', borderRadius: '10px', p: 0.5, border: '1px solid #E2E8F0' }}>
+                      <IconButton 
+                        onClick={() => handleUpdateQty(item.productId, -1)} 
+                        size="small" 
+                        sx={{ p: 0.2, color: '#64748B' }}
+                      >
+                        <TriIcon name="remove" size={14} />
+                      </IconButton>
+                      <Typography sx={{ fontSize: '13px', fontWeight: 800, width: 18, textAlign: 'center', fontFamily: '"Inter", sans-serif', color: '#1E293B' }}>
+                        {item.quantity}
+                      </Typography>
+                      <IconButton 
+                        onClick={() => handleUpdateQty(item.productId, 1)} 
+                        size="small" 
+                        disabled={!isAvailable}
+                        sx={{ p: 0.2, color: '#64748B' }}
+                      >
+                        <TriIcon name="add" size={14} />
+                      </IconButton>
+                    </Stack>
+
+                    <IconButton 
+                      onClick={() => handleRemoveProduct(item.productId)} 
+                      size="small"
+                      sx={{ color: '#EF4444', p: 0.5 }}
+                    >
+                      <TriIcon name="delete" size={18} />
+                    </IconButton>
+                  </Stack>
                 </Box>
               </TriCard>
             );
@@ -284,7 +313,9 @@ export default function CartPage() {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2" color="text.secondary">Delivery Fee</Typography>
-            <Typography variant="body2" fontWeight={700}>₹{deliveryFee.toFixed(2)}</Typography>
+            <Typography variant="body2" fontWeight={700} sx={{ color: deliveryFee === 0 ? '#22C55E' : 'text.primary' }}>
+              {deliveryFee === 0 ? 'FREE Delivery' : `₹${deliveryFee.toFixed(2)}`}
+            </Typography>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body2" color="text.secondary">Taxes</Typography>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Box } from '@mui/material';
+import { Box, Stack, Typography, Button } from '@mui/material';
+import TriIcon from '../../../components/ui/TriIcon';
 import {
   LuArrowRight,
   LuCamera,
@@ -33,9 +34,9 @@ import AdsCarousel from '../components/AdsCarousel.jsx';
 import CashbackAds from '../components/CashbackAds.jsx';
 import ActionGrid from '../components/ActionGrid.jsx';
 import BottomNav from '../components/BottomNav.jsx';
-import { useModal } from '../hooks/useModal.js';
+import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
+import axios from 'axios';
 import { consumerProfile, products, personalizedProducts } from '../services/mockData.js';
-import ProductDetailsPage from './ProductDetailsPage.jsx';
 import '../consumerEcommerce.css';
 
 const quickServices = [
@@ -427,6 +428,20 @@ export default function App() {
   const [activePromoIndex, setActivePromoIndex] = useState(0);
   const [activeAdIndex, setActiveAdIndex] = useState(0);
   const [ambientColors, setAmbientColors] = useState(promoDeals[0].ambient);
+  const [b2cShops, setB2cShops] = useState([]);
+
+  const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
+
+  useEffect(() => {
+    const params = location
+      ? `?lat=${location.lat}&lng=${location.lng}&radius_km=25`
+      : '';
+    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c${params}`)
+      .then(res => {
+        setB2cShops(res.data ? res.data.slice(0, 3) : []);
+      })
+      .catch(err => console.error('Failed to load B2C merchants in App:', err));
+  }, [location]);
 
   return (
     <div
@@ -441,14 +456,97 @@ export default function App() {
       <main className="ce-commerce-main" style={{ paddingTop: 0 }}>
         {/* We start directly with the Explore Nearby link and Live Deals to connect naturally with the header */}
         <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
-          <Link to="/consumer-ecommerce/nearby-stores" className="ce-commerce-explore" style={{ margin: 0, borderRadius: '20px' }}>
+          <Link to="/consumer-ecommerce/near-me" className="ce-commerce-explore" style={{ margin: 0, borderRadius: '20px' }}>
             <span><LuGrid2X2 /></span>
             <div>
-              <strong>Explore Nearby Stores</strong>
-              <small>Find stores and services around you</small>
+              <strong>Explore Near Me</strong>
+              <small>Find hotels, restaurants, shopping and services around you</small>
             </div>
             <LuArrowRight />
           </Link>
+
+          {/* Join Tri Prime Premium Banner */}
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, #FFF5E6 0%, #FFFAF0 100%)',
+              borderRadius: '20px', // Card radius token
+              p: 2.5,
+              border: '1.5px solid #FFE0B2',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+              boxShadow: '0 4px 15px rgba(255, 122, 0, 0.05)',
+              mt: 0.5
+            }}
+          >
+            <Box sx={{ maxWidth: '65%' }}>
+              <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.5 }}>
+                <TriIcon name="sparkles" size={18} color="#FF7A00" />
+                <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                  Join Tri Prime
+                </Typography>
+              </Stack>
+              <Typography sx={{ fontSize: '18px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', mb: 1, lineHeight: 1.2 }}>
+                Unlock Premium Super App Perks
+              </Typography>
+              <Stack spacing={0.8}>
+                {[
+                  '10% instant wallet cashback',
+                  'Free delivery on all orders',
+                  'Premium member-only offers',
+                  'Early access to weekly sales'
+                ].map((benefit) => (
+                  <Stack key={benefit} direction="row" spacing={0.8} alignItems="center">
+                    <TriIcon name="check_circle" size={16} color="#22C55E" />
+                    <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#475569', fontFamily: '"Inter", sans-serif' }}>
+                      {benefit}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+
+            <Box
+              sx={{
+                position: 'absolute',
+                right: 16,
+                bottom: 16,
+                width: 110,
+                height: 110,
+                opacity: 0.95,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <TriIcon name="workspace_premium" size={90} color="#FF7A00" />
+            </Box>
+
+            <Link
+              to="/consumer-ecommerce/join-prime"
+              style={{
+                backgroundColor: '#FF7A00',
+                color: '#FFFFFF',
+                fontWeight: 800,
+                fontSize: '13px',
+                padding: '10px 24px',
+                borderRadius: '12px',
+                width: 'fit-content',
+                textDecoration: 'none',
+                textAlign: 'center',
+                boxShadow: '0 4px 10px rgba(255, 122, 0, 0.2)',
+                display: 'inline-block',
+                marginTop: '4px',
+                transition: 'background 0.2s',
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#E06B00'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#FF7A00'}
+            >
+              Join Now
+            </Link>
+          </Box>
 
           <PromoDealCarousel
             title="Live deals for you"
@@ -555,6 +653,42 @@ export default function App() {
               ))}
             </div>
           </section>
+
+          {/* Nearby Stores Preview Section */}
+          {b2cShops.length > 0 && (
+            <section className="ce-content-section" style={{ padding: '0 16px', marginBottom: '24px' }}>
+              <div className="ce-section-heading-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <h2 className="ce-section-title">Nearby Stores</h2>
+                  <p className="ce-section-subtitle">Top verified stores near you</p>
+                </div>
+                <Link to="/consumer-ecommerce/nearby-stores" className="ce-section-link" style={{ color: '#FF7A00', fontWeight: 700, textDecoration: 'none', fontSize: '14px' }}>
+                  View All
+                </Link>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {b2cShops.map((shop) => {
+                  const resolvedShop = {
+                    id: shop.id,
+                    shopId: shop.shop_id || shop.id,
+                    name: shop.shop_name || shop.business_name || shop.full_name || 'B2C Merchant',
+                    category: shop.category_name || shop.business_category || 'Retail Store',
+                    rating: '4.5',
+                    location: shop.city || shop.address || 'Local Area',
+                    distance: shop.distance_km != null ? `${shop.distance_km.toFixed(1)} KM` : '0.8 KM',
+                    status: 'Open now',
+                    phone: shop.contact_number || shop.phone || '',
+                    image: shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+                    latitude: shop.latitude || shop.lat,
+                    longitude: shop.longitude || shop.lng,
+                  };
+                  return (
+                    <NearbyStoreCard key={shop.id} store={resolvedShop} />
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <section className="ce-content-section ce-personalized-section">
             <div className="ce-section-heading-row">

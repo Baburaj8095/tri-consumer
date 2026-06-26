@@ -192,7 +192,12 @@ export default function CartPage() {
         <Typography variant="caption" color="text.secondary" fontWeight={700}>Grand Total</Typography>
         <Typography variant="h3" color="text.primary">₹{grandTotal.toFixed(2)}</Typography>
       </Box>
-      <TriButton onClick={handleProceedCheckout} disabled={isValidating || isPlacingOrder} sx={{ minWidth: 160 }}>
+      <TriButton 
+        onClick={handleProceedCheckout} 
+        disabled={isValidating || isPlacingOrder} 
+        fullWidth={false}
+        sx={{ width: '180px', borderRadius: '12px' }}
+      >
         {isPlacingOrder ? <CircularProgress size={24} color="inherit" /> : 'Place Order'}
       </TriButton>
     </Box>

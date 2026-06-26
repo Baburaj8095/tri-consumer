@@ -80,7 +80,7 @@ export default function TriProductCard({
       <Box 
         sx={{ 
           width: '100%', 
-          paddingTop: '90%', // Reduced empty whitespace above details
+          paddingTop: '100%', // Unified square ratio
           position: 'relative', 
           bgcolor: '#F8FAFC',
         }}
@@ -92,7 +92,7 @@ export default function TriProductCard({
           sx={{
             position: 'absolute', top: 0, left: 0, 
             width: '100%', height: '100%', 
-            objectFit: 'contain', p: 1.5
+            objectFit: 'cover', p: 0 // Full-bleed cover for premium look
           }}
           onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
         />
@@ -159,7 +159,7 @@ export default function TriProductCard({
         </Box>
 
         {/* ADD Button */}
-        <Box sx={{ position: 'absolute', bottom: 6, right: 6 }}>
+        <Box sx={{ position: 'absolute', bottom: 8, right: 8 }}>
           {quantity === 0 ? (
             <Box
               onClick={handleAddClick}
@@ -219,7 +219,7 @@ export default function TriProductCard({
       <Box sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
         {/* Pricing Row */}
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography sx={{ fontSize: '14px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }}>
+          <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }}>
             ₹{product.price?.toLocaleString('en-IN')}
           </Typography>
           {hasDiscount && product.mrp > product.price && (
@@ -232,8 +232,8 @@ export default function TriProductCard({
         {/* Title */}
         <Typography 
           sx={{ 
-            fontSize: '12px',
-            fontWeight: 600,
+            fontSize: '13px',
+            fontWeight: 700,
             color: '#334155',
             fontFamily: '"Inter", sans-serif',
             overflow: 'hidden',
@@ -277,22 +277,22 @@ export default function TriProductCard({
         <Stack spacing={0.5} sx={{ mt: 'auto', pt: 0.5, borderTop: '1px solid #F1F5F9' }}>
           <Stack direction="row" alignItems="center" spacing={0.3} sx={{ color: '#64748B' }}>
             <TriIcon name="schedule" size={12} color="#64748B" />
-            <Typography sx={{ fontSize: '10px', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
+            <Typography sx={{ fontSize: '11px', fontWeight: 600, fontFamily: '"Inter", sans-serif' }}>
               10 mins
             </Typography>
             {product.shop_name && (
-              <Typography sx={{ fontSize: '10px', fontWeight: 600, color: '#94A3B8', fontFamily: '"Inter", sans-serif', ml: 0.3 }} noWrap>
+              <Typography sx={{ fontSize: '11px', fontWeight: 600, color: '#94A3B8', fontFamily: '"Inter", sans-serif', ml: 0.3 }} noWrap>
                 • {product.shop_name}
               </Typography>
             )}
           </Stack>
           <Stack direction="row" alignItems="center" spacing={0.3}>
             <TriIcon name="star" size={12} sx={{ color: '#F59E0B', fill: '#F59E0B' }} />
-            <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#F59E0B', fontFamily: '"Inter", sans-serif' }}>
+            <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#F59E0B', fontFamily: '"Inter", sans-serif' }}>
               {product.rating || '4.5'}
             </Typography>
             <Box sx={{ width: 3, height: 3, borderRadius: '50%', bgcolor: '#CBD5E1', mx: 0.5 }} />
-            <Typography sx={{ fontSize: '10px', fontWeight: 700, color: '#22C55E', fontFamily: '"Inter", sans-serif' }}>
+            <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#22C55E', fontFamily: '"Inter", sans-serif' }}>
               5% Cashback
             </Typography>
           </Stack>

@@ -600,8 +600,8 @@ export default function App() {
                     longitude: shop.longitude || shop.lng,
                   };
                   return (
-                    <Box key={shop.id} sx={{ minWidth: '280px', maxWidth: '300px', flexShrink: 0 }}>
-                      <NearbyStoreCard store={resolvedShop} sx={{ mb: 0 }} />
+                    <Box key={shop.id} sx={{ minWidth: '210px', maxWidth: '210px', flexShrink: 0 }}>
+                      <NearbyStoreCard store={resolvedShop} compact={true} sx={{ mb: 0 }} />
                     </Box>
                   );
                 })}

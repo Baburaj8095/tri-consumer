@@ -34,6 +34,7 @@ import ActionGrid from '../components/ActionGrid.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import { useModal } from '../hooks/useModal.js';
 import { consumerProfile, products, personalizedProducts } from '../services/mockData.js';
+import ProductDetailsPage from './ProductDetailsPage.jsx';
 import '../consumerEcommerce.css';
 
 const quickServices = [

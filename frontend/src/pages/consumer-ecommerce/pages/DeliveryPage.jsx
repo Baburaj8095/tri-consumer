@@ -77,16 +77,17 @@ const getCatIcon = (name) => {
 function addToCart(product) {
   try {
     let cart = JSON.parse(localStorage.getItem('tri_consumer_cart') || '{"shopId":null,"shopName":"","items":[]}');
-    if (cart.shopId && String(cart.shopId) !== String(product.shop_id)) {
-      const confirmed = window.confirm(
-        `Your cart has items from "${cart.shopName}". Starting a new cart will remove them. Continue?`
-      );
-      if (!confirmed) return false;
-      cart = { shopId: product.shop_id, shopName: product.shop_name || 'Online Shop', items: [] };
-    }
+      if (cart.shopId && String(cart.shopId) !== String(product.shop_id)) {
+        const confirmed = window.confirm(
+          `Your cart has items from "${cart.shopName}". Starting a new cart will remove them. Continue?`
+        );
+        if (!confirmed) return false;
+        cart = { shopId: product.shop_id, shopName: product.shop_name || 'Online Shop', items: [], orderChannel: 'ONLINE_DELIVERY' };
+      }
     if (!cart.shopId) {
       cart.shopId = product.shop_id;
       cart.shopName = product.shop_name || 'Online Shop';
+      cart.orderChannel = 'ONLINE_DELIVERY';
     }
     const existing = cart.items.find((i) => i.productId === product.id);
     if (existing) {
@@ -114,43 +115,48 @@ function ProductCard({ product, onAdd }) {
   const img = product.image || product.image_url || FALLBACK_IMAGE;
 
   return (
-    <div className="ce-online-product" style={{ position: 'relative', cursor: 'pointer' }}>
-      <img
-        src={img}
-        alt={product.title}
-        onClick={() => navigate(`/consumer-ecommerce/shop/${product.shop_id}`)}
-        onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
-      />
-      {hasDiscount && (
-        <span style={{
-          position: 'absolute', top: 8, left: 8,
-          background: '#ea580c', color: '#fff',
-          fontSize: '0.65rem', fontWeight: 800,
-          padding: '2px 6px', borderRadius: '4px',
-        }}>
-          {Math.round(product.discount_percent)}% OFF
-        </span>
-      )}
-      <div style={{ padding: '8px 8px 4px' }}>
+    <div className="ce-online-product" style={{ position: 'relative', cursor: 'pointer', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', overflow: 'hidden', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', height: '100%', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
+      <div 
+        style={{ width: '100%', paddingTop: '100%', position: 'relative', background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}
+        onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)}
+      >
+        <img
+          src={img}
+          alt={product.title}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply', padding: '10px' }}
+          onError={(e) => { e.target.src = FALLBACK_IMAGE; }}
+        />
+        {hasDiscount && (
+          <span style={{
+            position: 'absolute', top: 8, left: 8,
+            background: '#ef4444', color: '#fff',
+            fontSize: '0.65rem', fontWeight: 800,
+            padding: '4px 8px', borderRadius: '4px', boxShadow: '0 2px 5px rgba(239, 68, 68, 0.3)'
+          }}>
+            {Math.round(product.discount_percent)}% OFF
+          </span>
+        )}
+      </div>
+      <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h3
-          style={{ margin: 0, fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.3,
-            overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-          onClick={() => navigate(`/consumer-ecommerce/shop/${product.shop_id}`)}
+          style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.4,
+            overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', flex: 1 }}
+          onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)}
         >
           {product.title}
         </h3>
         {product.shop_name && (
-          <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>
-            <LuStore size={10} style={{ marginRight: 3, verticalAlign: 'middle' }} />
+          <p style={{ margin: '6px 0 0', fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>
+            <LuStore size={12} style={{ marginRight: 4, verticalAlign: 'middle', color: '#ea580c' }} />
             {product.shop_name}
           </p>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-          <strong style={{ fontSize: '0.88rem', color: '#ea580c', fontWeight: 900 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+          <strong style={{ fontSize: '1rem', color: '#0f172a', fontWeight: 900 }}>
             ₹{product.price?.toLocaleString('en-IN')}
           </strong>
           {hasDiscount && product.mrp > product.price && (
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', textDecoration: 'line-through' }}>
+            <span style={{ fontSize: '0.75rem', color: '#94a3b8', textDecoration: 'line-through', fontWeight: 600 }}>
               ₹{product.mrp?.toLocaleString('en-IN')}
             </span>
           )}
@@ -159,15 +165,19 @@ function ProductCard({ product, onAdd }) {
       <button
         onClick={() => onAdd(product)}
         style={{
-          width: 'calc(100% - 16px)', margin: '0 8px 8px',
-          padding: '7px 0', borderRadius: '8px',
-          background: 'linear-gradient(135deg, #ea580c, #f97316)',
+          width: 'calc(100% - 24px)', margin: '0 12px 12px',
+          padding: '8px 0', borderRadius: '8px',
+          background: '#f97316',
           color: '#fff', border: 'none', cursor: 'pointer',
-          fontWeight: 800, fontSize: '0.78rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          fontWeight: 800, fontSize: '0.8rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          boxShadow: '0 2px 8px rgba(249, 115, 22, 0.25)',
+          transition: 'background 0.2s ease'
         }}
+        onMouseOver={(e) => e.currentTarget.style.background = '#ea580c'}
+        onMouseOut={(e) => e.currentTarget.style.background = '#f97316'}
       >
-        <LuShoppingCart size={13} /> Add
+        <LuShoppingCart size={15} /> Add to Cart
       </button>
     </div>
   );
@@ -370,17 +380,55 @@ export default function DeliveryPage() {
 
       <main className="ce-online-shell">
         {/* Left rail nav */}
-        <aside className="ce-online-rail">
-          {rail.map(([label, Icon]) => (
-            <Link
-              key={label}
-              to={label === 'Tri Zone' ? '/consumer-ecommerce/tri-zone' : '/consumer-ecommerce/delivery'}
-              className={label === 'Online Shop' ? 'active' : ''}
-            >
-              <Icon />
-              <span>{label}</span>
-            </Link>
-          ))}
+        <aside className="ce-online-rail" style={{ overflowY: 'auto' }}>
+          <Link to="/consumer-ecommerce/my-orders">
+            <LuReceiptText /><span>Orders</span>
+          </Link>
+          <Link to="/consumer-ecommerce/tri-zone">
+            <LuHeartHandshake /><span>Tri Zone</span>
+          </Link>
+          <Link to="/consumer-ecommerce/delivery" className="active">
+            <LuShoppingBag /><span>Online Shop</span>
+          </Link>
+
+          <div style={{ margin: '16px 16px 8px', fontSize: '0.7rem', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Categories</div>
+          
+          <div 
+            onClick={() => { setActiveCat(''); setSearch(''); fetchProducts('', ''); }}
+            className={activeCat === '' ? 'active' : ''}
+            style={{ 
+              display: 'flex', alignItems: 'center', padding: '10px 16px', gap: 12, cursor: 'pointer', 
+              color: activeCat === '' ? '#ea580c' : '#475569', 
+              fontWeight: activeCat === '' ? 800 : 600, 
+              background: activeCat === '' ? '#fff7ed' : 'transparent', 
+              borderRight: activeCat === '' ? '3px solid #ea580c' : '3px solid transparent' 
+            }}
+          >
+            <LuList size={20} />
+            <span style={{ fontSize: '0.8rem' }}>All Products</span>
+          </div>
+
+          {categories.map((c) => {
+            const Icon = getCatIcon(c.name);
+            const isActive = activeCat === c.name;
+            return (
+              <div
+                key={c.id || c.name}
+                onClick={() => { setActiveCat(c.name); setSearch(''); fetchProducts(c.name, ''); }}
+                className={isActive ? 'active' : ''}
+                style={{ 
+                  display: 'flex', alignItems: 'center', padding: '10px 16px', gap: 12, cursor: 'pointer', 
+                  color: isActive ? '#ea580c' : '#475569', 
+                  fontWeight: isActive ? 800 : 600, 
+                  background: isActive ? '#fff7ed' : 'transparent', 
+                  borderRight: isActive ? '3px solid #ea580c' : '3px solid transparent' 
+                }}
+              >
+                <Icon size={20} />
+                <span style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+              </div>
+            );
+          })}
         </aside>
 
         {/* Main content */}

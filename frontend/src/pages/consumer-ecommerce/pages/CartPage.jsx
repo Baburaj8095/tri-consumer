@@ -345,9 +345,11 @@ export default function CartPage() {
           </button>
           <div className="ce-delivery-header-title-wrap">
             <h1 className="ce-delivery-title" style={{ fontSize: '1.1rem', fontWeight: 900 }}>Checkout Cart</h1>
-            <p className="ce-delivery-location" style={{ justifyContent: 'center', fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700 }}>
-              <FaLocationDot style={{ marginRight: '4px' }} /> Delivering from {cart.shopName}
-            </p>
+            {isNearbyDeliveryOrder && (
+              <p className="ce-delivery-location" style={{ justifyContent: 'center', fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700 }}>
+                <FaLocationDot style={{ marginRight: '4px' }} /> Delivering from {cart.shopName}
+              </p>
+            )}
           </div>
           <div></div>
         </div>
@@ -372,7 +374,7 @@ export default function CartPage() {
         {/* 1. Cart Items list */}
         <section style={{ backgroundColor: '#fff', borderRadius: '16px', padding: '16px', border: '1px solid #e2e8f0', marginBottom: '16px' }}>
           <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', fontWeight: 900, color: '#0f172a' }}>
-            Items from {cart.shopName}
+            {isNearbyDeliveryOrder ? `Items from ${cart.shopName}` : 'Online Order Items'}
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

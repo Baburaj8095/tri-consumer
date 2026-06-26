@@ -55,8 +55,6 @@ export default function TriEatPage() {
           </div>
         </section>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

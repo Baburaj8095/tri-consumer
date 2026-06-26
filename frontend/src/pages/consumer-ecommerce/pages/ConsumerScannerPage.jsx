@@ -3,22 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { alpha } from "@mui/material/styles";
 import { Box, Button, Card, CardContent, IconButton, Stack, Typography } from "@mui/material";
 import BottomNav from "../components/BottomNav.jsx";
-import {
-  HiOutlineArrowLeft,
-  HiOutlineQrCode,
-  HiOutlineBolt
-} from 'react-icons/hi2';
+import Header from "../components/Header.jsx";
+import { HiOutlineQrCode } from 'react-icons/hi2';
 
 const UI = {
   bg: "#08111f",
   surface: "#ffffff",
   text: "#1f2937",
   muted: "#94a3b8",
-  primary: "#0F52BA",
+  primary: "#FF7A00",
   onPrimary: "#ffffff",
 };
 
-function ConsumerScannerPage() {
+export default function ConsumerScannerPage() {
   const navigate = useNavigate();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -107,47 +104,12 @@ function ConsumerScannerPage() {
 
   return (
     <Box className="ce-app ce-scanner-shell" sx={{ minHeight: "100vh", bgcolor: UI.bg, color: UI.onPrimary, pb: "92px" }}>
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          px: 2,
-          py: 1.5,
-          backdropFilter: "blur(10px)",
-          bgcolor: alpha("#08111f", 0.9),
-          borderBottom: `1px solid ${alpha("#ffffff", 0.08)}`,
-        }}
-      >
-        <Stack direction="row" spacing={1.2} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1.2} alignItems="center">
-            <IconButton
-              onClick={() => navigate("/consumer-ecommerce")}
-              sx={{
-                width: 38,
-                height: 38,
-                bgcolor: alpha("#ffffff", 0.1),
-                color: UI.onPrimary,
-              }}
-            >
-              <HiOutlineArrowLeft style={{ fontSize: 20 }} />
-            </IconButton>
-            <Typography sx={{ fontSize: 18, fontWeight: 900 }}>
-              Scan QR
-            </Typography>
-          </Stack>
-          <IconButton
-            sx={{
-              width: 38,
-              height: 38,
-              bgcolor: alpha("#ffffff", 0.1),
-              color: UI.onPrimary,
-            }}
-          >
-            <HiOutlineBolt style={{ fontSize: 20 }} />
-          </IconButton>
-        </Stack>
-      </Box>
+      <Header 
+        mode="compact" 
+        title="Scan QR" 
+        subtitle="Scan any UPI or Trikonekt QR" 
+        onBack={() => navigate("/consumer-ecommerce")} 
+      />
 
       <Box sx={{ px: 2, py: 2.5, maxWidth: 640, mx: "auto" }}>
         <Stack spacing={2}>
@@ -287,5 +249,3 @@ function ConsumerScannerPage() {
     </Box>
   );
 }
-
-export default ConsumerScannerPage;

@@ -437,41 +437,14 @@ export default function App() {
       }}
     >
       <Header />
-      <main className="ce-commerce-main">
-        <section className="ce-service-strip" aria-label="Quick services">
-          {quickServices.map(({ label, sub, icon: Icon, to }) => (
-            <Link key={label} to={to} className="ce-service-tile">
-              <Icon />
-              <strong>{label}</strong>
-              <span>{sub}</span>
-            </Link>
-          ))}
-        </section>
-
-        <section className="ce-commerce-search-section">
-          <Link to="/consumer-ecommerce/delivery" className="ce-commerce-search">
-            <LuSearch />
-            <span>Search for products, brands and more</span>
-            <LuCamera />
-            <LuMic />
-          </Link>
-
-          <div className="ce-commerce-location">
-            <button type="button" onClick={() => setShowPicker(true)}>
-              <LuMapPin />
-              <span>Deliver to {location.area}, {location.city} {location.pincode}</span>
-              <LuChevronDown />
-            </button>
-            <Link to="/consumer-ecommerce/join-prime">
-              Join Tri Prime
-            </Link>
-          </div>
-
-          <Link to="/consumer-ecommerce/near-me" className="ce-commerce-explore">
+      <main className="ce-commerce-main" style={{ paddingTop: 0 }}>
+        {/* We start directly with the Explore Nearby link and Live Deals to connect naturally with the header */}
+        <Box sx={{ px: 2, pt: 2, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
+          <Link to="/consumer-ecommerce/nearby-stores" className="ce-commerce-explore" style={{ margin: 0, borderRadius: '20px' }}>
             <span><LuGrid2X2 /></span>
             <div>
-              <strong>Explore Nearby</strong>
-              <small>Find services around you</small>
+              <strong>Explore Nearby Stores</strong>
+              <small>Find stores and services around you</small>
             </div>
             <LuArrowRight />
           </Link>
@@ -485,7 +458,7 @@ export default function App() {
               setAmbientColors(promoDeals[index].ambient);
             }}
           />
-        </section>
+        </Box>
 
         <section className="ce-commerce-full-stack">
           <GiftCardsSection />

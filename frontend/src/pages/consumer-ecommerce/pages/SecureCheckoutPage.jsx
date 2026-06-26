@@ -330,8 +330,6 @@ export default function SecureCheckoutPage() {
           </Box>
         </Container>
       </Box>
-
-      <BottomNav />
     </div>
   );
 }

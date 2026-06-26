@@ -65,8 +65,6 @@ export default function TriPickDropPage() {
           <button className="ce-pickdrop-confirm-btn">Book {vehicle.toUpperCase()}</button>
         </section>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

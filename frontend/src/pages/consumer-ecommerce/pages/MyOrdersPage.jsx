@@ -550,8 +550,6 @@ export default function MyOrdersPage() {
         )}
 
       </Container>
-
-      <BottomNav />
     </div>
   );
 }

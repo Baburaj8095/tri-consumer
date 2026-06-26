@@ -307,15 +307,13 @@ export default function OrderDetailsPage() {
           </button>
           <button
             onClick={() => navigate('/orders')}
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '48px', borderRadius: '12px', border: 'none', background: '#f97316', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', height: '48px', borderRadius: '12px', border: 'none', background: '#FF7A00', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
           >
             Back to Orders
           </button>
         </div>
 
       </div>
-
-      <BottomNav />
     </div>
   );
 }

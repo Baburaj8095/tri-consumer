@@ -163,13 +163,13 @@ export default function StorePaymentPage() {
             sx={{
               py: 1.5,
               borderRadius: '12px',
-              bgcolor: '#f97316',
+              bgcolor: '#FF7A00',
               fontWeight: 800,
               fontSize: '1rem',
               textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#ea580c',
+                bgcolor: '#FF8F22',
                 boxShadow: 'none'
               }
             }}
@@ -178,8 +178,6 @@ export default function StorePaymentPage() {
           </Button>
         </Box>
       </Container>
-
-      <BottomNav />
     </div>
   );
 }

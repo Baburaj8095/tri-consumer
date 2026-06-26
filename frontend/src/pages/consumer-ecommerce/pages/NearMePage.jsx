@@ -31,6 +31,7 @@ import {
   LuShoppingBag
 } from 'react-icons/lu';
 import BottomNav from '../components/BottomNav.jsx';
+import Header from '../components/Header.jsx';
 import { useLocation } from '../context/LocationContext.jsx';
 import LocationPickerModal from '../components/LocationPickerModal.jsx';
 import '../consumerEcommerce.css';
@@ -184,18 +185,12 @@ export default function NearMePage() {
     return (
       <div className="ce-app ce-nearme-wire">
         <main className="ce-nearme-list-shell">
-          <header className="ce-nearme-list-head" style={{ borderBottom: '1px solid #e2e8f0', pb: 1 }}>
-            <button type="button" onClick={() => setSelectedCategory(null)} aria-label="Back">
-              <LuArrowLeft />
-            </button>
-            <div>
-              <h1 style={{ fontSize: '1.15rem', fontWeight: 900 }}>{selectedCategory.name} in {selectedCity.name}</h1>
-              <p style={{ color: '#f97316', fontWeight: 700, fontSize: '0.75rem' }}>ONLINE DELIVERY ACTIVE</p>
-            </div>
-            <button type="button" aria-label="Filters">
-              <LuFilter />
-            </button>
-          </header>
+          <Header 
+            mode="compact" 
+            title={selectedCategory.name} 
+            subtitle={`Online delivery in ${selectedCity.name}`} 
+            onBack={() => setSelectedCategory(null)} 
+          />
 
           <section className="ce-nearme-list-filters" aria-label="Filters">
             {filters.map((filter) => (
@@ -259,20 +254,11 @@ export default function NearMePage() {
       <main className="ce-nearme-wire-shell">
         <section className="ce-nearme-wire-hero">
           <div className="ce-nearme-wire-hero-bg" />
-          <header className="ce-nearme-wire-top">
-            <button type="button" className="ce-nearme-wire-menu" aria-label="Menu">
-              <LuEllipsis />
-            </button>
-            <div>
-              <h1 style={{ fontWeight: 900 }}>Nearby Marketplace</h1>
-              <p>Everything around you</p>
-            </div>
-            <button type="button" className="ce-nearme-wire-location" onClick={() => setShowPicker(true)}>
-              <LuMapPin />
-              {location.area}, {location.city}
-              <LuChevronDown />
-            </button>
-          </header>
+          <Header 
+            mode="compact" 
+            title="Nearby Marketplace" 
+            subtitle="Everything around you" 
+          />
 
           {/* CHANNEL CHANNEL CONTROLS */}
           <div style={{ display: 'flex', background: 'rgba(255,255,255,0.12)', borderRadius: 14, padding: 4, margin: '14px 16px 14px 16px', backdropFilter: 'blur(10px)' }}>

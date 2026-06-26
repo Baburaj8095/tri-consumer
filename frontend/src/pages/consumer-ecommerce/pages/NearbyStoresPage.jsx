@@ -15,6 +15,7 @@ import {
   LuMap,
   LuList
 } from 'react-icons/lu';
+import Header from '../components/Header.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import NearbyStoreCard from '../components/NearbyStoreCard.jsx';
 import LocationPickerModal from '../components/LocationPickerModal.jsx';
@@ -130,19 +131,10 @@ export default function NearbyStoresPage() {
   }, [userLoc]);
 
   return (
-    <div className="ce-app ce-nearby-page" style={{ paddingTop: 84, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className="ce-app ce-nearby-page" style={{ paddingTop: 0, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#FFFFFF' }}>
       
       {/* Header Location selector Dropdown */}
-      <header className="ce-compact-page-header">
-        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
-        <div onClick={() => setShowPicker(true)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <h1 style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '15px' }}>
-            📍 {userLoc.area}, {userLoc.city} <LuChevronDown size={14} color="#64748b" />
-          </h1>
-          <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Stores around your area</p>
-        </div>
-        <span><LuStore /></span>
-      </header>
+      <Header mode="compact" title="Nearby Stores" subtitle="Stores around your area" />
 
       {/* Main Responsive Body Container (Centered on desktop to match Header/Nav) */}
       <div style={{ maxWidth: 430, margin: '0 auto', width: '100%' }}>

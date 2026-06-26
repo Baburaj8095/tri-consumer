@@ -90,7 +90,6 @@ export default function AdsPage() {
           </div>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }

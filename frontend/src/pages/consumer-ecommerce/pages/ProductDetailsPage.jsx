@@ -225,24 +225,23 @@ export default function ProductDetailsPage() {
         </Typography>
       </Container>
 
-      <Box sx={{ position: 'fixed', bottom: 65, left: 0, right: 0, bgcolor: '#fff', borderTop: '1px solid #f1f5f9', p: 2, display: 'flex', gap: 2, zIndex: 40, pb: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+      <Box sx={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', maxWidth: '430px', width: '100%', bgcolor: '#fff', borderTop: '1px solid #f1f5f9', p: 2, display: 'flex', gap: 2, zIndex: 40, pb: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
         <Button 
           variant="outlined" 
           onClick={handleAddToCart}
           disabled={addingToCart}
-          sx={{ flex: 1, borderColor: '#f97316', color: '#ea580c', fontWeight: 800, textTransform: 'none', py: 1.5, borderRadius: 2, '&:hover': { borderColor: '#ea580c', bgcolor: '#fff7ed' } }}
+          sx={{ flex: 1, borderColor: '#FF7A00', color: '#FF7A00', fontWeight: 800, textTransform: 'none', py: 1.5, borderRadius: 2, '&:hover': { borderColor: '#ea580c', bgcolor: '#fff7ed' } }}
         >
-          {addingToCart ? <CircularProgress size={24} sx={{ color: '#f97316' }} /> : 'Add to Cart'}
+          {addingToCart ? <CircularProgress size={24} sx={{ color: '#FF7A00' }} /> : 'Add to Cart'}
         </Button>
         <Button 
           variant="contained" 
           onClick={handleBuyNow}
-          sx={{ flex: 1, bgcolor: '#f97316', color: '#fff', fontWeight: 800, textTransform: 'none', py: 1.5, borderRadius: 2, '&:hover': { bgcolor: '#ea580c' }, boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)' }}
+          sx={{ flex: 1, bgcolor: '#FF7A00', color: '#fff', fontWeight: 800, textTransform: 'none', py: 1.5, borderRadius: 2, '&:hover': { bgcolor: '#ea580c' }, boxShadow: '0 4px 12px rgba(255, 122, 0, 0.3)' }}
         >
           Buy Now
         </Button>
       </Box>
-      <BottomNav />
     </div>
   );
 }

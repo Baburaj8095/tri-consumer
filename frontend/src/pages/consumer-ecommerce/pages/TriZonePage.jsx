@@ -15,6 +15,7 @@ import {
   LuTruck,
   LuUtensils,
 } from 'react-icons/lu';
+import Header from '../components/Header.jsx';
 import BottomNav from '../components/BottomNav.jsx';
 import '../consumerEcommerce.css';
 
@@ -48,15 +49,8 @@ const cats = [
 
 export default function TriZonePage() {
   return (
-    <div className="ce-app ce-zone-page">
-      <header className="ce-compact-page-header">
-        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
-        <div>
-          <h1>Tri Zone</h1>
-          <p>Everything you need, in one zone</p>
-        </div>
-        <span><LuShoppingBag /></span>
-      </header>
+    <div className="ce-app ce-zone-page" style={{ paddingTop: 0 }}>
+      <Header mode="compact" title="Tri Zone" subtitle="Service Marketplace" />
 
       <main className="ce-zone-shell">
         <aside className="ce-zone-rail">

@@ -234,8 +234,6 @@ export default function TrackOrderPage() {
         </div>
 
       </div>
-
-      <BottomNav />
     </div>
   );
 }

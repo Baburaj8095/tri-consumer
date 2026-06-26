@@ -1,15 +1,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, CircularProgress, Badge, Grid, Chip } from '@mui/material';
-import { LuSearch, LuShoppingCart, LuX } from 'react-icons/lu';
+import { Box, Typography, CircularProgress, Grid, Button, Stack } from '@mui/material';
+import { LuSlidersHorizontal, LuChevronDown, LuLayoutGrid, LuSearch } from 'react-icons/lu';
 
-import ShoppingPageTemplate from '../../../components/templates/ShoppingPageTemplate';
+import TriAppShell from '../../../components/ui/TriAppShell';
+import Header from '../components/Header';
 import TriProductCard from '../../../components/ui/TriProductCard';
-import TriButton from '../../../components/ui/TriButton';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80';
+
+// Visual category mappings matching the screenshot
+const sidebarCategories = [
+  { name: 'All', icon: '🍎', image: 'https://images.unsplash.com/photo-1610832958506-ee5633619144?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Electronics', icon: '💻', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Fashion', icon: '👕', image: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Grocery', icon: '👜', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Home & Kitchen', icon: '🍳', image: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Beauty', icon: '🧴', image: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Sports', icon: '🏋️', image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=80&q=80' },
+  { name: 'Books', icon: '📚', image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=80&q=80' },
+  { name: 'More', icon: '💬', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=80&q=80' },
+];
 
 function addToCart(product) {
   try {
@@ -49,43 +62,14 @@ function addToCart(product) {
 export default function DeliveryPage() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [activeCat, setActiveCat] = useState('');
-  const [cartCount, setCartCount] = useState(0);
-
-  // Sync Cart
-  useEffect(() => {
-    const syncCart = () => {
-      try {
-        const c = JSON.parse(localStorage.getItem('tri_consumer_cart') || '{"items":[]}');
-        setCartCount(c.items?.reduce((s, i) => s + (i.quantity || 1), 0) || 0);
-      } catch { setCartCount(0); }
-    };
-    syncCart();
-    window.addEventListener('storage', syncCart);
-    return () => window.removeEventListener('storage', syncCart);
-  }, []);
-
-  // Fetch Categories
-  useEffect(() => {
-    axios.get(`${CAPTAIN_API_URL}/captain/shops/online/categories`)
-      .then(res => {
-        const data = Array.isArray(res.data) ? res.data : 
-                     Array.isArray(res.data?.categories) ? res.data.categories : 
-                     Array.isArray(res.data?.results) ? res.data.results : [];
-        const validCats = data.map(c => typeof c === 'string' ? { name: c } : c);
-        setCategories(validCats);
-      })
-      .catch(err => console.error('Failed to load categories', err));
-  }, []);
+  const [activeCat, setActiveCat] = useState('All');
 
   const fetchProducts = useCallback((cat = '', q = '') => {
     setLoading(true);
     const params = new URLSearchParams({ limit: 100, offset: 0 });
-    if (cat) params.append('category', cat);
+    if (cat && cat !== 'All') params.append('category', cat);
     if (q) params.append('search', q);
 
     axios.get(`${CAPTAIN_API_URL}/captain/shops/online/products?${params.toString()}`)
@@ -103,132 +87,277 @@ export default function DeliveryPage() {
     fetchProducts(activeCat, search);
   }, [activeCat, search, fetchProducts]);
 
-  const handleSearchChange = (e) => {
-    setSearchInput(e.target.value);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
-  };
-
   const handleAdd = (product) => {
     if (addToCart(product)) {
       window.dispatchEvent(new Event('storage'));
     }
   };
 
-  const SearchBar = (
-    <Box 
-      component="form" 
-      onSubmit={handleSearchSubmit}
-      sx={{ 
-        display: 'flex', alignItems: 'center', 
-        bgcolor: 'background.default', 
-        borderRadius: 2, 
-        px: 2, py: 1, 
-        border: '1px solid', borderColor: 'divider' 
-      }}
-    >
-      <LuSearch style={{ color: '#94a3b8' }} />
-      <Box 
-        component="input"
-        placeholder="Search products, brands…"
-        value={searchInput}
-        onChange={handleSearchChange}
-        sx={{ 
-          flex: 1, border: 'none', outline: 'none', 
-          bgcolor: 'transparent', ml: 1, 
-          fontSize: '0.9rem', color: 'text.primary',
-          fontFamily: 'inherit'
-        }}
-      />
-      {searchInput && (
-        <Box 
-          component="button" 
-          type="button"
-          onClick={() => { setSearchInput(''); setSearch(''); }}
-          sx={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-        >
-          <LuX size={16} style={{ color: '#94a3b8' }} />
-        </Box>
-      )}
-    </Box>
-  );
-
-  const FilterChips = (
-    <Box sx={{ display: 'flex', gap: 1, pb: 1 }}>
-      <Chip
-        label="All Products"
-        onClick={() => { setActiveCat(''); setSearch(''); }}
-        color={activeCat === '' ? 'primary' : 'default'}
-        variant={activeCat === '' ? 'filled' : 'outlined'}
-        sx={{ fontWeight: activeCat === '' ? 800 : 600 }}
-      />
-      {categories.map(c => (
-        <Chip
-          key={c.id || c.name}
-          label={c.name}
-          onClick={() => { setActiveCat(c.name); setSearch(''); }}
-          color={activeCat === c.name ? 'primary' : 'default'}
-          variant={activeCat === c.name ? 'filled' : 'outlined'}
-          sx={{ fontWeight: activeCat === c.name ? 800 : 600 }}
-        />
-      ))}
-    </Box>
-  );
-
-  const HeaderRight = (
-    <Link to="/consumer-ecommerce/cart" style={{ color: 'inherit' }}>
-      <Badge badgeContent={cartCount > 99 ? '99+' : cartCount} color="error" sx={{ '& .MuiBadge-badge': { fontWeight: 900 } }}>
-        <LuShoppingCart size={22} style={{ color: '#0f172a' }} />
-      </Badge>
-    </Link>
-  );
-
   return (
-    <ShoppingPageTemplate
-      title="Online Shop"
-      subtitle="Products & daily deals"
-      headerRight={HeaderRight}
-      searchBar={SearchBar}
-      filterChips={FilterChips}
-      bottomNavIndex={3} // Delivery is index 3 in BottomNav
-    >
-      
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-          <CircularProgress color="primary" />
+    <TriAppShell bottomNavIndex={3}>
+      {/* Orange Gradient Compact Header */}
+      <Header mode="compact" title="Online Shop" subtitle="Products & daily deals" />
+
+      {/* Main Content Area: Left Category Sidebar + Right Product Area */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flex: 1, 
+          height: 'calc(100vh - 108px - 68px)', // Screen height minus header and bottom navigation
+          maxWidth: '430px', 
+          width: '100%', 
+          margin: '0 auto', 
+          bgcolor: '#FFFFFF',
+          overflow: 'hidden'
+        }}
+      >
+        {/* Left Sidebar Categories */}
+        <Box 
+          sx={{ 
+            width: '84px', 
+            bgcolor: '#F8F9FB', 
+            borderRight: '1px solid #F1F5F9',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            py: 2,
+            gap: 2,
+            flexShrink: 0
+          }}
+        >
+          {sidebarCategories.map((c) => {
+            const isSelected = activeCat.toLowerCase() === c.name.toLowerCase();
+            return (
+              <Box
+                key={c.name}
+                onClick={() => { setActiveCat(c.name); setSearch(''); }}
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  px: 0.5
+                }}
+              >
+                {/* Active Category Vertical Line */}
+                {isSelected && (
+                  <Box 
+                    sx={{ 
+                      position: 'absolute', 
+                      left: 0, 
+                      top: '15%', 
+                      height: '70%', 
+                      width: '4px', 
+                      bgcolor: '#FF7A00',
+                      borderTopRightRadius: '4px',
+                      borderBottomRightRadius: '4px'
+                    }} 
+                  />
+                )}
+
+                {/* Category Circle Image */}
+                <Box 
+                  sx={{ 
+                    width: '54px', 
+                    height: '54px', 
+                    borderRadius: '50%', 
+                    overflow: 'hidden', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: isSelected ? '#FFEFE0' : '#FFFFFF',
+                    border: isSelected ? '1.5px solid #FF7A00' : '1px solid #E2E8F0',
+                    transition: 'all 0.2s',
+                    mb: 0.8
+                  }}
+                >
+                  <Box 
+                    component="img"
+                    src={c.image}
+                    alt={c.name}
+                    sx={{ width: '38px', height: '38px', objectFit: 'contain' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </Box>
+
+                {/* Category Label */}
+                <Typography 
+                  sx={{ 
+                    fontSize: '11px', 
+                    fontWeight: isSelected ? 700 : 500, 
+                    color: isSelected ? '#FF7A00' : '#475569',
+                    textAlign: 'center',
+                    lineHeight: 1.2,
+                    fontFamily: '"Inter", sans-serif'
+                  }}
+                >
+                  {c.name}
+                </Typography>
+              </Box>
+            );
+          })}
         </Box>
-      ) : products.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 10, px: 2 }}>
-          <LuSearch size={48} style={{ color: '#cbd5e1', marginBottom: 12 }} />
-          <Typography variant="h6" fontWeight={800} color="text.primary" mb={1}>
-            {search ? `No results for "${search}"` : activeCat ? `No products in "${activeCat}"` : 'No products available'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            {search || activeCat ? 'Try a different search or category' : 'Check back soon'}
-          </Typography>
-          {(search || activeCat) && (
-            <TriButton onClick={() => { setSearch(''); setActiveCat(''); setSearchInput(''); }} size="small" sx={{ width: 'auto' }}>
-              Clear Filters
-            </TriButton>
+
+        {/* Right Main Product Area */}
+        <Box 
+          sx={{ 
+            flex: 1, 
+            overflowY: 'auto',
+            p: 1.5,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5
+          }}
+        >
+          {/* Horizontal Filters Row */}
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            alignItems="center" 
+            sx={{ 
+              overflowX: 'auto', 
+              pb: 0.5, 
+              flexShrink: 0,
+              '&::-webkit-scrollbar': { display: 'none' } 
+            }}
+          >
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<LuSlidersHorizontal size={13} />}
+              endIcon={<LuChevronDown size={12} />}
+              sx={{ 
+                borderRadius: '12px', 
+                borderColor: '#E2E8F0', 
+                color: '#475569',
+                fontSize: '12px', 
+                fontWeight: 600,
+                textTransform: 'none',
+                py: 0.5,
+                px: 1.5,
+                bgcolor: '#FFFFFF',
+                flexShrink: 0
+              }}
+            >
+              Filters
+            </Button>
+            {['Sort', 'Category', 'Brand', 'Price'].map(filterName => (
+              <Button
+                key={filterName}
+                variant="outlined"
+                size="small"
+                endIcon={<LuChevronDown size={12} />}
+                sx={{ 
+                  borderRadius: '12px', 
+                  borderColor: '#E2E8F0', 
+                  color: '#475569',
+                  fontSize: '12px', 
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  py: 0.5,
+                  px: 1.5,
+                  bgcolor: '#FFFFFF',
+                  flexShrink: 0
+                }}
+              >
+                {filterName}
+              </Button>
+            ))}
+            <IconButton 
+              size="small"
+              sx={{ 
+                border: '1px solid #E2E8F0', 
+                borderRadius: '12px', 
+                p: 0.6,
+                color: '#475569',
+                bgcolor: '#FFFFFF'
+              }}
+            >
+              <LuLayoutGrid size={15} />
+            </IconButton>
+          </Stack>
+
+          {/* Promotion Offer Banner */}
+          <Box
+            sx={{
+              background: 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)',
+              borderRadius: '20px',
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              border: '1px solid #FED7AA',
+              position: 'relative',
+              overflow: 'hidden',
+              flexShrink: 0
+            }}
+          >
+            <Box sx={{ flex: 1, zIndex: 1 }}>
+              <Typography sx={{ fontSize: '16px', fontWeight: 800, color: '#9A3412', fontFamily: '"Inter", sans-serif', lineHeight: 1.2 }}>
+                Fresh seasonal fruits
+              </Typography>
+              <Typography sx={{ fontSize: '11px', color: '#C2410C', fontFamily: '"Inter", sans-serif', mt: 0.5, mb: 1.2 }}>
+                Nutritional goodness in every bite
+              </Typography>
+              <Box
+                sx={{
+                  bgcolor: '#FF7A00',
+                  color: '#FFFFFF',
+                  borderRadius: '8px',
+                  px: 1.8,
+                  py: 0.6,
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  display: 'inline-block',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(255, 122, 0, 0.25)',
+                  fontFamily: '"Inter", sans-serif'
+                }}
+              >
+                Shop Now
+              </Box>
+            </Box>
+            <Box 
+              component="img"
+              src="https://images.unsplash.com/photo-1610832958506-ee5633619144?auto=format&fit=crop&w=150&q=80"
+              alt="Fruits basket"
+              sx={{ width: '90px', height: '90px', objectFit: 'contain', zIndex: 1 }}
+            />
+          </Box>
+
+          {/* Product Grid Area */}
+          {loading ? (
+            <Box sx={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center', py: 10 }}>
+              <CircularProgress sx={{ color: '#FF7A00' }} />
+            </Box>
+          ) : products.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
+              <LuSearch size={40} style={{ color: '#CBD5E1', marginBottom: 12 }} />
+              <Typography sx={{ fontSize: '15px', fontWeight: 700, color: '#334155', mb: 0.5, fontFamily: '"Inter", sans-serif' }}>
+                No products found
+              </Typography>
+              <Typography sx={{ fontSize: '12px', color: '#64748B', fontFamily: '"Inter", sans-serif' }}>
+                Try selecting another category or searching again
+              </Typography>
+            </Box>
+          ) : (
+            <Grid container spacing={1.5}>
+              {products.map(product => (
+                <Grid item xs={6} key={product.id}>
+                  <TriProductCard 
+                    product={product} 
+                    onAdd={handleAdd} 
+                    onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)} 
+                  />
+                </Grid>
+              ))}
+            </Grid>
           )}
         </Box>
-      ) : (
-        <Grid container spacing={2}>
-          {products.map(product => (
-            <Grid item xs={6} sm={4} md={3} key={product.id}>
-              <TriProductCard 
-                product={product} 
-                onAdd={handleAdd} 
-                onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)} 
-              />
-            </Grid>
-          ))}
-        </Grid>
-      )}
-
-    </ShoppingPageTemplate>
+      </Box>
+    </TriAppShell>
   );
 }

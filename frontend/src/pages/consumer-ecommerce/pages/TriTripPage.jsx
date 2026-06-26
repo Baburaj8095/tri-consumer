@@ -79,8 +79,6 @@ export default function TriTripPage() {
           </div>
         </section>
       </main>
-
-      <BottomNav />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Box, Typography, CircularProgress, Grid, Button, Stack } from '@mui/material';
+import { Box, Typography, CircularProgress, Grid, Button, Stack, IconButton } from '@mui/material';
 import { LuSlidersHorizontal, LuChevronDown, LuLayoutGrid, LuSearch } from 'react-icons/lu';
 
 import TriAppShell from '../../../components/ui/TriAppShell';

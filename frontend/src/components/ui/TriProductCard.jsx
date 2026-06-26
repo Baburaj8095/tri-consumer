@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton, Stack } from '@mui/material';
 import { LuHeart, LuClock, LuPlus, LuMinus } from 'react-icons/lu';
 import TriCard from './TriCard';
 

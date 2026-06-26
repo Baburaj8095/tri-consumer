@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Box } from '@mui/material';
 import {
   LuArrowRight,
   LuCamera,

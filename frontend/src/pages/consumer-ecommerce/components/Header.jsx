@@ -30,6 +30,7 @@ import { consumerProfile } from '../services/mockData.js';
 import { clearAuth, getAccessToken } from '../../../services/authStorage.js';
 import { useLocation } from '../context/LocationContext.jsx';
 import LocationPickerModal from './LocationPickerModal.jsx';
+import { Box, Stack, IconButton, Typography } from '@mui/material';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 

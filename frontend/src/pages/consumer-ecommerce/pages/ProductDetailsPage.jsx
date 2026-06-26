@@ -152,7 +152,7 @@ export default function ProductDetailsPage() {
   ];
 
   return (
-    <div className="ce-app" style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', paddingBottom: 120 }}>
+    <div className="ce-app" style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', paddingBottom: 120, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
       {/* Header */}
       <Box sx={{ position: 'sticky', top: 0, zIndex: 50, bgcolor: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.5 }}>
         <IconButton onClick={() => navigate(-1)} sx={{ color: '#0f172a' }}>
@@ -213,7 +213,7 @@ export default function ProductDetailsPage() {
         </Stack>
       </Box>
 
-      <Container maxWidth="md" sx={{ px: 2, py: 3 }}>
+      <Container maxWidth={false} sx={{ maxWidth: '430px', margin: '0 auto', width: '100%', px: 2, py: 3 }}>
         <Typography variant="h5" fontWeight={900} color="#0f172a" lineHeight={1.3} mb={1}>
           {product.title}
         </Typography>

@@ -574,7 +574,7 @@ export default function App() {
           {/* Nearby Stores Preview Section */}
           {b2cShops.length > 0 && (
             <section className="ce-content-section" style={{ padding: '0 16px', marginBottom: '16px' }}>
-              <div className="ce-section-heading-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div className="ce-section-heading-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', marginTop : '10px' }}>
                 <div>
                   <h2 className="ce-section-title">Nearby Stores</h2>
                   <p className="ce-section-subtitle">Top verified stores near you</p>

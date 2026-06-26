@@ -17,12 +17,15 @@ export default function CheckoutPageTemplate({
       
       {/* Main Content Area */}
       <Container 
-        maxWidth="sm" // 600px roughly, tighter for checkout forms
+        maxWidth={false}
         disableGutters
         sx={{ 
           flex: 1, 
           display: 'flex', 
           flexDirection: 'column',
+          maxWidth: '430px',
+          width: '100%',
+          margin: '0 auto',
           px: { xs: 2, sm: 3 },
           py: 2,
           gap: 2
@@ -46,7 +49,7 @@ export default function CheckoutPageTemplate({
             boxShadow: '0 -4px 10px rgba(0,0,0,0.02)'
           }}
         >
-          <Container maxWidth="sm" disableGutters>
+          <Container maxWidth={false} disableGutters sx={{ maxWidth: '430px', margin: '0 auto', width: '100%' }}>
             {stickyAction}
           </Container>
         </Box>

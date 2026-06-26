@@ -182,7 +182,7 @@ export default function NearbyStoresPage() {
 
 
         {/* Category filter pills */}
-        <Box sx={{ px: 2, pb: 1, display: 'flex', gap: 1, overflowX: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}>
+        <Box sx={{ px: 2, mt: 2, pb: 1, display: 'flex', gap: 1, overflowX: 'auto', '&::-webkit-scrollbar': { display: 'none' } }}>
           {categoriesList.map((cat) => {
             const isSelected = activeCat === cat.name;
             return (

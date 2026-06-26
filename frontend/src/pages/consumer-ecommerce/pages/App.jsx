@@ -455,7 +455,7 @@ export default function App() {
       <Header />
       <main className="ce-commerce-main" style={{ paddingTop: 0 }}>
         {/* We start directly with the Explore Nearby link and Live Deals to connect naturally with the header */}
-        <Box sx={{ px: 2, pt: 3, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
+        <Box sx={{ pt: 3, display: 'flex', flexDirection: 'column', gap: 2, maxWidth: '430px', margin: '0 auto', width: '100%' }}>
           <Link to="/consumer-ecommerce/near-me" className="ce-commerce-explore" style={{ margin: 0, borderRadius: '20px' }}>
             <span><LuGrid2X2 /></span>
             <div>

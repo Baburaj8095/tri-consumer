@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Box, Typography, Stack, Button } from '@mui/material';
 import { useLocation, calculateDistance } from '../context/LocationContext';
 import TriIcon from '../../../components/ui/TriIcon';
+import fallbackImg from '../../../images/fallback_img.png';
 
 export default function NearbyStoreCard({ store, sx = {} }) {
   const navigate = useNavigate();
@@ -62,9 +63,10 @@ export default function NearbyStoreCard({ store, sx = {} }) {
       {/* Top: Image Section */}
       <Box sx={{ width: '100%', height: 160, overflow: 'hidden', position: 'relative', bgcolor: '#F8F9FB' }}>
         <img 
-          src={store.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80'} 
+          src={store.image || fallbackImg} 
           alt={store.name} 
           style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+          onError={(e) => { e.target.src = fallbackImg; }}
         />
         {/* Distance Badge */}
         <Box sx={{ 

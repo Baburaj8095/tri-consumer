@@ -44,7 +44,7 @@ export default function CartPage() {
   // Address Modal
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
-    recipientsName: '', recipientsPhone: '', addressLine1: '', addressLine2: '',
+    recipients_name: '', recipients_phone: '', address_line1: '', address_line2: '',
     landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true
   });
 
@@ -142,7 +142,7 @@ export default function CartPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setShowAddressForm(false);
-      setNewAddress({ recipientsName: '', recipientsPhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
+      setNewAddress({ recipients_name: '', recipients_phone: '', address_line1: '', address_line2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
       await fetchAddresses();
     } catch (err) {
       if (err.response?.status === 401) {
@@ -154,7 +154,7 @@ export default function CartPage() {
               headers: { Authorization: `Bearer ${newToken}` }
             });
             setShowAddressForm(false);
-            setNewAddress({ recipientsName: '', recipientsPhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
+            setNewAddress({ recipients_name: '', recipients_phone: '', address_line1: '', address_line2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
             await fetchAddresses();
             return;
           } catch (retryErr) {
@@ -414,9 +414,9 @@ export default function CartPage() {
         <DialogTitle sx={{ fontWeight: 800 }}>Add New Address</DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleAddNewAddress} sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField label="Recipient's Name" value={newAddress.recipientsName} onChange={e => setNewAddress({...newAddress, recipientsName: e.target.value})} fullWidth required />
-            <TextField label="Phone Number" value={newAddress.recipientsPhone} onChange={e => setNewAddress({...newAddress, recipientsPhone: e.target.value})} fullWidth required />
-            <TextField label="Address Line 1" value={newAddress.addressLine1} onChange={e => setNewAddress({...newAddress, addressLine1: e.target.value})} fullWidth required />
+            <TextField label="Recipient's Name" value={newAddress.recipients_name} onChange={e => setNewAddress({...newAddress, recipients_name: e.target.value})} fullWidth required />
+            <TextField label="Phone Number" value={newAddress.recipients_phone} onChange={e => setNewAddress({...newAddress, recipients_phone: e.target.value})} fullWidth required />
+            <TextField label="Address Line 1" value={newAddress.address_line1} onChange={e => setNewAddress({...newAddress, address_line1: e.target.value})} fullWidth required />
             <TextField label="City" value={newAddress.city} onChange={e => setNewAddress({...newAddress, city: e.target.value})} fullWidth required />
             <TextField label="Pincode" value={newAddress.pincode} onChange={e => setNewAddress({...newAddress, pincode: e.target.value})} fullWidth required />
             <TriButton type="submit">Save Address</TriButton>

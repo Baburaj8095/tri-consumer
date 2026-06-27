@@ -45,11 +45,7 @@ export default function ShopDetailsPage() {
     setShopError(false);
     axios.get(shopUrl)
       .then(res => {
-        const data = res.data;
-        if (isNearbyDeliveryMode && data && data.is_delivery_available === false) {
-          throw new Error(data.delivery_unavailable_reason || 'Nearby delivery unavailable');
-        }
-        setShop(data);
+        setShop(res.data);
       })
       .catch(err => {
         console.error('Failed to fetch consumer-safe online store details:', err);
@@ -261,8 +257,28 @@ export default function ShopDetailsPage() {
         ) : products.length === 0 ? (
           <Paper sx={{ p: 3, textAlign: 'center', color: '#64748b', borderRadius: 3 }}>
             <LuShoppingBag size={40} style={{ color: '#cbd5e1', marginBottom: 8 }} />
-            <Typography sx={{ fontWeight: 800 }}>No products available online</Typography>
-            <Typography variant="caption" sx={{ color: '#94a3b8' }}>This store doesn't have active delivery items cataloged yet.</Typography>
+            {!shop?.home_delivery_enabled ? (
+              <>
+                <Typography sx={{ fontWeight: 800 }}>Home Delivery Disabled</Typography>
+                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5 }}>
+                  This store does not offer home delivery. You can still visit in person or place an offline order.
+                </Typography>
+              </>
+            ) : (isNearbyDeliveryMode && shop?.is_delivery_available === false) ? (
+              <>
+                <Typography sx={{ fontWeight: 800, color: '#f59e0b' }}>Delivery Out of Range</Typography>
+                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5 }}>
+                  You are outside this store's delivery range (max: {shop?.delivery_radius_km || 5} km). You can still order for counter pickup or visit the store.
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Typography sx={{ fontWeight: 800 }}>No products available online</Typography>
+                <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block', mt: 0.5 }}>
+                  This store doesn't have active delivery items cataloged yet.
+                </Typography>
+              </>
+            )}
           </Paper>
         ) : (
           <Stack spacing={1.5}>

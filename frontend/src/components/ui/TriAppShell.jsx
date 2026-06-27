@@ -21,7 +21,7 @@ export default function TriAppShell({
         pb: hideBottomNav ? 'env(safe-area-inset-bottom)' : 'calc(65px + env(safe-area-inset-bottom))',
       }}
     >
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
         {children}
       </Box>
 

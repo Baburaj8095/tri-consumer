@@ -300,17 +300,22 @@ export default function DeliveryPage() {
               </Typography>
             </Box>
           ) : (
-            <Grid container spacing={2}>
+            <Box 
+              sx={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(2, 1fr)', 
+                gap: 2 
+              }}
+            >
               {products.map(product => (
-                <Grid item xs={6} key={product.id}>
-                  <TriProductCard 
-                    product={product} 
-                    onAdd={handleAdd} 
-                    onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)} 
-                  />
-                </Grid>
+                <TriProductCard 
+                  key={product.id}
+                  product={product} 
+                  onAdd={handleAdd} 
+                  onClick={() => navigate(`/consumer-ecommerce/product/${product.id}`)} 
+                />
               ))}
-            </Grid>
+            </Box>
           )}
         </Box>
       </Box>

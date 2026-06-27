@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Stack, Typography, Grid, Button, InputBase, IconButton } from '@mui/material';
-import BottomNav from '../components/BottomNav.jsx';
+import { Box, Stack, Typography, Button, IconButton } from '@mui/material';
 import TriIcon from '../../../components/ui/TriIcon.jsx';
+import TriAppShell from '../../../components/ui/TriAppShell.jsx';
+import Header from '../components/Header.jsx';
 import giftBoxPromo from '../../../images/gift_box_promo.png';
 import '../consumerEcommerce.css';
 
@@ -42,58 +43,11 @@ export default function TriZonePage() {
   };
 
   return (
-    <div className="ce-app ce-zone-page" style={{ paddingTop: 0, minHeight: '100vh', backgroundColor: '#F8F9FB', paddingBottom: '100px' }}>
-      
-      {/* Header exactly matching right screen in screenshot */}
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
-          pt: 4,
-          pb: 3,
-          px: 2.5,
-          color: '#FFFFFF',
-          borderBottomLeftRadius: '32px',
-          borderBottomRightRadius: '32px',
-          boxShadow: '0 8px 30px rgba(255, 122, 0, 0.15)',
-          maxWidth: '430px',
-          margin: '0 auto',
-          width: '100%',
-        }}
-      >
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2.5 }}>
-          <Box>
-            <Typography sx={{ fontSize: '20px', fontWeight: 800, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.2 }}>
-              Tri Zone
-            </Typography>
-            <Typography sx={{ fontSize: '11px', color: 'rgba(255,255,255,0.85)', fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>
-              Everything you need, in one place
-            </Typography>
-          </Box>
-          <IconButton sx={{ color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.15)', width: 36, height: 36, borderRadius: '50%' }}>
-            <TriIcon name="notifications" size={20} />
-          </IconButton>
-        </Stack>
-
-        {/* Search Bar inside Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#FFFFFF', borderRadius: '24px', px: 2, py: 1 }}>
-          <TriIcon name="search" size={20} color="#64748B" sx={{ mr: 1.5 }} />
-          <InputBase
-            placeholder="Search services, products & more"
-            sx={{
-              flex: 1,
-              fontSize: '13px',
-              fontWeight: 500,
-              fontFamily: '"Inter", sans-serif',
-              color: '#1E293B',
-              '&::placeholder': { color: '#94A3B8', opacity: 1 }
-            }}
-          />
-          <TriIcon name="mic" size={20} color="#64748B" />
-        </Box>
-      </Box>
+    <TriAppShell bottomNavIndex={1}>
+      <Header />
 
       {/* Main Grid Container */}
-      <Box sx={{ maxWidth: '430px', margin: '0 auto', width: '100%', px: 2, pt: 3.5, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+      <Box sx={{ maxWidth: '430px', margin: '0 auto', width: '100%', px: 2, pt: 2, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
         
         {/* Recently Used Section */}
         <Box>
@@ -155,45 +109,51 @@ export default function TriZonePage() {
             Top Picks
           </Typography>
 
-          <Grid container spacing={1.5}>
+          <Box 
+            sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(4, 1fr)', 
+              gap: 1.5 
+            }}
+          >
             {topPicks.map((pick) => (
-              <Grid item xs={3} key={pick.title}>
-                <Box
-                  onClick={(e) => handleCardClick(e, pick.title)}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '85px',
-                    mx: 'auto',
-                    height: '92px',
-                    bgcolor: '#FFFFFF',
-                    borderRadius: '20px',
-                    border: '1px solid #E2E8F0',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-                    transition: 'all 0.15s ease-in-out',
-                    '&:hover': {
-                      borderColor: '#FF7A00',
-                      boxShadow: '0 6px 16px rgba(255,122,0,0.06)'
-                    },
-                    '&:active': { transform: 'scale(0.95)' }
-                  }}
-                >
-                  <Box sx={{ color: pick.color, mb: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <TriIcon name={pick.icon} size={22} />
-                  </Box>
-                  <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#1E293B', textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, lineHeight: 1.1 }}>
-                    {pick.title}
-                  </Typography>
-                  <Typography sx={{ fontSize: '7.5px', color: '#94A3B8', fontWeight: 600, textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, mt: 0.2, lineHeight: 1.1 }}>
-                    {pick.desc}
-                  </Typography>
+              <Box
+                key={pick.title}
+                onClick={(e) => handleCardClick(e, pick.title)}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  maxWidth: '85px',
+                  mx: 'auto',
+                  height: '92px',
+                  bgcolor: '#FFFFFF',
+                  borderRadius: '20px',
+                  border: '1px solid #E2E8F0',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                  transition: 'all 0.15s ease-in-out',
+                  '&:hover': {
+                    borderColor: '#FF7A00',
+                    boxShadow: '0 6px 16px rgba(255,122,0,0.06)'
+                  },
+                  '&:active': { transform: 'scale(0.95)' }
+                }}
+              >
+                <Box sx={{ color: pick.color, mb: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <TriIcon name={pick.icon} size={22} />
                 </Box>
-              </Grid>
+                <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#1E293B', textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, lineHeight: 1.1 }}>
+                  {pick.title}
+                </Typography>
+                <Typography sx={{ fontSize: '7.5px', color: '#94A3B8', fontWeight: 600, textAlign: 'center', fontFamily: '"Inter", sans-serif', px: 0.5, mt: 0.2, lineHeight: 1.1 }}>
+                  {pick.desc}
+                </Typography>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Box>
 
         {/* Promo Banner Card */}
@@ -286,7 +246,7 @@ export default function TriZonePage() {
       </Box>
 
       <BottomNav />
-    </div>
+    </TriAppShell>
   );
 }
 

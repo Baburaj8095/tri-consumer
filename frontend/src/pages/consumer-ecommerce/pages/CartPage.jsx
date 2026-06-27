@@ -7,7 +7,7 @@ import {
 } from 'react-icons/fa6';
 import { Box, Typography, Divider, CircularProgress, IconButton, Dialog, DialogTitle, DialogContent, TextField, Stack } from '@mui/material';
 
-import { getAccessToken } from '../../../services/authStorage';
+import { getAccessToken, tryTokenRefresh, clearAuth } from '../../../services/authStorage';
 import CheckoutPageTemplate from '../../../components/templates/CheckoutPageTemplate';
 import TriCard from '../../../components/ui/TriCard';
 import TriButton from '../../../components/ui/TriButton';
@@ -58,7 +58,30 @@ export default function CartPage() {
       const list = res.data || [];
       setAddresses(list);
       if (list.length > 0) setSelectedAddressId((list.find(a => a.isDefault) || list[0]).id);
-    } catch (err) { console.error('Failed to load user addresses:', err); }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        const refreshed = await tryTokenRefresh();
+        if (refreshed) {
+          const newToken = getAccessToken();
+          try {
+            const res = await axios.get(`${CAPTAIN_API_URL}/api/addresses`, {
+              headers: { Authorization: `Bearer ${newToken}` }
+            });
+            const list = res.data || [];
+            setAddresses(list);
+            if (list.length > 0) setSelectedAddressId((list.find(a => a.isDefault) || list[0]).id);
+            return;
+          } catch (retryErr) {
+            console.error('Failed to reload addresses after token refresh:', retryErr);
+          }
+        }
+        // If refresh fails, clear invalid auth and send to login
+        clearAuth();
+        navigate('/login');
+      } else {
+        console.error('Failed to load user addresses:', err);
+      }
+    }
   };
 
   useEffect(() => { fetchAddresses(); }, []);
@@ -122,7 +145,30 @@ export default function CartPage() {
       setNewAddress({ recipientsName: '', recipientsPhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
       await fetchAddresses();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to submit address.');
+      if (err.response?.status === 401) {
+        const refreshed = await tryTokenRefresh();
+        if (refreshed) {
+          const newToken = getAccessToken();
+          try {
+            await axios.post(`${CAPTAIN_API_URL}/api/addresses`, newAddress, {
+              headers: { Authorization: `Bearer ${newToken}` }
+            });
+            setShowAddressForm(false);
+            setNewAddress({ recipientsName: '', recipientsPhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', pincode: '', addressType: 'HOME', isDefault: true });
+            await fetchAddresses();
+            return;
+          } catch (retryErr) {
+            console.error('Failed to save address after token refresh:', retryErr);
+            alert(retryErr.response?.data?.message || retryErr.response?.data?.error || 'Failed to submit address.');
+          }
+        } else {
+          clearAuth();
+          alert('Your session has expired. Please login again.');
+          navigate('/login');
+        }
+      } else {
+        alert(err.response?.data?.message || err.response?.data?.error || 'Failed to submit address.');
+      }
     }
   };
 
@@ -135,7 +181,9 @@ export default function CartPage() {
     const token = getAccessToken();
     if (!token) {
       setIsPlacingOrder(false);
-      return alert("Session expired, please login again");
+      clearAuth();
+      navigate('/login');
+      return;
     }
 
     const payload = {
@@ -159,7 +207,34 @@ export default function CartPage() {
         navigate(`/consumer-ecommerce/order-success/${res.data.order_id}`);
       }
     } catch (err) {
-      setErrorMessage(err.response?.data?.error || "Failed to place order.");
+      if (err.response?.status === 401) {
+        const refreshed = await tryTokenRefresh();
+        if (refreshed) {
+          const newToken = getAccessToken();
+          try {
+            const res = await axios.post(`${CAPTAIN_API_URL}/api/orders/place`, payload, {
+              headers: { Authorization: `Bearer ${newToken}` }
+            });
+            localStorage.removeItem('tri_consumer_cart');
+            window.dispatchEvent(new Event('storage'));
+            if (paymentMethod === 'ONLINE' && res.data.payment_intent_url) {
+              window.location.href = res.data.payment_intent_url;
+            } else {
+              navigate(`/consumer-ecommerce/order-success/${res.data.order_id}`);
+            }
+            return;
+          } catch (retryErr) {
+            console.error('Failed to place order after token refresh:', retryErr);
+            setErrorMessage(retryErr.response?.data?.message || retryErr.response?.data?.error || "Failed to place order.");
+          }
+        } else {
+          clearAuth();
+          alert('Your session has expired. Please login again.');
+          navigate('/login');
+        }
+      } else {
+        setErrorMessage(err.response?.data?.message || err.response?.data?.error || "Failed to place order.");
+      }
     } finally {
       setIsPlacingOrder(false);
     }

@@ -35,12 +35,16 @@ export default function NearbyStoreCard({ store, compact = false, sx = {} }) {
 
   const handleViewClick = (e) => {
     e.stopPropagation();
-    navigate(`/consumer-ecommerce/shop/${targetId}`);
+    navigate(`/consumer-ecommerce/shop/${targetId}?mode=nearby-delivery`);
+  };
+
+  const handleViewDetail = () => {
+    navigate(`/consumer-ecommerce/shop/${targetId}?mode=nearby-delivery`);
   };
 
   return (
     <Box 
-      onClick={() => navigate(`/consumer-ecommerce/shop/${targetId}`)}
+      onClick={handleViewDetail}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -126,9 +130,22 @@ export default function NearbyStoreCard({ store, compact = false, sx = {} }) {
           </Box>
           {!compact && (
             <>
-              <Box sx={{ bgcolor: '#F8F9FB', color: '#475569', px: 1, py: 0.5, borderRadius: '8px', fontSize: '10px', fontWeight: 700, fontFamily: '"Inter", sans-serif' }}>
-                Home Delivery
-              </Box>
+              {store.homeDeliveryEnabled && (
+                <Box 
+                  sx={{ 
+                    bgcolor: store.isDeliveryAvailable ? 'rgba(34, 197, 94, 0.08)' : '#F8F9FB', 
+                    color: store.isDeliveryAvailable ? '#22C55E' : '#64748B', 
+                    px: 1, 
+                    py: 0.5, 
+                    borderRadius: '8px', 
+                    fontSize: '10px', 
+                    fontWeight: 700, 
+                    fontFamily: '"Inter", sans-serif' 
+                  }}
+                >
+                  {store.isDeliveryAvailable ? 'Home Delivery' : 'Delivery Out of Range'}
+                </Box>
+              )}
               <Box sx={{ bgcolor: '#F8F9FB', color: '#475569', px: 1, py: 0.5, borderRadius: '8px', fontSize: '10px', fontWeight: 700, fontFamily: '"Inter", sans-serif' }}>
                 Pickup
               </Box>

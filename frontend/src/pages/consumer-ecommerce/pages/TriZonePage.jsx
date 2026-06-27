@@ -245,7 +245,6 @@ export default function TriZonePage() {
 
       </Box>
 
-      <BottomNav />
     </TriAppShell>
   );
 }

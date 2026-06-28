@@ -6,6 +6,7 @@ import {
   LuChevronLeft, LuPhone, LuMessageCircle, 
   LuMessageSquare, LuInfo, LuMapPin, LuStar, LuShare2, LuShoppingBag, LuPlus, LuMinus
 } from 'react-icons/lu';
+import { useLocation as useGeoLocation } from '../context/LocationContext';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
@@ -15,8 +16,9 @@ export default function ShopDetailsPage() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isNearbyDeliveryMode = searchParams.get('mode') === 'nearby-delivery';
-  const nearbyLat = searchParams.get('lat');
-  const nearbyLng = searchParams.get('lng');
+  const { location: userLoc } = useGeoLocation();
+  const nearbyLat = searchParams.get('lat') || userLoc?.lat;
+  const nearbyLng = searchParams.get('lng') || userLoc?.lng;
   const [shop, setShop] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

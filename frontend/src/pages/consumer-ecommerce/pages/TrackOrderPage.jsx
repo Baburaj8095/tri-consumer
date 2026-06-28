@@ -52,7 +52,10 @@ export default function TrackOrderPage() {
             shopName: o.shopName || 'Retail Store',
             status: String(o.status || 'CONFIRMED').toUpperCase(),
             location: o.address || 'Indiranagar, Bangalore',
-            isNearby: o.orderChannel === 'NEARBY_DELIVERY' || o.shopId != null
+            isNearby: o.orderChannel === 'NEARBY_DELIVERY',
+            awbNumber: o.awb_number,
+            courierName: o.courier_name,
+            trackingUrl: o.tracking_url
           });
         }
       } catch (err) {
@@ -219,18 +222,35 @@ export default function TrackOrderPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', alignItems: 'center' }}>
-            <div style={{ flex: 1 }}>
-              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>RIDER PARTNER</span>
-              <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '2px 0 0 0', color: '#0f172a' }}>Karan Kumar</h4>
+          {displayTrack.awbNumber ? (
+            <div style={{ display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>COURIER ({displayTrack.courierName || 'Shiprocket Fleet'})</span>
+                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '2px 0 0 0', color: '#0f172a' }}>AWB: {displayTrack.awbNumber}</h4>
+              </div>
+              {displayTrack.trackingUrl && (
+                <button
+                  onClick={() => window.open(displayTrack.trackingUrl, '_blank')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '40px', padding: '0 16px', borderRadius: '8px', border: 'none', background: '#f97316', color: '#fff', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}
+                >
+                  Track AWB
+                </button>
+              )}
             </div>
-            <button
-              onClick={() => window.open('tel:08095918105')}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '40px', padding: '0 16px', borderRadius: '8px', border: 'none', background: 'rgba(249, 115, 22, 0.08)', color: '#f97316', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}
-            >
-              <LuPhone size={14} /> Call Rider
-            </button>
-          </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>RIDER PARTNER</span>
+                <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '2px 0 0 0', color: '#0f172a' }}>Karan Kumar</h4>
+              </div>
+              <button
+                onClick={() => window.open('tel:08095918105')}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '40px', padding: '0 16px', borderRadius: '8px', border: 'none', background: 'rgba(249, 115, 22, 0.08)', color: '#f97316', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }}
+              >
+                <LuPhone size={14} /> Call Rider
+              </button>
+            </div>
+          )}
         </div>
 
       </div>

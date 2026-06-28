@@ -210,7 +210,7 @@ export default function CartPage() {
       if (paymentMethod === 'ONLINE' && res.data.payment_intent_url) {
         window.location.href = res.data.payment_intent_url; // Stripe or Razorpay redirect
       } else {
-        navigate(`/consumer-ecommerce/order-success/${res.data.order_id}`);
+        navigate(`/track-order/${res.data.id}`);
       }
     } catch (err) {
       if (err.response?.status === 401) {
@@ -226,7 +226,7 @@ export default function CartPage() {
             if (paymentMethod === 'ONLINE' && res.data.payment_intent_url) {
               window.location.href = res.data.payment_intent_url;
             } else {
-              navigate(`/consumer-ecommerce/order-success/${res.data.order_id}`);
+              navigate(`/track-order/${res.data.id}`);
             }
             return;
           } catch (retryErr) {

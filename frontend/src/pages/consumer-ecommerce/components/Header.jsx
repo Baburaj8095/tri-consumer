@@ -332,6 +332,23 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               <TriIcon name="chat_bubble" size={18} />
             </IconButton>
 
+            {/* Orders History Button */}
+            <IconButton
+              component={Link}
+              to="/orders"
+              sx={{
+                color: '#FFFFFF',
+                bgcolor: 'rgba(255,255,255,0.16)',
+                width: 32,
+                height: 32,
+                borderRadius: '10px',
+                flexShrink: 0,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
+              }}
+            >
+              <TriIcon name="receipt_long" size={18} />
+            </IconButton>
+
             {/* Cart Button */}
             <IconButton
               component={Link}
@@ -573,6 +590,20 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 <div>
                   <span>Location</span>
                   <strong>{displayProfile.city}</strong>
+                </div>
+              </div>
+              <div 
+                className="ce-profile-list-row"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate('/orders');
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <LuShoppingBag className="ce-primary-text" />
+                <div>
+                  <span>My Orders</span>
+                  <strong>View Transaction History</strong>
                 </div>
               </div>
               <div className="ce-profile-list-row">

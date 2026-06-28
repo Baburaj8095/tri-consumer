@@ -199,7 +199,7 @@ export default function CartPage() {
     };
 
     try {
-      const res = await axios.post(`${CAPTAIN_API_URL}/api/orders/place`, payload, {
+      const res = await axios.post(`${CAPTAIN_API_URL}/api/orders`, payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
       localStorage.removeItem('tri_consumer_cart');
@@ -216,7 +216,7 @@ export default function CartPage() {
         if (refreshed) {
           const newToken = getAccessToken();
           try {
-            const res = await axios.post(`${CAPTAIN_API_URL}/api/orders/place`, payload, {
+            const res = await axios.post(`${CAPTAIN_API_URL}/api/orders`, payload, {
               headers: { Authorization: `Bearer ${newToken}` }
             });
             localStorage.removeItem('tri_consumer_cart');

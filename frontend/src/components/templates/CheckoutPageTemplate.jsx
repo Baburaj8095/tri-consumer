@@ -45,6 +45,7 @@ export default function CheckoutPageTemplate({
             borderTop: '1px solid',
             borderColor: 'divider',
             p: 2,
+            width:'100px',
             pb: `calc(16px + env(safe-area-inset-bottom))`,
             boxShadow: '0 -4px 10px rgba(0,0,0,0.02)'
           }}

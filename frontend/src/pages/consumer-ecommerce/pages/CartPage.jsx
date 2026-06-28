@@ -14,11 +14,13 @@ import TriButton from '../../../components/ui/TriButton';
 import TriEmptyState from '../../../components/ui/TriEmptyState';
 import TriAddressCard from '../../../components/ui/TriAddressCard';
 import TriIcon from '../../../components/ui/TriIcon';
+import { useLocation as useGeoLocation } from '../context/LocationContext';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
 export default function CartPage() {
   const navigate = useNavigate();
+  const { location: userLoc } = useGeoLocation();
 
   // 1. Core State
   const [cart, setCart] = useState(() => {
@@ -100,6 +102,8 @@ export default function CartPage() {
       shop_id: currentCart.shopId,
       address_id: addressId || null,
       order_channel: currentCart.orderChannel || 'ONLINE_DELIVERY',
+      latitude: currentCart.latitude || userLoc?.lat || null,
+      longitude: currentCart.longitude || userLoc?.lng || null,
       items: currentCart.items.map(it => ({ product_id: it.productId, quantity: it.quantity }))
     };
 
@@ -265,7 +269,7 @@ export default function CartPage() {
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
       <Box>
         <Typography variant="caption" color="text.secondary" fontWeight={700}>Grand Total</Typography>
-        <Typography variant="h3" color="text.primary">₹{grandTotal.toFixed(2)}</Typography>
+        <Typography sx={{ fontSize: '1.35rem', fontWeight: 900, color: 'text.primary', lineHeight: 1.2 }}>₹{grandTotal.toFixed(2)}</Typography>
       </Box>
       <TriButton 
         onClick={handleProceedCheckout} 

@@ -195,6 +195,8 @@ export default function CartPage() {
       address_id: selectedAddressId,
       order_channel: cart.orderChannel || 'ONLINE_DELIVERY',
       payment_mode: paymentMethod,
+      latitude: cart.latitude || userLoc?.lat || null,
+      longitude: cart.longitude || userLoc?.lng || null,
       items: cart.items.map(it => ({ product_id: it.productId, quantity: it.quantity }))
     };
 

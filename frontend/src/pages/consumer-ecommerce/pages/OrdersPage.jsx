@@ -125,7 +125,7 @@ export default function OrdersPage() {
     <ShoppingPageTemplate
       title="My Orders"
       subtitle="Your transaction history & tracks"
-      onBack={() => navigate('/consumer-ecommerce/profile')}
+      onBack={() => navigate('/consumer-ecommerce')}
       filterChips={FilterTabs}
       hideBottomNav={true} // Orders page traditionally hides it, or we can show it depending on preference
     >

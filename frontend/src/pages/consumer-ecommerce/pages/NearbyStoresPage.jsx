@@ -90,13 +90,11 @@ export default function NearbyStoresPage() {
   }, [b2cShops, offlineCategories]);
 
   const categoriesList = useMemo(() => {
-    const mapped = resolvedShops.map(shop => shop.category).filter(Boolean);
-    const uniq = Array.from(new Set(mapped));
     return [
       { name: 'All Stores', icon: <LuStore size={24} /> },
-      ...uniq.map(name => ({ name, icon: getCategoryIcon(name) }))
+      ...offlineCategories.map(cat => ({ name: cat.name, icon: getCategoryIcon(cat.name) }))
     ];
-  }, [resolvedShops]);
+  }, [offlineCategories]);
 
   const filteredShops = useMemo(() => {
     let shops = resolvedShops;

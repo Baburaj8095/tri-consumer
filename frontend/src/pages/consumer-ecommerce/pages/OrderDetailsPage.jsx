@@ -171,14 +171,14 @@ export default function OrderDetailsPage() {
     <div className="ce-app" style={{ paddingTop: '72px', paddingBottom: '90px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
-        <button onClick={() => navigate('/orders')} aria-label="Back" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-          <LuChevronLeft size={24} />
+        <button onClick={() => navigate('/orders')} aria-label="Back">
+          <LuChevronLeft size={20} />
         </button>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0 }}>Order Details</h1>
-          <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>Order Info &amp; Summary</p>
+          <h1>Order Details</h1>
+          <p>Order Info &amp; Summary</p>
         </div>
-        <span style={{ color: '#f97316' }}><LuInfo size={22} /></span>
+        <span><LuInfo size={20} /></span>
       </header>
 
       {/* Main Container */}

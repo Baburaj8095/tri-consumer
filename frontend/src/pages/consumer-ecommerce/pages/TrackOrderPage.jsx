@@ -147,14 +147,14 @@ export default function TrackOrderPage() {
     <div className="ce-app" style={{ paddingTop: '72px', paddingBottom: '90px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       {/* Header */}
       <header className="ce-compact-page-header">
-        <button onClick={() => navigate('/orders')} aria-label="Back" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-          <LuChevronLeft size={24} />
+        <button onClick={() => navigate('/orders')} aria-label="Back">
+          <LuChevronLeft size={20} />
         </button>
         <div>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: 0 }}>Track Order</h1>
-          <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>Live delivery tracking</p>
+          <h1>Track Order</h1>
+          <p>Live delivery tracking</p>
         </div>
-        <span style={{ color: '#f97316' }}><LuTruck size={22} /></span>
+        <span><LuTruck size={20} /></span>
       </header>
 
       {/* Container */}

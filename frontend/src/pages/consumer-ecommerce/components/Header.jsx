@@ -195,6 +195,98 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
 
   const isCompact = mode === 'compact';
 
+  if (title) {
+    return (
+      <Box
+        component="header"
+        sx={{
+          background: 'linear-gradient(135deg, #FF9E44 0%, #FF7A00 100%)',
+          py: 1.8,
+          px: 2,
+          color: '#FFFFFF',
+          boxShadow: '0 4px 20px rgba(255, 122, 0, 0.12)',
+          borderBottomLeftRadius: '24px',
+          borderBottomRightRadius: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          maxWidth: '430px',
+          margin: '0 auto',
+          width: '100%',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1090,
+        }}
+      >
+        {onBack && (
+          <IconButton
+            onClick={onBack}
+            sx={{
+              color: '#FFFFFF',
+              bgcolor: 'rgba(255,255,255,0.16)',
+              width: 32,
+              height: 32,
+              borderRadius: '10px',
+              mr: 0.5,
+              flexShrink: 0,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.26)' }
+            }}
+          >
+            <TriIcon name="arrow_back" size={18} />
+          </IconButton>
+        )}
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography sx={{ fontSize: '15px', fontWeight: 800, fontFamily: '"Inter", sans-serif', color: '#FFFFFF', lineHeight: 1.2 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography sx={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.8)', fontFamily: '"Inter", sans-serif', mt: 0.25 }}>
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+        <IconButton
+          component={Link}
+          to="/consumer-ecommerce/cart"
+          sx={{
+            color: '#FFFFFF',
+            bgcolor: 'rgba(255,255,255,0.16)',
+            width: 32,
+            height: 32,
+            borderRadius: '10px',
+            position: 'relative',
+            flexShrink: 0,
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.24)' }
+          }}
+        >
+          <TriIcon name="shopping_bag" size={18} />
+          {cartCount > 0 && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: -2,
+                right: -2,
+                bgcolor: '#EF4444',
+                color: '#FFFFFF',
+                fontSize: '9px',
+                fontWeight: 700,
+                borderRadius: '50%',
+                width: 15,
+                height: 15,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid #FF7A00',
+              }}
+            >
+              {cartCount}
+            </Box>
+          )}
+        </IconButton>
+      </Box>
+    );
+  }
+
   return (
     <>
       <Box

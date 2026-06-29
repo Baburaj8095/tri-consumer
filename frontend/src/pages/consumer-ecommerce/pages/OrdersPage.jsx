@@ -145,7 +145,7 @@ export default function OrdersPage() {
             <TriOrderCard 
               key={order.id} 
               order={order} 
-              onClick={() => navigate(`/consumer-ecommerce/order/${order.id}`)} 
+              onClick={() => navigate(`/orders/${order.id}`)} 
             />
           ))}
         </Box>

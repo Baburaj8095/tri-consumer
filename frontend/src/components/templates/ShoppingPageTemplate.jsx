@@ -30,24 +30,31 @@ export default function ShoppingPageTemplate({
             backdropFilter: 'blur(8px)',
             borderBottom: '1px solid',
             borderColor: 'divider',
-            pb: 1
+            pb: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%'
           }}
         >
-          {searchBar && <Box sx={{ px: 2, pt: 1 }}>{searchBar}</Box>}
-          {filterChips && <Box sx={{ pt: 1, pl: 2, overflowX: 'auto', display: 'flex' }}>{filterChips}</Box>}
+          <Box sx={{ width: '100%', maxWidth: '430px' }}>
+            {searchBar && <Box sx={{ px: 2, pt: 1 }}>{searchBar}</Box>}
+            {filterChips && <Box sx={{ pt: 1, pl: 2, overflowX: 'auto', display: 'flex' }}>{filterChips}</Box>}
+          </Box>
         </Box>
       )}
 
       {/* Main Content Area constrained by width tokens */}
       <Container 
-        maxWidth="md" // 900px roughly, aligns with Tablet/Desktop rules
         disableGutters
         sx={{ 
           flex: 1, 
           display: 'flex', 
           flexDirection: 'column',
           px: { xs: 2, sm: 3 }, // 16px on mobile, 24px on larger
-          py: 2
+          py: 2,
+          maxWidth: '430px !important',
+          width: '100%',
+          margin: '0 auto'
         }}
       >
         {children}
@@ -64,10 +71,13 @@ export default function ShoppingPageTemplate({
             borderTop: '1px solid',
             borderColor: 'divider',
             p: 2,
-            pb: `calc(16px + env(safe-area-inset-bottom))`
+            pb: `calc(16px + env(safe-area-inset-bottom))`,
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%'
           }}
         >
-          <Container maxWidth="md" disableGutters>
+          <Container disableGutters sx={{ maxWidth: '430px !important', width: '100%', margin: '0 auto' }}>
             {stickyAction}
           </Container>
         </Box>

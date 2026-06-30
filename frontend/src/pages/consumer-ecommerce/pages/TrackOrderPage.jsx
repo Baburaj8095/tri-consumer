@@ -48,11 +48,11 @@ export default function TrackOrderPage() {
           const o = response.data;
           setOrder({
             id: String(o.id),
-            orderId: `TR-${String(o.id).padStart(8, '0')}`,
-            shopName: o.shopName || 'Retail Store',
+            orderId: o.order_number || `TR-${String(o.id).padStart(8, '0')}`,
+            shopName: o.shop_name || 'Retail Store',
             status: String(o.status || 'CONFIRMED').toUpperCase(),
-            location: o.address || 'Indiranagar, Bangalore',
-            isNearby: o.orderChannel === 'NEARBY_DELIVERY',
+            location: o.address || 'No address specified',
+            isNearby: o.order_channel === 'NEARBY_DELIVERY',
             awbNumber: o.awb_number,
             courierName: o.courier_name,
             trackingUrl: o.tracking_url
@@ -158,7 +158,7 @@ export default function TrackOrderPage() {
       </header>
 
       {/* Container */}
-      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '430px', margin: '0 auto' }}>
         
         {/* Order Info Bar */}
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>

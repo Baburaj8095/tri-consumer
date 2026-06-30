@@ -36,21 +36,21 @@ export default function OrderDetailsPage() {
 
           setOrder({
             id: String(o.id),
-            orderId: `TR-${String(o.id).padStart(8, '0')}`,
-            shopName: o.shopName || 'Retail Store',
+            orderId: o.order_number || `TR-${String(o.id).padStart(8, '0')}`,
+            shopName: o.shop_name || 'Retail Store',
             shopImage: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=120&q=80',
-            amount: o.total || o.grandTotal || 0,
-            date: o.createdAt || new Date().toISOString(),
+            amount: o.total || o.grand_total || 0,
+            date: o.created_at || new Date().toISOString(),
             status: status,
-            items: o.items || [{ product_title: 'Product Package', quantity: 1, product_price: o.total || 0 }],
-            location: o.address || 'Whitefield, Bangalore',
-            paymentMethod: o.paymentMethod || 'Online Pay',
-            paymentStatus: o.paymentStatus || 'PAID',
-            transactionId: o.transactionId || 'UPI1234567890',
-            subtotal: o.subtotal || (o.total ? o.total - 40 : 0),
-            deliveryFee: o.deliveryFee || 40,
-            discount: o.discount || 10,
-            phone: o.shopPhone || '08040404040'
+            items: o.items || [],
+            location: o.address || 'No address specified',
+            paymentMethod: o.payment_method || 'Online Pay',
+            paymentStatus: o.payment_status || 'PAID',
+            transactionId: o.payment_ref_id || 'N/A',
+            subtotal: o.subtotal || 0,
+            deliveryFee: o.delivery_fee || 0,
+            discount: o.total_discount || 0,
+            phone: o.shop_phone || ''
           });
         }
       } catch (err) {
@@ -59,7 +59,7 @@ export default function OrderDetailsPage() {
         setLoading(false);
       }
     };
-
+ 
     fetchOrderDetails();
   }, [id]);
 
@@ -182,7 +182,7 @@ export default function OrderDetailsPage() {
       </header>
 
       {/* Main Container */}
-      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '430px', margin: '0 auto' }}>
         
         {/* Order Summary Card */}
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
@@ -217,7 +217,7 @@ export default function OrderDetailsPage() {
                   <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0', color: '#0f172a' }}>{item.product_title || item.productTitle}</h4>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>Qty: {item.quantity}</span>
                 </div>
-                <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{((item.product_price || item.productPrice || 0) * item.quantity).toFixed(2)}</strong>
+                <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{((item.price || item.product_price || item.productPrice || 0) * item.quantity).toFixed(2)}</strong>
               </div>
             ))}
           </div>

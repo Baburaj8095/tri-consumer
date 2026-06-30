@@ -49,8 +49,8 @@ export default function OrderDetailsPage() {
             transactionId: o.payment_ref_id || 'N/A',
             subtotal: o.subtotal || 0,
             deliveryFee: o.delivery_fee || 0,
-            discount: o.total_discount || 0,
-            phone: o.shop_phone || ''
+            phone: o.shop_phone || '',
+            shopAddress: o.shop_address || 'Trikonekt Store Location'
           });
         }
       } catch (err) {
@@ -261,7 +261,7 @@ export default function OrderDetailsPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h4 style={{ fontSize: '14px', fontWeight: 700, margin: '0 0 2px 0', color: '#0f172a' }}>{displayOrder.shopName}</h4>
-              <span style={{ fontSize: '12px', color: '#64748b' }}>Indiranagar, Bangalore</span>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>{displayOrder.shopAddress || 'Trikonekt Store Location'}</span>
             </div>
             <button
               onClick={() => window.open(`tel:${displayOrder.phone}`)}

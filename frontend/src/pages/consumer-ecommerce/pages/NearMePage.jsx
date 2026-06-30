@@ -61,47 +61,86 @@ export default function NearMePage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [channelMode, setChannelMode] = useState('ONLINE');
-  const [liveShops, setLiveShops] = useState([]);
-  const [loadingShops, setLoadingShops] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   useEffect(() => {
-    setLoadingShops(true);
-    axios.get(`${CAPTAIN_API_URL}/captain/merchants/b2c`)
+    setLoadingProducts(true);
+    const params = new URLSearchParams({ limit: 120, offset: 0 });
+    if (selectedCity.name) params.append('city', selectedCity.name);
+    
+    axios.get(`${CAPTAIN_API_URL}/captain/shops/online/products?${params.toString()}`)
       .then(res => {
-        setLiveShops(res.data || []);
-        setLoadingShops(false);
+        const data = Array.isArray(res.data) ? res.data : 
+                     Array.isArray(res.data?.products) ? res.data.products : 
+                     Array.isArray(res.data?.results) ? res.data.results : [];
+        setProducts(data);
       })
-      .catch(err => {
-        console.error('Error fetching B2C live merchants:', err);
-        setLoadingShops(false);
-      });
-  }, []);
+      .catch(err => console.error('Failed to fetch online products:', err))
+      .finally(() => setLoadingProducts(false));
+  }, [selectedCity.name]);
 
-  const visibleListings = useMemo(() => {
-    return liveShops.filter(shop => {
-      const shopCity = (shop.city || '').trim().toLowerCase();
-      const chosenCity = selectedCity.name.toLowerCase();
-      if (shopCity !== chosenCity) return false;
+  const activeCategories = useMemo(() => {
+    if (channelMode === 'ONLINE') {
+      return [
+        { name: 'All', icon: 'grid_view', bg: '#FFEFE0', color: '#FF7A00' },
+        { name: 'Electronics', icon: 'devices', bg: '#E0F2FE', color: '#0284C7' },
+        { name: 'Fashion', icon: 'checkroom', bg: '#FCE4EC', color: '#DB2777' },
+        { name: 'Groceries', icon: 'shopping_cart', bg: '#E8F5E9', color: '#16A34A' },
+        { name: 'Health', icon: 'local_hospital', bg: '#FFEBEE', color: '#DC2626' },
+      ];
+    } else {
+      return [
+        { name: 'All', icon: 'grid_view', bg: '#FFEFE0', color: '#FF7A00' },
+        { name: 'Hotels', icon: 'hotel', bg: '#E0F2FE', color: '#0284C7' },
+        { name: 'EV Vehicles', icon: 'electric_car', bg: '#E8F5E9', color: '#16A34A' },
+        { name: 'Travel', icon: 'flight', bg: '#F3E8FF', color: '#7C3AED' },
+        { name: 'Food & Dine', icon: 'restaurant', bg: '#FFEBEE', color: '#DC2626' },
+      ];
+    }
+  }, [channelMode]);
 
-      const serviceMode = (shop.service_mode || 'ONLINE').toUpperCase();
-      if (serviceMode === 'OFFLINE') return false;
+  const visibleProducts = useMemo(() => {
+    return products.filter(prod => {
+      // Filter by selected mode
+      const isTriAppProd = prod.tri_app_id != null || prod.tri_app_slug != null;
+      if (channelMode === 'ONLINE') {
+        if (isTriAppProd) return false;
+      } else {
+        if (!isTriAppProd) return false;
+      }
 
+      // Filter by Category
+      if (selectedCategory && selectedCategory.name !== 'All') {
+        const prodCat = (prod.category || '').toLowerCase();
+        const chosenCat = selectedCategory.name.toLowerCase();
+        if (channelMode === 'TRIZONE') {
+          const appSlug = (prod.tri_app_slug || '').toLowerCase();
+          const appName = (prod.tri_app_name || '').toLowerCase();
+          if (!appSlug.includes(chosenCat) && !appName.includes(chosenCat) && !chosenCat.includes(appSlug) && !chosenCat.includes(appName)) return false;
+        } else {
+          if (prodCat !== chosenCat) return false;
+        }
+      }
+
+      // Filter by Search Query
       if (searchTerm.trim() !== '') {
         const query = searchTerm.toLowerCase();
-        const matchTitle = (shop.shop_name || '').toLowerCase().includes(query);
-        const matchAddr = (shop.address || '').toLowerCase().includes(query);
-        if (!matchTitle && !matchAddr) return false;
+        const matchTitle = (prod.title || '').toLowerCase().includes(query);
+        const matchDesc = (prod.description || '').toLowerCase().includes(query);
+        const matchShop = (prod.shop_name || '').toLowerCase().includes(query);
+        if (!matchTitle && !matchDesc && !matchShop) return false;
       }
       return true;
     });
-  }, [liveShops, selectedCity, searchTerm]);
+  }, [products, channelMode, selectedCategory, searchTerm]);
 
   const handleChannelChange = (mode) => {
     setChannelMode(mode);
+    setSelectedCategory(null);
+    setSearchTerm('');
     if (mode === 'OFFLINE') {
       navigate('/consumer-ecommerce/nearby-stores');
-    } else if (mode === 'TRIZONE') {
-      navigate('/consumer-ecommerce/tri-zone');
     }
   };
 
@@ -116,36 +155,68 @@ export default function NearMePage() {
         />
         <Box sx={{ maxWidth: '430px', margin: '0 auto', width: '100%', px: 2, pt: 2 }}>
           <Stack spacing={2} sx={{ mt: 1, pb: 4 }}>
-            {loadingShops ? (
-              <Typography sx={{ textAlign: 'center', py: 4, color: '#64748B', fontFamily: '"Inter", sans-serif' }}>Loading...</Typography>
-            ) : visibleListings.length === 0 ? (
+            {loadingProducts ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress sx={{ color: '#FF7A00' }} />
+              </Box>
+            ) : visibleProducts.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 6, px: 2 }}>
                 <TriIcon name="search_off" size={48} color="#CBD5E1" sx={{ mb: 1.5 }} />
-                <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', mb: 0.5, fontFamily: '"Inter", sans-serif' }}>No Shops Found</Typography>
+                <Typography sx={{ fontSize: '15px', fontWeight: 800, color: '#1E293B', mb: 0.5, fontFamily: '"Inter", sans-serif' }}>No Products Found</Typography>
               </Box>
             ) : (
-              visibleListings.map((listing) => (
-                <TriCard
-                  key={listing.id}
-                  noPadding
-                  component={Link}
-                  to={`/consumer-ecommerce/shop/${listing.id}`}
-                  sx={{ display: 'flex', textDecoration: 'none', bgcolor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', overflow: 'hidden' }}
-                >
-                  <Box
-                    component="img"
-                    src={listing.shop_image || fallbackImg}
-                    alt={listing.shop_name}
-                    sx={{ width: 110, height: 110, objectFit: 'cover', flexShrink: 0 }}
-                    onError={(e) => { e.target.src = fallbackImg; }}
-                  />
-                  <Box sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <Typography sx={{ fontSize: '14px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }} noWrap>
-                      {listing.shop_name}
-                    </Typography>
-                  </Box>
-                </TriCard>
-              ))
+              visibleProducts.map((prod) => {
+                const isTriZone = channelMode === 'TRIZONE';
+                return (
+                  <TriCard
+                    key={prod.id}
+                    noPadding
+                    component={Link}
+                    to={`/consumer-ecommerce/product/${prod.id}`}
+                    sx={{ display: 'flex', textDecoration: 'none', bgcolor: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0', overflow: 'hidden', height: 120 }}
+                  >
+                    <Box
+                      component="img"
+                      src={prod.image || prod.image_url || fallbackImg}
+                      alt={prod.title}
+                      sx={{ width: 120, height: 120, objectFit: 'cover', flexShrink: 0 }}
+                      onError={(e) => { e.target.src = fallbackImg; }}
+                    />
+                    <Box sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
+                      <Box>
+                        <Typography sx={{ fontSize: '14px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif' }} noWrap>
+                          {prod.title}
+                        </Typography>
+                        <Typography sx={{ fontSize: '11px', color: '#64748B', mt: 0.5 }} noWrap>
+                          Sold by: {prod.shop_name}
+                        </Typography>
+                      </Box>
+                      
+                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#FF7A00' }}>
+                          ₹{prod.price} {isTriZone && <span style={{ fontSize: '9px', color: '#64748B', fontWeight: 500 }}>/day</span>}
+                        </Typography>
+                        {isTriZone ? (
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            sx={{ 
+                              fontSize: '10px', fontWeight: 800, px: 2, py: 0.4, borderRadius: '8px', bgcolor: '#FF7A00', textTransform: 'none',
+                              '&:hover': { bgcolor: '#E06B00' }
+                            }}
+                          >
+                            Book Now
+                          </Button>
+                        ) : (
+                          <Typography sx={{ fontSize: '10px', color: '#22C55E', fontWeight: 700 }}>
+                            Free delivery
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Box>
+                  </TriCard>
+                );
+              })
             )}
           </Stack>
         </Box>
@@ -358,16 +429,8 @@ export default function NearMePage() {
 
           {/* Quick Categories Section */}
           <Box sx={{ mb: 3.5 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-              <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                Quick Categories
-              </Typography>
-              <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}>
-                View all
-              </Typography>
-            </Stack>
             <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
-              {quickCategories.map((c) => (
+              {activeCategories.map((c) => (
                 <Box
                   key={c.name}
                   onClick={() => setSelectedCategory(c)}
@@ -456,49 +519,97 @@ export default function NearMePage() {
             </Stack>
           </Box>
 
-          {/* Featured Online Shops Section */}
+          {/* Featured Dynamic Products Section */}
           <Box sx={{ mb: 3.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
               <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                Featured Online Shops
+                {channelMode === 'ONLINE' ? 'Featured Online Products' : 'Featured Tri Zone Stays'}
               </Typography>
-              <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}>
+              <Typography 
+                onClick={() => setSelectedCategory({ name: 'All' })}
+                sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', cursor: 'pointer', fontFamily: '"Inter", sans-serif' }}
+              >
                 View all
               </Typography>
             </Stack>
-            <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
-              {mockOnlineShops.map((shop) => (
-                <Box
-                  key={shop.name}
-                  sx={{
-                    minWidth: '130px',
-                    bgcolor: '#FFFFFF',
-                    borderRadius: '20px',
-                    border: '1px solid #E2E8F0',
-                    p: 1,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-                    flexShrink: 0
-                  }}
-                >
-                  <Box sx={{ width: '100%', height: '80px', borderRadius: '14px', overflow: 'hidden', mb: 1 }}>
-                    <Box component="img" src={shop.image} alt={shop.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = fallbackImg; }} />
-                  </Box>
-                  <Typography sx={{ fontSize: '12px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', px: 0.5 }} noWrap>{shop.name}</Typography>
-                  <Stack direction="row" alignItems="center" spacing={0.3} sx={{ mt: 0.5, px: 0.5 }}>
-                    <Typography sx={{ fontSize: '10px', fontWeight: 800, color: '#475569', fontFamily: '"Inter", sans-serif' }}>
-                      {shop.rate}
-                    </Typography>
-                    <TriIcon name="star" size={11} color="#F59E0B" sx={{ fill: '#F59E0B', mr: 0.5 }} />
-                    <Typography sx={{ fontSize: '10px', color: '#94A3B8', mx: 0.2 }}>•</Typography>
-                    <TriIcon name={shop.name === 'Cloud Kitchen' ? 'schedule' : 'location_on'} size={11} color="#64748B" />
-                    <Typography sx={{ fontSize: '10px', fontWeight: 600, color: '#64748B', fontFamily: '"Inter", sans-serif' }}>
-                      {shop.time}
-                    </Typography>
-                  </Stack>
-                  <Typography sx={{ fontSize: '9px', color: '#22C55E', fontWeight: 700, mt: 0.5, px: 0.5 }}>Free delivery</Typography>
-                </Box>
-              ))}
-            </Stack>
+            
+            {loadingProducts ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress sx={{ color: '#FF7A00' }} size={24} />
+              </Box>
+            ) : visibleProducts.length === 0 ? (
+              <Typography sx={{ fontSize: '12px', color: '#64748B', py: 2, textAlign: 'center' }}>
+                No listings available in {selectedCity.name}
+              </Typography>
+            ) : (
+              <Stack direction="row" spacing={2} sx={{ overflowX: 'auto', pb: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+                {visibleProducts.slice(0, 10).map((prod) => {
+                  const isTriZone = channelMode === 'TRIZONE';
+                  return (
+                    <Box
+                      key={prod.id}
+                      component={Link}
+                      to={`/consumer-ecommerce/product/${prod.id}`}
+                      style={{ textDecoration: 'none' }}
+                      sx={{
+                        minWidth: '150px',
+                        maxWidth: '150px',
+                        bgcolor: '#FFFFFF',
+                        borderRadius: '20px',
+                        border: '1px solid #E2E8F0',
+                        p: 1,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                        flexShrink: 0,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Box sx={{ width: '100%', height: '100px', borderRadius: '14px', overflow: 'hidden', mb: 1, position: 'relative' }}>
+                        <Box component="img" src={prod.image || prod.image_url || fallbackImg} alt={prod.title} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.src = fallbackImg; }} />
+                        {prod.discount_percent > 0 && (
+                          <Box sx={{ position: 'absolute', top: 6, left: 6, bgcolor: '#ef4444', color: '#fff', px: 0.8, py: 0.2, borderRadius: '6px', fontSize: '9px', fontWeight: 800 }}>
+                            {Math.round(prod.discount_percent)}% OFF
+                          </Box>
+                        )}
+                      </Box>
+                      <Typography sx={{ fontSize: '12px', fontWeight: 800, color: '#1E293B', fontFamily: '"Inter", sans-serif', px: 0.5 }} noWrap>
+                        {prod.title}
+                      </Typography>
+                      
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.5, px: 0.5 }}>
+                        <Typography sx={{ fontSize: '11px', fontWeight: 800, color: '#FF7A00', fontFamily: '"Inter", sans-serif' }}>
+                          ₹{prod.price} {isTriZone && <span style={{ fontSize: '8px', color: '#64748B', fontWeight: 500 }}>/day</span>}
+                        </Typography>
+                        {prod.mrp > prod.price && (
+                          <Typography sx={{ fontSize: '9px', color: '#94A3B8', textDecoration: 'line-through' }}>
+                            ₹{prod.mrp}
+                          </Typography>
+                        )}
+                      </Stack>
+
+                      {isTriZone ? (
+                        <Box sx={{ mt: 1, px: 0.5 }}>
+                          <Typography sx={{ fontSize: '8px', color: '#22C55E', fontWeight: 700 }}>Free Cancellation</Typography>
+                          <Button 
+                            variant="contained" 
+                            size="small"
+                            sx={{ 
+                              mt: 0.8, width: '100%', fontSize: '9px', fontWeight: 800, py: 0.4, borderRadius: '8px', bgcolor: '#FF7A00', textTransform: 'none',
+                              '&:hover': { bgcolor: '#E06B00' }
+                            }}
+                          >
+                            Book Now
+                          </Button>
+                        </Box>
+                      ) : (
+                        <Typography sx={{ fontSize: '9px', color: '#22C55E', fontWeight: 700, mt: 0.5, px: 0.5 }}>
+                          Free delivery
+                        </Typography>
+                      )}
+                    </Box>
+                  );
+                })}
+              </Stack>
+            )}
           </Box>
 
           {/* Promo Coupon Card */}

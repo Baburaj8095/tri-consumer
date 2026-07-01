@@ -279,7 +279,7 @@ export default function ConsumerKYC() {
     <TriAppShell bottomNavIndex={2} bg="background">
       <TriHeader title="KYC Verification" onBack={() => navigate(-1)} />
 
-      <Container maxWidth="md" sx={{ py: 3, pb: 8 }}>
+      <Container maxWidth="xs" sx={{ py: 3, pb: 8 }}>
         {renderStatusHeader()}
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4 }}>
@@ -346,8 +346,8 @@ export default function ConsumerKYC() {
                       Aadhaar Identity Details
                     </Typography>
                     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, border: `1px solid ${BORDER}` }}>
-                      <Grid container spacing={3}>
-                        <Grid item xs={12} sm={3} sx={{ display: "flex", justifyContent: "center" }}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
                           {dlProfile.photo ? (
                             <Avatar
                               src={`data:image/jpeg;base64,${dlProfile.photo}`}
@@ -360,21 +360,21 @@ export default function ConsumerKYC() {
                             </Avatar>
                           )}
                         </Grid>
-                        <Grid item xs={12} sm={9}>
+                        <Grid item xs={12}>
                           <Grid container spacing={2}>
                             <Grid item xs={12}>
                               <Typography variant="caption" sx={{ color: TEXT_SECONDARY }}>Name (as per Aadhaar)</Typography>
                               <Typography sx={{ fontWeight: 700, color: TEXT }}>{dlProfile.name}</Typography>
                             </Grid>
-                            <Grid item xs={6} md={4}>
+                            <Grid item xs={12}>
                               <Typography variant="caption" sx={{ color: TEXT_SECONDARY }}>Date of Birth</Typography>
                               <Typography sx={{ fontWeight: 600, color: TEXT }}>{dlProfile.dob}</Typography>
                             </Grid>
-                            <Grid item xs={6} md={4}>
+                            <Grid item xs={12}>
                               <Typography variant="caption" sx={{ color: TEXT_SECONDARY }}>Gender</Typography>
                               <Typography sx={{ fontWeight: 600, color: TEXT }}>{dlProfile.gender === "M" ? "Male" : dlProfile.gender === "F" ? "Female" : dlProfile.gender}</Typography>
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12}>
                               <Typography variant="caption" sx={{ color: TEXT_SECONDARY }}>Aadhaar Last 4</Typography>
                               <Typography sx={{ fontWeight: 600, color: TEXT }}>xxxx-xxxx-{dlProfile.aadhaarLast4 || "8095"}</Typography>
                             </Grid>
@@ -441,7 +441,7 @@ export default function ConsumerKYC() {
                         InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12}>
                       <TextField
                         label="Bank Account Number"
                         fullWidth
@@ -452,7 +452,7 @@ export default function ConsumerKYC() {
                         InputLabelProps={{ shrink: true }}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12}>
                       <TextField
                         label="IFSC Code"
                         fullWidth

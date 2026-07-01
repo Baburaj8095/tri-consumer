@@ -617,12 +617,33 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
 
       {isMenuOpen && (
         <div className="ce-profile-menu-overlay" role="presentation" onClick={() => setIsMenuOpen(false)}>
-          <aside className="ce-profile-menu" role="dialog" aria-label="User profile" onClick={(event) => event.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-              <button className="ce-icon-btn ce-icon-btn-sm" onClick={() => setIsMenuOpen(false)} aria-label="Close profile menu">
-                <LuX />
+          <aside className="ce-profile-menu" role="dialog" aria-label="User profile" onClick={(event) => event.stopPropagation()} style={{ padding: '0px', display: 'flex', flexDirection: 'column', overflowY: 'hidden' }}>
+            {/* Drawer Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>Consumer Account</span>
+              <button 
+                onClick={() => setIsMenuOpen(false)} 
+                aria-label="Close profile menu"
+                style={{ 
+                  border: 'none', 
+                  background: 'none', 
+                  cursor: 'pointer', 
+                  color: '#64748b', 
+                  padding: '4px', 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  borderRadius: '50%',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <LuX size={20} />
               </button>
             </div>
+
+            {/* Scrollable Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column' }}>
 
             {/* Premium Header Card (Orange Gradient) */}
             <div className="ce-profile-header-card" style={{
@@ -717,27 +738,13 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
               </div>
             </div>
 
-            {/* 3-Column Stats Grid */}
+            {/* 2-Column Stats Grid */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: '1fr 1fr',
               gap: '10px',
               marginBottom: '24px'
             }}>
-              <div style={{
-                background: '#f8fafc',
-                borderRadius: '12px',
-                padding: '12px 6px',
-                textAlign: 'center',
-                border: '1px solid #e2e8f0'
-              }}>
-                <LuShoppingBag size={18} color="#f97316" style={{ marginBottom: '4px' }} />
-                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {displayProfile.idNumber}
-                </div>
-                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Member ID</div>
-              </div>
-
               <div style={{
                 background: '#f8fafc',
                 borderRadius: '12px',
@@ -882,6 +889,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 <LuLogOut size={16} />
                 Logout
               </button>
+            </div>
             </div>
           </aside>
         </div>

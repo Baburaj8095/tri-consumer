@@ -1,0 +1,8 @@
+export type AuthUser = { id?: string | number; username?: string; fullName?: string; full_name?: string; mobile?: string; email?: string };
+export type AuthPayload = { access?: string; token?: string; refresh?: string; user?: AuthUser; data?: AuthPayload };
+export type LocationInfo = { id?: string; lat: number; lng: number; area: string; city: string; state?: string; country?: string; pincode?: string; formattedAddress: string; lastUpdated?: number };
+export type Product = { id: string | number; productId?: string | number; title?: string; name?: string; price: number; mrp?: number; image?: string; image_url?: string; shop_id?: string | number; shop_name?: string };
+export type CartItem = { productId: string | number; title: string; price: number; mrp?: number; image?: string; quantity: number };
+export type CartStateShape = { shopId: string | number | null; shopName: string; orderChannel?: 'ONLINE_DELIVERY' | 'NEARBY_DELIVERY'; latitude?: number | null; longitude?: number | null; items: CartItem[] };
+export type Shop = { id: string | number; shopId?: string | number; shop_id?: string | number; shop_name?: string; business_name?: string; full_name?: string; category?: string; category_name?: string; city?: string; address?: string; distance_km?: number; shop_image?: string; phone?: string; contact_number?: string; latitude?: number; longitude?: number; lat?: number; lng?: number };
+export type Address = { id?: string | number; recipients_name: string; recipients_phone: string; address_line1: string; address_line2?: string; landmark?: string; city: string; pincode: string; addressType?: 'HOME' | 'WORK' | 'OTHER'; isDefault?: boolean };

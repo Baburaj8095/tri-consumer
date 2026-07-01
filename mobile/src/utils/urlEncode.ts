@@ -1,0 +1,1 @@
+export const encodeMessage = (str: string) => encodeURIComponent(str).replace(/%20/g, '+');

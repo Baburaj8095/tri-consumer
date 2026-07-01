@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import axios from "axios";
-import DataTable from "../../admin-panel/components/data/DataTable";
+import DataTable from "./DataTable";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 

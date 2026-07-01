@@ -1,6 +1,20 @@
 import React, { useCallback, useMemo, useState } from "react";
-import API from "../../api/api";
+import axios from "axios";
 import DataTable from "../../admin-panel/components/data/DataTable";
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+
+const API = axios.create({
+  baseURL: API_BASE_URL + "/api"
+});
+
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("triAdminToken") || "";
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 import {
   Dialog,
   DialogTitle,

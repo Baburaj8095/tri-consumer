@@ -35,7 +35,7 @@ import {
 import { LuChevronLeft } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { getAccessToken } from "../../../services/authStorage";
+import { getAccessToken, clearAuth } from "../../../services/authStorage";
 import TriAppShell from "../../../components/ui/TriAppShell";
 import TriHeader from "../../../components/ui/TriHeader";
 

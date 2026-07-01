@@ -1,26 +1,39 @@
 import React, { useCallback, useMemo, useState } from "react";
-import axios from "axios";
-import { LuCheck, LuX, LuEye, LuRefreshCcw } from "react-icons/lu";
-import DataTable from "./DataTable";
+import API from "../../api/api";
+import DataTable from "../../admin-panel/components/data/DataTable";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Avatar,
+  Grid,
+  Typography,
+  Box,
+  Stack,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  Paper
+} from "@mui/material";
 
 function TextInput({ label, value, onChange, placeholder, type = "text", style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, color: "var(--admin-text-light)", fontWeight: 500 }}>{label}</label>
+      <label style={{ fontSize: 12, color: "#64748b" }}>{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         type={type}
-        className="admin-search-input"
         style={{
           padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid var(--admin-border)",
+          borderRadius: 8,
+          border: "1px solid #e2e8f0",
           outline: "none",
           background: "#fff",
-          fontSize: "13px",
-          fontFamily: "var(--admin-font)",
           ...style,
         }}
       />
@@ -31,20 +44,16 @@ function TextInput({ label, value, onChange, placeholder, type = "text", style }
 function Select({ label, value, onChange, options, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, color: "var(--admin-text-light)", fontWeight: 500 }}>{label}</label>
+      <label style={{ fontSize: 12, color: "#64748b" }}>{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         style={{
           padding: "10px 12px",
-          borderRadius: 10,
-          border: "1px solid var(--admin-border)",
+          borderRadius: 8,
+          border: "1px solid #e2e8f0",
           outline: "none",
           background: "#fff",
-          fontSize: "13px",
-          fontFamily: "var(--admin-font)",
-          color: "var(--admin-text)",
-          cursor: "pointer",
           ...style,
         }}
       >
@@ -58,21 +67,21 @@ function Select({ label, value, onChange, options, style }) {
   );
 }
 
-function Badge({ children, color = "#ea580c", bg = "#fff7ed" }) {
+function Badge({ children, color = "#0369a1", bg = "#e0f2fe" }) {
   return (
     <span
       style={{
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "2px 8px",
+        padding: "1px 6px",
         lineHeight: 1,
-        fontSize: "11px",
-        borderRadius: "999px",
+        height: 18,
+        fontSize: 10,
+        borderRadius: 999,
         color,
         background: bg,
         fontWeight: 600,
-        border: `1px solid ${color}1a`,
       }}
     >
       {children}
@@ -80,460 +89,689 @@ function Badge({ children, color = "#ea580c", bg = "#fff7ed" }) {
   );
 }
 
-export default function AdminKYC({
-  users = [],
-  onViewKyc,
-  isMobile,
-  headers,
-  loadAdminData,
-  API_BASE_URL = "",
-}) {
+const FRANCHISE_CATEGORY_OPTIONS = [
+  { value: "", label: "All franchise levels" },
+  { value: "agency_state_coordinator", label: "State Coordinator" },
+  { value: "agency_state", label: "State" },
+  { value: "agency_district_coordinator", label: "District Coordinator" },
+  { value: "agency_district", label: "District" },
+  { value: "agency_pincode_coordinator", label: "Pincode Coordinator" },
+  { value: "agency_pincode", label: "Pincode" },
+];
+
+function categoryLabel(value) {
+  const option = FRANCHISE_CATEGORY_OPTIONS.find((item) => item.value === value);
+  return option?.label || value || "";
+}
+
+export default function AdminKYC({ audience = "consumer" }) {
+  const isFranchise = audience === "franchise";
+  // View mode bifurcation: 'kyc' vs 'nominee'
   const [viewMode, setViewMode] = useState("kyc"); // 'kyc' | 'nominee'
-  const [actionLoadingId, setActionLoadingId] = useState(null);
-  const [actionError, setActionError] = useState("");
+  const [selectedKycRow, setSelectedKycRow] = useState(null);
 
   // KYC filters
   const [kycFilters, setKycFilters] = useState({
-    status: "SUBMITTED", // Default tab matches original behavior
+    status: "submitted", // default tab
     user: "",
     state: "",
     pincode: "",
+    category: "",
+    date_from: "",
+    date_to: "",
+  });
+
+  // Nominee filters (aligned to UserNominee fields where possible)
+  const [nomineeFilters, setNomineeFilters] = useState({
+    user: "",
+    name: "",
+    relationship: "",
+    date_from: "",
+    date_to: "",
+    status: "", // e.g. "completed" | "incomplete" (backend optional)
   });
 
   const [density, setDensity] = useState("standard");
   const [reloadKeyKyc, setReloadKeyKyc] = useState(0);
+  const [reloadKeyNominee, setReloadKeyNominee] = useState(0);
 
   function setKycF(key, val) {
     setKycFilters((f) => ({ ...f, [key]: val }));
   }
+  function setNomineeF(key, val) {
+    setNomineeFilters((f) => ({ ...f, [key]: val }));
+  }
 
   const statusOptions = useMemo(
     () => [
-      { value: "", label: "Any Status" },
-      { value: "UNSUBMITTED", label: "Unsubmitted" },
-      { value: "PENDING", label: "Pending" },
-      { value: "SUBMITTED", label: "Submitted" },
-      { value: "VERIFIED", label: "Verified" },
-      { value: "REOPENED", label: "Rejected/Reopened" },
+      { value: "", label: "Any" },
+      { value: "pending", label: "Pending" },
+      { value: "submitted", label: "Submitted" },
+      { value: "verified", label: "Verified" },
     ],
     []
   );
 
-  const handleUpdateKycStatus = async (user, status) => {
-    const actionName = status === "VERIFIED" ? "Verify" : "Reject";
-    if (!window.confirm(`${actionName} KYC request for ${user.fullName || user.username}?`)) return;
+  const nomineeRelationshipOptions = useMemo(
+    () => [
+      { value: "", label: "Any" },
+      { value: "Spouse", label: "Spouse" },
+      { value: "Parent", label: "Parent" },
+      { value: "Child", label: "Child" },
+      { value: "Sibling", label: "Sibling" },
+      { value: "Other", label: "Other" },
+    ],
+    []
+  );
 
-    setActionLoadingId(user.id);
-    setActionError("");
+  const nomineeStatusOptions = useMemo(
+    () => [
+      { value: "", label: "Any" },
+      { value: "completed", label: "Completed" },
+      { value: "incomplete", label: "Incomplete" },
+    ],
+    []
+  );
+
+  async function handleVerify(row) {
+    if (!window.confirm(`Verify KYC for ${row.username}?`)) return;
     try {
-      await axios.put(
-        `${API_BASE_URL}/api/admin/users/${user.id}`,
-        {
-          email: user.email,
-          mobile: user.mobile,
-          pinCode: user.pinCode,
-          district: user.district,
-          state: user.state,
-          status: user.status,
-          fullName: user.fullName,
-          address: user.address,
-          accountActive: user.accountActive,
-          kycStatus: status,
-        },
-        { headers }
-      );
-      loadAdminData();
-    } catch (err) {
-      setActionError(err?.response?.data?.message || err?.message || "Failed to update KYC status");
-    } finally {
-      setActionLoadingId(null);
+      await API.patch(`/admin/kyc/${row.user_id}/verify/`);
+      setReloadKeyKyc((k) => k + 1);
+    } catch (e) {
+      alert(e?.response?.data?.detail || "Failed to verify KYC");
     }
-  };
+  }
 
-  // KYC DataGrid columns
+  async function handleReject(row) {
+    if (!window.confirm(`Reject KYC for ${row.username}?`)) return;
+    try {
+      await API.patch(`/admin/kyc/${row.user_id}/reject/`);
+      setReloadKeyKyc((k) => k + 1);
+    } catch (e) {
+      alert(e?.response?.data?.detail || "Failed to reject KYC");
+    }
+  }
+
+  // KYC DataGrid columns (responsive with flex + minWidth)
   const columnsKyc = useMemo(
     () => [
-      { field: "id", headerName: "User ID", minWidth: 100, flex: 0.5 },
-      { field: "username", headerName: "Username", minWidth: 140, flex: 1 },
-      { field: "fullName", headerName: "Full Name", minWidth: 180, flex: 1.2 },
-      { field: "mobile", headerName: "Mobile", minWidth: 130, flex: 0.8 },
-      { field: "pinCode", headerName: "Pincode", minWidth: 110, flex: 0.6 },
+      { field: "user_id", headerName: "UserID", minWidth: 110 },
+      { field: "username", headerName: "Username", minWidth: 160, flex: 1 },
+      { field: "full_name", headerName: "Full Name", minWidth: 200, flex: 1 },
+      { field: "phone", headerName: "Phone", minWidth: 140 },
+      ...(isFranchise
+        ? [
+            {
+              field: "category",
+              headerName: "Franchise Level",
+              minWidth: 190,
+              renderCell: (params) => categoryLabel(params?.row?.category),
+              valueGetter: (_, row) => categoryLabel(row?.category),
+            },
+          ]
+        : []),
+      { field: "pincode", headerName: "Pincode", minWidth: 120 },
       {
-        field: "bankName",
-        headerName: "Bank Details",
-        minWidth: 220,
-        flex: 1.5,
+        field: "bank",
+        headerName: "Bank",
+        minWidth: 200,
         renderCell: (params) => {
           const r = params?.row || {};
-          return r.bankName ? `${r.bankName} (${r.ifscCode || ""})` : <span style={{ color: "var(--admin-muted)", fontStyle: "italic" }}>Not Provided</span>;
+          return r.bank_name ? `${r.bank_name} (${r.ifsc_code})` : "";
+        },
+        valueGetter: (_, row) => {
+          if (!row) return "";
+          return row.bank_name ? `${row.bank_name} (${row.ifsc_code})` : "";
         },
       },
       {
-        field: "bankAccountNumber",
+        field: "bank_account_number",
         headerName: "Account No.",
         minWidth: 160,
-        flex: 1,
         renderCell: (params) => {
-          return params?.row?.bankAccountNumber || <span style={{ color: "var(--admin-muted)", fontStyle: "italic" }}>Not Provided</span>;
+          const v = params?.row?.bank_account_number || "";
+          const s = String(v || "");
+          if (!s) return "";
+          if (s.length <= 4) return s;
+          return s;
         },
+        valueGetter: (_, row) => (row && row.bank_account_number) || "",
       },
       {
-        field: "kycStatus",
-        headerName: "KYC Status",
-        minWidth: 140,
-        flex: 1,
+        field: "verified",
+        headerName: "Status",
+        minWidth: 120,
         align: "center",
         headerAlign: "center",
         renderCell: (params) => {
-          const status = params?.row?.kycStatus || "UNSUBMITTED";
-          let color = "var(--admin-muted)";
-          let bg = "var(--admin-soft)";
-          if (status === "VERIFIED") {
-            color = "var(--admin-success)";
-            bg = "rgba(16, 185, 129, 0.08)";
-          } else if (status === "SUBMITTED" || status === "PENDING") {
-            color = "var(--admin-warning)";
-            bg = "rgba(245, 158, 11, 0.08)";
-          } else if (status === "REOPENED") {
-            color = "var(--admin-danger)";
-            bg = "rgba(239, 110, 110, 0.08)";
-          }
-          return <Badge color={color} bg={bg}>{status}</Badge>;
+          const verified = !!params?.row?.verified;
+          return verified ? <Badge color="#065f46" bg="#d1fae5">Verified</Badge> : <Badge>Pending</Badge>;
         },
+        valueFormatter: (v) => (!!v ? "Verified" : "Pending"),
       },
       {
         field: "__actions",
         headerName: "Actions",
         sortable: false,
         filterable: false,
-        minWidth: 220,
-        flex: 1.5,
+        minWidth: 200,
         align: "center",
         headerAlign: "center",
         renderCell: (params) => {
           const r = params?.row || {};
-          const status = r.kycStatus || "UNSUBMITTED";
-          const isLoading = actionLoadingId === r.id;
-
           return (
-            <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "center", height: "100%" }}>
+             <div style={{ display: "flex", gap: 8, width: "100%", height: "100%", alignItems: "center", justifyContent: "center", flexWrap: "wrap" }}>
               <button
-                onClick={() => onViewKyc(r)}
-                title="View KYC Details"
-                className="admin-secondary-btn"
+                onClick={() => setSelectedKycRow(r)}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "6px 10px",
-                  borderRadius: 8,
-                  fontSize: 12,
-                  minHeight: "30px",
+                  padding: "4px 8px",
+                  background: "#3b82f6",
+                  color: "#fff",
+                  border: 0,
+                  borderRadius: 6,
                   cursor: "pointer",
                 }}
               >
-                <LuEye style={{ marginRight: 4 }} /> Details
+                Details
               </button>
-
-              {status !== "VERIFIED" && (
+              {!r.verified ? (
                 <button
-                  onClick={() => handleUpdateKycStatus(r, "VERIFIED")}
-                  disabled={isLoading}
-                  title="Approve KYC"
+                  onClick={() => handleVerify(r)}
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    fontSize: 12,
-                    background: "var(--admin-success)",
+                    padding: "4px 8px",
+                    background: "#059669",
                     color: "#fff",
-                    border: "none",
-                    minHeight: "30px",
-                    fontWeight: 600,
+                    border: 0,
+                    borderRadius: 6,
                     cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(16, 185, 129, 0.15)",
                   }}
                 >
-                  <LuCheck style={{ marginRight: 4 }} /> Verify
+                  Verify
                 </button>
-              )}
-
-              {status !== "REOPENED" && status !== "UNSUBMITTED" && (
-                <button
-                  onClick={() => handleUpdateKycStatus(r, "REOPENED")}
-                  disabled={isLoading}
-                  title="Reject/Reopen KYC"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    fontSize: 12,
-                    background: "var(--admin-danger)",
-                    color: "#fff",
-                    border: "none",
-                    minHeight: "30px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    boxShadow: "0 2px 6px rgba(239, 68, 68, 0.15)",
-                  }}
-                >
-                  <LuX style={{ marginRight: 4 }} /> Reject
-                </button>
-              )}
+              ) : null}
+              <button
+                onClick={() => handleReject(r)}
+                style={{
+                  padding: "4px 8px",
+                  background: "#ef4444",
+                  color: "#fff",
+                  border: 0,
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                Reject
+              </button>
             </div>
           );
         },
       },
     ],
-    [onViewKyc, actionLoadingId]
+    [isFranchise]
   );
 
-  // Client-side local data grid fetcher
+  // Nominee DataGrid columns (aligned with accounts.UserNomineeSerializer; admin endpoint may include user fields optionally)
+  const columnsNominee = useMemo(
+    () => [
+      // Show user info if admin endpoint provides it; falls back to empty if not present
+      { field: "user_id", headerName: "UserID", minWidth: 100 },
+      { field: "username", headerName: "Username", minWidth: 160, flex: 1 },
+
+      // Core nominee fields from accounts.UserNomineeSerializer
+      { field: "name", headerName: "Nominee Name", minWidth: 200, flex: 1 },
+      { field: "relationship", headerName: "Relationship", minWidth: 140 },
+      { field: "phone", headerName: "Phone", minWidth: 140 },
+      { field: "share_percent", headerName: "Share %", minWidth: 100, align: "right", headerAlign: "right",
+        valueFormatter: (v) => (v == null || v === "" ? "" : `${v}%`) },
+
+      // Timestamps
+      { field: "updated_at", headerName: "Updated At", minWidth: 180 },
+      { field: "created_at", headerName: "Created At", minWidth: 180 },
+
+      // Optional status column if backend provides
+      { field: "status", headerName: "Status", minWidth: 120, align: "center", headerAlign: "center",
+        renderCell: (params) => {
+          const status = String(params?.row?.status || "").toLowerCase();
+          if (status === "completed") return <Badge color="#065f46" bg="#d1fae5">Completed</Badge>;
+          if (status === "incomplete") return <Badge color="#92400e" bg="#fef3c7">Incomplete</Badge>;
+          return String(params?.row?.status || "");
+        },
+      },
+    ],
+    []
+  );
+
+  // Server-side fetchers
   const fetcherKyc = useCallback(
     async ({ page, pageSize, search, ordering }) => {
-      // 1. Filter local user records client side
-      let filtered = (users || []).map((u) => ({
-        ...u,
-        kycStatus: u.kycStatus || "UNSUBMITTED",
-      }));
-
-      // Apply tab filters
-      if (kycFilters.status) {
-        filtered = filtered.filter((u) => u.kycStatus === kycFilters.status);
+      const params = { page, page_size: pageSize };
+      params.audience = isFranchise ? "franchise" : "consumer";
+      // Merge active filters (omit empty)
+      Object.entries(kycFilters).forEach(([k, v]) => {
+        if (v !== null && v !== undefined && String(v).trim() !== "") {
+          params[k] = v;
+        }
+      });
+      // Map quick search to backend-supported "user" filter
+      if (search && String(search).trim()) {
+        params.user = String(search).trim();
       }
+      if (ordering) params.ordering = ordering;
 
-      // Apply quick search and input search filter
-      const textFilter = (search || kycFilters.user || "").trim().toLowerCase();
-      if (textFilter) {
-        filtered = filtered.filter(
-          (u) =>
-            String(u.id).toLowerCase().includes(textFilter) ||
-            String(u.username || "").toLowerCase().includes(textFilter) ||
-            String(u.fullName || "").toLowerCase().includes(textFilter) ||
-            String(u.mobile || "").toLowerCase().includes(textFilter) ||
-            String(u.email || "").toLowerCase().includes(textFilter)
-        );
-      }
-
-      // Apply state filter
-      if (kycFilters.state) {
-        const sf = kycFilters.state.toLowerCase();
-        filtered = filtered.filter((u) => String(u.state || "").toLowerCase().includes(sf));
-      }
-
-      // Apply pincode filter
-      if (kycFilters.pincode) {
-        const pf = kycFilters.pincode.toLowerCase();
-        filtered = filtered.filter((u) => String(u.pinCode || "").toLowerCase().includes(pf));
-      }
-
-      // Apply sorting ordering
-      if (ordering) {
-        const desc = ordering.startsWith("-");
-        const field = desc ? ordering.slice(1) : ordering;
-        filtered.sort((a, b) => {
-          let valA = a[field] ?? "";
-          let valB = b[field] ?? "";
-          if (typeof valA === "string") valA = valA.toLowerCase();
-          if (typeof valB === "string") valB = valB.toLowerCase();
-
-          if (valA < valB) return desc ? 1 : -1;
-          if (valA > valB) return desc ? -1 : 1;
-          return 0;
-        });
-      }
-
-      // Calculate pagination slice
-      const count = filtered.length;
-      const start = (page - 1) * pageSize;
-      const results = filtered.slice(start, start + pageSize);
-
+      const res = await API.get("/admin/kyc/", { params });
+      const data = res?.data;
+      const results = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      const count = typeof data?.count === "number" ? data.count : results.length;
       return { results, count };
     },
-    [users, kycFilters, reloadKeyKyc]
+    [isFranchise, kycFilters, reloadKeyKyc]
+  );
+
+  // Note: This expects an admin endpoint to list nominee records. If not present yet,
+  // backend should implement GET /admin/nominees/ returning {count, results}.
+  // We map search to both user and name so backend can choose which to honor.
+  const fetcherNominee = useCallback(
+    async ({ page, pageSize, search, ordering }) => {
+      const params = { page, page_size: pageSize };
+      Object.entries(nomineeFilters).forEach(([k, v]) => {
+        if (v !== null && v !== undefined && String(v).trim() !== "") {
+          params[k] = v;
+        }
+      });
+      if (search && String(search).trim()) {
+        params.user = String(search).trim();
+        params.name = String(search).trim();
+      }
+      if (ordering) params.ordering = ordering;
+
+      const res = await API.get("/admin/nominees/", { params });
+      const data = res?.data;
+      const results = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      const count = typeof data?.count === "number" ? data.count : results.length;
+      return { results, count };
+    },
+    [nomineeFilters, reloadKeyNominee]
   );
 
   const toolbar = (
-    <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: "13px", color: "var(--admin-text-light)", fontWeight: 500 }}>Density:</span>
-        <div style={{ display: "inline-flex", border: "1px solid var(--admin-border)", borderRadius: 8, overflow: "hidden", background: "#fff" }}>
-          {["comfortable", "standard", "compact"].map((d) => (
-            <button
-              key={d}
-              onClick={() => setDensity(d)}
-              style={{
-                padding: "6px 12px",
-                fontSize: 12,
-                background: density === d ? "var(--admin-primary)" : "#fff",
-                color: density === d ? "#fff" : "var(--admin-text)",
-                border: 0,
-                cursor: "pointer",
-                fontWeight: 500,
-                borderLeft: d !== "comfortable" ? "1px solid var(--admin-border)" : "none",
-                textTransform: "capitalize",
-              }}
-            >
-              {d}
-            </button>
-          ))}
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <label style={{ fontSize: 12, color: "#64748b" }}>Density</label>
+        <div style={{ display: "inline-flex", border: "1px solid #e5e7eb", borderRadius: 8, overflow: "hidden" }}>
+          <button
+            onClick={() => setDensity("comfortable")}
+            aria-pressed={density === "comfortable"}
+            style={{
+              padding: "6px 10px",
+              fontSize: 12,
+              background: density === "comfortable" ? "#0f172a" : "#fff",
+              color: density === "comfortable" ? "#fff" : "#0f172a",
+              border: 0,
+              cursor: "pointer",
+            }}
+          >
+            Comfortable
+          </button>
+          <button
+            onClick={() => setDensity("standard")}
+            aria-pressed={density === "standard"}
+            style={{
+              padding: "6px 10px",
+              fontSize: 12,
+              background: density === "standard" ? "#0f172a" : "#fff",
+              color: density === "standard" ? "#fff" : "#0f172a",
+              border: 0,
+              borderLeft: "1px solid #e5e7eb",
+              cursor: "pointer",
+            }}
+          >
+            Standard
+          </button>
+          <button
+            onClick={() => setDensity("compact")}
+            aria-pressed={density === "compact"}
+            style={{
+              padding: "6px 10px",
+              fontSize: 12,
+              background: density === "compact" ? "#0f172a" : "#fff",
+              color: density === "compact" ? "#fff" : "#0f172a",
+              border: 0,
+              borderLeft: "1px solid #e5e7eb",
+              cursor: "pointer",
+            }}
+          >
+            Compact
+          </button>
         </div>
       </div>
       <button
-        onClick={() => {
-          loadAdminData();
-          setReloadKeyKyc((k) => k + 1);
-        }}
-        className="admin-secondary-btn"
+        onClick={() => (viewMode === "kyc" ? setReloadKeyKyc((k) => k + 1) : setReloadKeyNominee((k) => k + 1))}
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
           padding: "8px 12px",
           borderRadius: 8,
-          fontSize: 13,
+          border: "1px solid #e2e8f0",
+          background: "#fff",
+          color: "#0f172a",
           cursor: "pointer",
           fontWeight: 600,
         }}
       >
-        <LuRefreshCcw size={14} /> Refresh
+        Refresh
       </button>
     </div>
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Top Banner and Tabs */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", borderBottom: "1px solid var(--admin-border)", paddingBottom: "16px" }}>
+    <div>
+      {/* Page header + view toggle */}
+      <div style={{ marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <h2 style={{ margin: 0, color: "var(--admin-text)", fontSize: "20px", fontWeight: 700 }}>
-            {viewMode === "kyc" ? "KYC Verification List" : "Nominee Management"}
-          </h2>
-          <div style={{ color: "var(--admin-muted)", fontSize: 13, marginTop: 4 }}>
+          <h2 style={{ margin: 0, color: "#0f172a" }}>{viewMode === "kyc" ? (isFranchise ? "Franchise KYC Verification" : "KYC Verification") : "Nominee Details"}</h2>
+          <div style={{ color: "#64748b", fontSize: 13 }}>
             {viewMode === "kyc"
-              ? "Review and verify customer bank information, ID documents, and account status."
-              : "Review consumer nominee profiles and share allocations."}
+              ? isFranchise
+                ? "Review only franchise hierarchy KYC records. Consumer KYC is excluded from this workspace."
+                : "Review and decide consumer KYC. Use filters to find records quickly, and quick filter in the table toolbar."
+              : "Review consumer nominee details. Use filters to find records quickly, and quick filter in the table toolbar."}
           </div>
         </div>
-        <div style={{ display: "inline-flex", border: "1px solid var(--admin-border)", borderRadius: 10, overflow: "hidden", background: "#fff", padding: "3px" }}>
+        <div
+          role="tablist"
+          aria-label="View mode"
+          style={{ display: "inline-flex", border: "1px solid #e5e7eb", borderRadius: 10, overflow: "hidden" }}
+        >
           <button
+            role="tab"
+            aria-selected={viewMode === "kyc"}
             onClick={() => setViewMode("kyc")}
             style={{
-              padding: "8px 16px",
+              padding: "8px 14px",
               fontSize: 13,
-              background: viewMode === "kyc" ? "var(--admin-primary)" : "#fff",
-              color: viewMode === "kyc" ? "#fff" : "var(--admin-text)",
+              background: viewMode === "kyc" ? "#0f172a" : "#fff",
+              color: viewMode === "kyc" ? "#fff" : "#0f172a",
               border: 0,
-              borderRadius: "8px",
               cursor: "pointer",
               fontWeight: 600,
             }}
           >
-            KYC Lists
+            KYC
           </button>
           <button
+            role="tab"
+            aria-selected={viewMode === "nominee"}
             onClick={() => setViewMode("nominee")}
             style={{
-              padding: "8px 16px",
+              padding: "8px 14px",
               fontSize: 13,
-              background: viewMode === "nominee" ? "var(--admin-primary)" : "#fff",
-              color: viewMode === "nominee" ? "#fff" : "var(--admin-text)",
+              background: viewMode === "nominee" ? "#0f172a" : "#fff",
+              color: viewMode === "nominee" ? "#fff" : "#0f172a",
               border: 0,
-              borderRadius: "8px",
+              borderLeft: "1px solid #e5e7eb",
               cursor: "pointer",
               fontWeight: 600,
             }}
           >
-            Nominees
+            Nominee
           </button>
         </div>
       </div>
 
-      {actionError && (
-        <div className="admin-error" style={{ padding: "10px 14px", borderRadius: 8 }}>
-          {actionError}
+      {/* Filters */}
+      {viewMode === "kyc" ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <Select
+            label="Status"
+            value={kycFilters.status}
+            onChange={(v) => setKycF("status", v)}
+            options={statusOptions}
+          />
+          <TextInput
+            label="User"
+            value={kycFilters.user}
+            onChange={(v) => setKycF("user", v)}
+            placeholder="user id / username / name / phone"
+          />
+          <TextInput
+            label="State ID"
+            value={kycFilters.state}
+            onChange={(v) => setKycF("state", v)}
+            placeholder="numeric state id"
+          />
+          <TextInput
+            label="Pincode"
+            value={kycFilters.pincode}
+            onChange={(v) => setKycF("pincode", v)}
+            placeholder="contains"
+          />
+          {isFranchise ? (
+            <Select
+              label="Franchise Level"
+              value={kycFilters.category}
+              onChange={(v) => setKycF("category", v)}
+              options={FRANCHISE_CATEGORY_OPTIONS}
+            />
+          ) : null}
+          <TextInput
+            label="Updated From"
+            type="date"
+            value={kycFilters.date_from}
+            onChange={(v) => setKycF("date_from", v)}
+            placeholder=""
+          />
+          <TextInput
+            label="Updated To"
+            type="date"
+            value={kycFilters.date_to}
+            onChange={(v) => setKycF("date_to", v)}
+            placeholder=""
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <TextInput
+            label="User"
+            value={nomineeFilters.user}
+            onChange={(v) => setNomineeF("user", v)}
+            placeholder="user id / username (if supported by backend)"
+          />
+          <TextInput
+            label="Nominee Name"
+            value={nomineeFilters.name}
+            onChange={(v) => setNomineeF("name", v)}
+            placeholder="full or partial name"
+          />
+          <Select
+            label="Relationship"
+            value={nomineeFilters.relationship}
+            onChange={(v) => setNomineeF("relationship", v)}
+            options={nomineeRelationshipOptions}
+          />
+          <Select
+            label="Status"
+            value={nomineeFilters.status}
+            onChange={(v) => setNomineeF("status", v)}
+            options={nomineeStatusOptions}
+          />
+          <TextInput
+            label="Updated From"
+            type="date"
+            value={nomineeFilters.date_from}
+            onChange={(v) => setNomineeF("date_from", v)}
+            placeholder=""
+          />
+          <TextInput
+            label="Updated To"
+            type="date"
+            value={nomineeFilters.date_to}
+            onChange={(v) => setNomineeF("date_to", v)}
+            placeholder=""
+          />
         </div>
       )}
 
-      {/* View Content */}
+      {/* Table */}
       {viewMode === "kyc" ? (
-        <>
-          {/* KYC Filter Bar */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-              gap: 16,
-              background: "var(--admin-bg)",
-              padding: 16,
-              borderRadius: 12,
-              border: "1px solid var(--admin-border)",
-            }}
-          >
-            <Select
-              label="KYC Status"
-              value={kycFilters.status}
-              onChange={(v) => setKycF("status", v)}
-              options={statusOptions}
-            />
-            <TextInput
-              label="User Search"
-              value={kycFilters.user}
-              onChange={(v) => setKycF("user", v)}
-              placeholder="ID / Name / Mobile"
-            />
-            <TextInput
-              label="State"
-              value={kycFilters.state}
-              onChange={(v) => setKycF("state", v)}
-              placeholder="Filter by state"
-            />
-            <TextInput
-              label="Pincode"
-              value={kycFilters.pincode}
-              onChange={(v) => setKycF("pincode", v)}
-              placeholder="Filter by pincode"
-            />
-          </div>
-
-          {/* KYC DataTable */}
-          <DataTable
-            columns={columnsKyc}
-            fetcher={fetcherKyc}
-            density={density}
-            toolbar={toolbar}
-            checkboxSelection={false}
-            instanceKey="kyc"
-            extraKey={String(reloadKeyKyc) + "_" + String(users.length) + "_" + JSON.stringify(kycFilters)}
-          />
-        </>
+        <DataTable
+          columns={columnsKyc}
+          fetcher={fetcherKyc}
+          density={density}
+          toolbar={toolbar}
+          checkboxSelection={true}
+          onSelectionChange={() => {}}
+          instanceKey="kyc"
+          extraKey={String(reloadKeyKyc)}
+        />
       ) : (
-        /* Nominee Placeholder matching standard theme */
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "60px 20px",
-            background: "var(--admin-bg)",
-            borderRadius: 12,
-            border: "1px dashed var(--admin-border)",
-            textAlign: "center",
-          }}
+        <DataTable
+          columns={columnsNominee}
+          fetcher={fetcherNominee}
+          density={density}
+          toolbar={toolbar}
+          checkboxSelection={true}
+          onSelectionChange={() => {}}
+          instanceKey="nominee"
+          extraKey={String(reloadKeyNominee)}
+        />
+      )}
+
+      {/* Aadhaar Details Dialog */}
+      {selectedKycRow && (
+        <Dialog
+          open={!!selectedKycRow}
+          onClose={() => setSelectedKycRow(null)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
         >
-          <span style={{ fontSize: "40px", marginBottom: "12px" }}>📋</span>
-          <h3 style={{ margin: "0 0 6px 0", color: "var(--admin-text)", fontSize: "16px", fontWeight: 600 }}>
-            Nominee details are not active
-          </h3>
-          <p style={{ margin: 0, color: "var(--admin-muted)", fontSize: "13px", maxWidth: "360px" }}>
-            Nominee management and registration records are not configured in the tri-consumer workspace.
-          </p>
-        </div>
+          <DialogTitle sx={{ fontWeight: 800 }}>KYC Profile Details</DialogTitle>
+          <DialogContent dividers>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={3} sx={{ display: "flex", justifyContent: "center" }}>
+                {selectedKycRow.photo ? (
+                  <Avatar
+                    src={`data:image/jpeg;base64,${selectedKycRow.photo}`}
+                    variant="rounded"
+                    sx={{ width: 110, height: 130, border: "2px solid #ccc" }}
+                  />
+                ) : (
+                  <Avatar variant="rounded" sx={{ width: 110, height: 130, bgcolor: "#3b82f6" }}>
+                    {selectedKycRow.kyc_name ? selectedKycRow.kyc_name.charAt(0) : "U"}
+                  </Avatar>
+                )}
+              </Grid>
+              <Grid item xs={12} sm={9}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="text.secondary">Name (as per Aadhaar)</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{selectedKycRow.kyc_name || selectedKycRow.full_name || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">DOB</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedKycRow.dob || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={6} md={3}>
+                    <Typography variant="caption" color="text.secondary">Gender</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedKycRow.gender || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="text.secondary">Aadhaar Last 4</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>xxxx-xxxx-{selectedKycRow.aadhaar_last4 || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="text.secondary">PAN Number</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedKycRow.pan_number || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="text.secondary">Mobile</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedKycRow.kyc_mobile || selectedKycRow.phone || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="caption" color="text.secondary">Email</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedKycRow.kyc_email || "N/A"}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary">Address</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>{selectedKycRow.kyc_address || "N/A"}</Typography>
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            {selectedKycRow.issued_documents_json && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1 }}>Linked Issued Documents</Typography>
+                <Paper variant="outlined" sx={{ borderRadius: 2 }}>
+                  <List dense>
+                    {(() => {
+                      try {
+                        const docs = JSON.parse(selectedKycRow.issued_documents_json);
+                        const items = docs?.items || [];
+                        if (items.length === 0) return <ListItem><ListItemText primary="No issued documents." /></ListItem>;
+                        return items.map((doc, idx) => (
+                          <ListItem key={idx} divider={idx < items.length - 1}>
+                            <ListItemText
+                              primary={doc.name}
+                              secondary={`URI: ${doc.uri} | Type: ${doc.type || "Document"}`}
+                              primaryTypographyProps={{ fontWeight: 700 }}
+                            />
+                          </ListItem>
+                        ));
+                      } catch {
+                        return <ListItem><ListItemText primary="No documents." /></ListItem>;
+                      }
+                    })()}
+                  </List>
+                </Paper>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setSelectedKycRow(null)} color="inherit">Close</Button>
+            {!selectedKycRow.verified && (
+              <>
+                <Button
+                  onClick={async () => {
+                    if (window.confirm(`Reject KYC for ${selectedKycRow.username}?`)) {
+                      await handleReject(selectedKycRow);
+                      setSelectedKycRow(null);
+                    }
+                  }}
+                  color="error"
+                  variant="outlined"
+                >
+                  Reject
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (window.confirm(`Verify KYC for ${selectedKycRow.username}?`)) {
+                      await handleVerify(selectedKycRow);
+                      setSelectedKycRow(null);
+                    }
+                  }}
+                  color="success"
+                  variant="contained"
+                >
+                  Verify & Approve
+                </Button>
+              </>
+            )}
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   );

@@ -210,6 +210,7 @@ export default function ProfilePage() {
         {/* Quick Links */}
         <TriCard noPadding sx={{ p: '0 16px' }}>
           <NavItem icon={LuShoppingBag} title="My Orders" onClick={() => navigate('/consumer-ecommerce/my-orders')} />
+          <NavItem icon={LuUser} title="KYC Verification" onClick={() => navigate('/consumer-ecommerce/kyc')} />
           <NavItem icon={LuLock} title="Change Password" onClick={() => { setErrorMsg(''); setActiveModal('password'); }} />
           <NavItem icon={LuLogOut} title="Log Out" color="#ef4444" onClick={() => setActiveModal('logout')} />
         </TriCard>

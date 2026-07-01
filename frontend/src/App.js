@@ -28,6 +28,7 @@ import MyOrdersPage from "./pages/consumer-ecommerce/pages/MyOrdersPage";
 import OrdersPage from "./pages/consumer-ecommerce/pages/OrdersPage";
 import OrderDetailsPage from "./pages/consumer-ecommerce/pages/OrderDetailsPage";
 import TrackOrderPage from "./pages/consumer-ecommerce/pages/TrackOrderPage";
+import ConsumerKYC from "./pages/consumer-ecommerce/pages/ConsumerKYC";
 
 function App() {
   return (
@@ -67,6 +68,7 @@ function App() {
           <Route path="/consumer-ecommerce/tripickdrop" element={<TriPickDropPage />} />
           <Route path="/business/inventory-billing" element={<TriInventoryBillingPage />} />
           <Route path="/consumer-ecommerce/profile" element={<ProfilePage />} />
+          <Route path="/consumer-ecommerce/kyc" element={<ConsumerKYC />} />
           
           {/* Catch all to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />

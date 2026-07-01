@@ -79,10 +79,16 @@ public class KycProfileService {
         String documentsJson = digiLockerService.getIssuedDocuments(accessToken);
         profile.setIssuedDocumentsJson(documentsJson);
 
-        // Update status to PENDING and clear state (prevents token reuse)
-        profile.setStatus("PENDING");
+        // Update status to VERIFIED and clear state (prevents token reuse)
+        profile.setStatus("VERIFIED");
         profile.setState(""); // clear state
+        profile.setRemarks("Auto-verified via DigiLocker");
+        profile.setVerifiedAt(Instant.now());
+        profile.setVerifiedById(0L); // System auto-verified ID
         repository.save(profile);
+
+        // Sync flags to legacy Django tables to unlock gated features immediately
+        repository.syncToLegacyTables(profile.getUserId(), "VERIFIED", 0L);
 
         return profile;
     }

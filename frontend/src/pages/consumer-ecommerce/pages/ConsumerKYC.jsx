@@ -208,7 +208,7 @@ export default function ConsumerKYC() {
     const params = new URLSearchParams(window.location.search);
     const callback = params.get("kyc_callback");
     if (callback === "success") {
-      setMessage("DigiLocker verification completed! Your profile is pending admin approval.");
+      setMessage("DigiLocker verification completed! Your identity is verified and withdrawals are unlocked.");
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (callback === "error") {
       const errorMsg = params.get("error") || "Unknown error";
@@ -486,7 +486,7 @@ export default function ConsumerKYC() {
                               DigiLocker Verification Completed
                             </Typography>
                             <Typography sx={{ fontSize: '11.5px', color: '#0f172a', fontWeight: 500, lineHeight: 1.4 }}>
-                              Your Aadhaar has been verified successfully. Your profile is pending admin approval.
+                              Your Aadhaar has been verified successfully. Core transaction limits and wallet withdrawals are fully unlocked.
                             </Typography>
                           </Box>
                         </Stack>

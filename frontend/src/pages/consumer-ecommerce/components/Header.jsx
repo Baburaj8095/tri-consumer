@@ -151,8 +151,14 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
         setProfile(data);
         localStorage.setItem('triConsumerUser', JSON.stringify(data));
       }
-    }).catch(() => {
-      if (!cancelled) setProfile((prev) => prev || null);
+    }).catch((err) => {
+      if (cancelled) return;
+      if (err.response?.status === 401) {
+        clearAuth();
+        navigate('/login');
+      } else {
+        setProfile((prev) => prev || null);
+      }
     });
 
     return () => {
@@ -703,6 +709,20 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 <div>
                   <span>Wallet Balance</span>
                   <strong>{displayProfile.walletBalance}</strong>
+                </div>
+              </div>
+              <div 
+                className="ce-profile-list-row"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate('/consumer-ecommerce/kyc');
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <LuUser className="ce-primary-text" />
+                <div>
+                  <span>KYC Verification</span>
+                  <strong>Verify Identity / Aadhaar</strong>
                 </div>
               </div>
               <button

@@ -104,6 +104,10 @@ export default function ConsumerKYC() {
       }
     } catch (err) {
       console.error("Failed to fetch DigiLocker status", err);
+      if (err.response?.status === 401) {
+        clearAuth();
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
@@ -120,7 +124,13 @@ export default function ConsumerKYC() {
         });
       }
     } catch (err) {
-      console.error("Failed to fetch legacy KYC data", err);
+      if (err.response?.status !== 404) {
+        console.error("Failed to fetch legacy KYC data", err);
+      }
+      if (err.response?.status === 401) {
+        clearAuth();
+        navigate('/login');
+      }
     }
   };
 
@@ -133,7 +143,13 @@ export default function ConsumerKYC() {
         setNominees(res.data.results);
       }
     } catch (err) {
-      console.error("Failed to fetch nominees", err);
+      if (err.response?.status !== 404) {
+        console.error("Failed to fetch nominees", err);
+      }
+      if (err.response?.status === 401) {
+        clearAuth();
+        navigate('/login');
+      }
     }
   };
 
@@ -149,6 +165,10 @@ export default function ConsumerKYC() {
       }
     } catch (err) {
       setError("Failed to initiate DigiLocker KYC: " + (err.response?.data?.message || err.message));
+      if (err.response?.status === 401) {
+        clearAuth();
+        navigate('/login');
+      }
     } finally {
       setSaving(false);
     }

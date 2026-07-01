@@ -705,17 +705,46 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                   <p style={{ margin: '2px 0 6px 0', fontSize: '12px', opacity: 0.9, fontWeight: 500 }}>
                     {displayProfile.membership}
                   </p>
-                  <span style={{
-                    display: 'inline-block',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.4)',
-                    borderRadius: '20px',
-                    padding: '2px 8px',
-                    fontSize: '11px',
-                    fontWeight: 700
-                  }}>
-                    Verified Consumer
-                  </span>
+                  {profile?.kycStatus === 'VERIFIED' ? (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#10b981',
+                      borderRadius: '20px',
+                      padding: '3px 10px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      👑 KYC Verified
+                    </span>
+                  ) : profile?.kycStatus === 'PENDING' ? (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#f59e0b',
+                      borderRadius: '20px',
+                      padding: '3px 10px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      ⏳ KYC Pending Approval
+                    </span>
+                  ) : (
+                    <span style={{
+                      display: 'inline-block',
+                      background: '#ef4444',
+                      borderRadius: '20px',
+                      padding: '3px 10px',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: '#ffffff',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                    }}>
+                      ⚠️ KYC Unverified
+                    </span>
+                  )}
                 </div>
               </div>
 

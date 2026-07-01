@@ -618,123 +618,269 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
       {isMenuOpen && (
         <div className="ce-profile-menu-overlay" role="presentation" onClick={() => setIsMenuOpen(false)}>
           <aside className="ce-profile-menu" role="dialog" aria-label="User profile" onClick={(event) => event.stopPropagation()}>
-            <div className="ce-profile-menu-head">
-              <div className="ce-profile-avatar-wrap">
-                <div className="ce-profile-avatar">
-                  {profilePic ? (
-                    <img src={profilePic} alt="Profile" />
-                  ) : (
-                    <LuUser />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  className="ce-profile-edit-btn"
-                  onClick={() => setIsEditMenuOpen(true)}
-                  aria-label="Edit profile picture"
-                >
-                  <LuCamera />
-                </button>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
               <button className="ce-icon-btn ce-icon-btn-sm" onClick={() => setIsMenuOpen(false)} aria-label="Close profile menu">
                 <LuX />
               </button>
             </div>
 
-            <div className="ce-profile-main">
-              <p className="ce-profile-label">Profile</p>
-              <h2 className="ce-profile-name">{displayProfile.name}</h2>
-              <p className="ce-profile-subtitle">{displayProfile.membership}</p>
-              <Link 
-                to="/consumer-ecommerce/profile" 
-                className="ce-profile-settings-link" 
-                onClick={() => setIsMenuOpen(false)}
-                style={{ 
-                  display: 'inline-block', 
-                  marginTop: '8px', 
-                  color: '#2563eb', 
-                  fontWeight: 600, 
-                  fontSize: '13px', 
-                  textDecoration: 'underline' 
-                }}
-              >
-                Edit Account / Settings
-              </Link>
+            {/* Premium Header Card (Orange Gradient) */}
+            <div className="ce-profile-header-card" style={{
+              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+              borderRadius: '16px',
+              padding: '20px',
+              color: '#ffffff',
+              position: 'relative',
+              boxShadow: '0 10px 25px -5px rgba(249, 115, 22, 0.3)',
+              marginBottom: '20px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ position: 'relative' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    border: '3px solid #ffffff',
+                    overflow: 'hidden',
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'rgba(255, 255, 255, 0.2)'
+                  }}>
+                    {profilePic ? (
+                      <img src={profilePic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <LuUser size={28} color="#ffffff" />
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditMenuOpen(true)}
+                    style={{
+                      position: 'absolute',
+                      bottom: '-4px',
+                      right: '-4px',
+                      background: '#ffffff',
+                      color: '#f97316',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '22px',
+                      height: '22px',
+                      display: 'grid',
+                      placeItems: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 2px 5px rgba(0,0,0,0.15)'
+                    }}
+                  >
+                    <LuCamera size={12} />
+                  </button>
+                </div>
+
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#ffffff' }}>
+                      {displayProfile.name}
+                    </h3>
+                  </div>
+                  <p style={{ margin: '2px 0 6px 0', fontSize: '12px', opacity: 0.9, fontWeight: 500 }}>
+                    {displayProfile.membership}
+                  </p>
+                  <span style={{
+                    display: 'inline-block',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    borderRadius: '20px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    fontWeight: 700
+                  }}>
+                    Verified Consumer
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.2)', paddingTop: '12px' }}>
+                <Link 
+                  to="/consumer-ecommerce/profile" 
+                  onClick={() => setIsMenuOpen(false)}
+                  style={{
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  Edit Account / Settings →
+                </Link>
+              </div>
             </div>
 
-            <div className="ce-profile-detail-grid">
-              <div className="ce-profile-detail">
-                <LuShoppingBag className="ce-primary-text" />
-                <span>ID Number</span>
-                <strong>{displayProfile.idNumber}</strong>
+            {/* 3-Column Stats Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '10px',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '12px 6px',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0'
+              }}>
+                <LuShoppingBag size={18} color="#f97316" style={{ marginBottom: '4px' }} />
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {displayProfile.idNumber}
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Member ID</div>
               </div>
-              <div className="ce-profile-detail">
-                <LuMapPin className="ce-primary-text" />
-                <span>Pin Code</span>
-                <strong>{displayProfile.pinCode}</strong>
+
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '12px 6px',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0'
+              }}>
+                <LuMapPin size={18} color="#f97316" style={{ marginBottom: '4px' }} />
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a' }}>
+                  {displayProfile.pinCode}
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Pin Code</div>
+              </div>
+
+              <div style={{
+                background: '#f8fafc',
+                borderRadius: '12px',
+                padding: '12px 6px',
+                textAlign: 'center',
+                border: '1px solid #e2e8f0'
+              }}>
+                <LuWallet size={18} color="#f97316" style={{ marginBottom: '4px' }} />
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {displayProfile.walletBalance}
+                </div>
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>Wallet</div>
               </div>
             </div>
 
-            <div className="ce-profile-list">
-              <div className="ce-profile-list-row">
-                <LuPhone className="ce-primary-text" />
-                <div>
-                  <span>Phone</span>
-                  <strong>{displayProfile.phone}</strong>
+            {/* Quick Actions (2-Column Grid) */}
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+                Quick Actions
+              </h4>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '12px'
+              }}>
+                <div 
+                  onClick={() => { setIsMenuOpen(false); navigate('/orders'); }}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    padding: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <LuShoppingBag size={20} color="#f97316" />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>My Orders</span>
+                  <span style={{ fontSize: '10px', color: '#64748b' }}>Track purchases</span>
+                </div>
+
+                <div 
+                  onClick={() => { setIsMenuOpen(false); navigate('/consumer-ecommerce/kyc'); }}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    padding: '14px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <LuUser size={20} color="#f97316" />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>KYC Verify</span>
+                  <span style={{ fontSize: '10px', color: '#64748b' }}>Aadhaar & Payout</span>
                 </div>
               </div>
-              <div className="ce-profile-list-row">
-                <LuMapPin className="ce-primary-text" />
-                <div>
-                  <span>Location</span>
-                  <strong>{displayProfile.city}</strong>
+            </div>
+
+            {/* Account Details & Info */}
+            <div style={{ marginBottom: '24px' }}>
+              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>
+                Account & Support
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  background: '#f8fafc',
+                  padding: '12px',
+                  borderRadius: '10px'
+                }}>
+                  <LuPhone size={16} color="#f97316" />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#64748b' }}>Phone</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>{displayProfile.phone}</div>
+                  </div>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  background: '#f8fafc',
+                  padding: '12px',
+                  borderRadius: '10px'
+                }}>
+                  <LuMapPin size={16} color="#f97316" />
+                  <div>
+                    <div style={{ fontSize: '10px', color: '#64748b' }}>Location</div>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>{displayProfile.city}</div>
+                  </div>
                 </div>
               </div>
-              <div 
-                className="ce-profile-list-row"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate('/orders');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <LuShoppingBag className="ce-primary-text" />
-                <div>
-                  <span>My Orders</span>
-                  <strong>View Transaction History</strong>
-                </div>
-              </div>
-              <div className="ce-profile-list-row">
-                <LuWallet className="ce-primary-text" />
-                <div>
-                  <span>Wallet Balance</span>
-                  <strong>{displayProfile.walletBalance}</strong>
-                </div>
-              </div>
-              <div 
-                className="ce-profile-list-row"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  navigate('/consumer-ecommerce/kyc');
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                <LuUser className="ce-primary-text" />
-                <div>
-                  <span>KYC Verification</span>
-                  <strong>Verify Identity / Aadhaar</strong>
-                </div>
-              </div>
+            </div>
+
+            {/* Logout Button */}
+            <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
               <button
                 type="button"
-                className="ce-profile-list-row ce-profile-list-logout"
+                className="ce-profile-list-logout"
                 onClick={handleLogoutClick}
-                style={{ width: '100%', border: '1px solid #FEE2E2', cursor: 'pointer', textAlign: 'left' }}
+                style={{
+                  width: '100%',
+                  border: '1px solid #fee2e2',
+                  borderRadius: '12px',
+                  padding: '14px',
+                  cursor: 'pointer',
+                  background: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  color: '#ef4444',
+                  fontWeight: 700,
+                  fontSize: '14px'
+                }}
               >
-                <LuLogOut />
-                <div>
-                  <strong style={{ color: '#EF4444' }}>Logout</strong>
-                </div>
+                <LuLogOut size={16} />
+                Logout
               </button>
             </div>
           </aside>

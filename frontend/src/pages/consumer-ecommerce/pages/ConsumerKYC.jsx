@@ -158,8 +158,9 @@ export default function ConsumerKYC() {
       setSaving(true);
       clearAlerts();
       const res = await axios.post(`${API_BASE_URL}/api/kyc/start`, {}, { headers: getHeaders() });
-      if (res?.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
+      const url = res?.data?.data?.authorization_url || res?.data?.authorization_url;
+      if (url) {
+        window.location.href = url;
       } else {
         setError("Failed to generate DigiLocker verification link.");
       }
@@ -276,16 +277,19 @@ export default function ConsumerKYC() {
 
   return (
     <TriAppShell bottomNavIndex={2} bg="background">
-      <TriHeader title="KYC Verification" />
+      <TriHeader title="KYC Verification" onBack={() => navigate(-1)} />
 
       <Container maxWidth="md" sx={{ py: 3, pb: 8 }}>
         {renderStatusHeader()}
 
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 4 }}>
           <Tabs
             value={tabIndex}
             onChange={(e, newVal) => setTabIndex(newVal)}
             textColor="inherit"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             TabIndicatorProps={{ sx: { bgcolor: PRIMARY } }}
           >
             <Tab label="Identity (DigiLocker)" icon={<Person />} iconPosition="start" sx={{ textTransform: "none", fontWeight: 700, "&.Mui-selected": { color: PRIMARY } }} />

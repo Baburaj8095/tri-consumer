@@ -83,7 +83,20 @@ public class UserRepository {
   }
 
   public Optional<User> findByUsername(String username) {
-    return username.contains("@") ? findByEmail(username) : findByMobile(username);
+    if (username == null || username.isBlank()) {
+      return Optional.empty();
+    }
+    if (username.contains("@")) {
+      return findByEmail(username);
+    }
+    // Try finding by mobile
+    Optional<User> userOpt = findByMobile(username);
+    if (userOpt.isPresent()) {
+      return userOpt;
+    }
+    // Fallback: try finding by the actual username column
+    List<User> users = jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.username = ?", this::mapUser, username);
+    return users.stream().findFirst();
   }
 
   public List<User> findAll() {

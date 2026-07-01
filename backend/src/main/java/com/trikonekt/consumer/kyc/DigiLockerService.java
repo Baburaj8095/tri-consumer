@@ -77,6 +77,7 @@ public class DigiLockerService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("code", code);
@@ -115,6 +116,7 @@ public class DigiLockerService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("refresh_token", refreshToken);
@@ -156,6 +158,7 @@ public class DigiLockerService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(accessToken);
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             ResponseEntity<JsonNode> response = restTemplate.exchange(profileUrl, HttpMethod.GET, entity, JsonNode.class);
@@ -194,6 +197,7 @@ public class DigiLockerService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(accessToken);
+            headers.set(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             ResponseEntity<String> response = restTemplate.exchange(documentsUrl, HttpMethod.GET, entity, String.class);

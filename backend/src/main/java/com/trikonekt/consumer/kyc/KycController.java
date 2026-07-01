@@ -91,8 +91,9 @@ public class KycController {
             }
 
             if (error != null && !error.isEmpty()) {
+                String encodedError = java.net.URLEncoder.encode(error, java.nio.charset.StandardCharsets.UTF_8);
                 return ResponseEntity.status(HttpStatus.FOUND)
-                    .location(URI.create(baseRedirectUrl + "?kyc_callback=error&error=" + error))
+                    .location(URI.create(baseRedirectUrl + "?kyc_callback=error&error=" + encodedError))
                     .build();
             }
 
@@ -108,8 +109,10 @@ public class KycController {
                 .location(URI.create(baseRedirectUrl + "?kyc_callback=success"))
                 .build();
         } catch (Exception e) {
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown callback error";
+            String encodedError = java.net.URLEncoder.encode(errorMsg, java.nio.charset.StandardCharsets.UTF_8);
             return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(baseRedirectUrl + "?kyc_callback=error&error=" + e.getMessage()))
+                .location(URI.create(baseRedirectUrl + "?kyc_callback=error&error=" + encodedError))
                 .build();
         }
     }

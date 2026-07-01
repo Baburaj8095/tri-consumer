@@ -24,8 +24,9 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
+    ex.printStackTrace();
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ApiResponse.fail("Unexpected server error"));
+        .body(ApiResponse.fail("Unexpected server error: " + ex.getMessage()));
   }
 }
 

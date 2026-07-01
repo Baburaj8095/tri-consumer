@@ -32,11 +32,15 @@ public class KycProfileService {
         });
 
         String state = UUID.randomUUID().toString();
+        String codeVerifier = PkceUtil.generateCodeVerifier();
+        String codeChallenge = PkceUtil.generateCodeChallenge(codeVerifier);
+
         profile.setState(state);
+        profile.setCodeVerifier(codeVerifier);
         profile.setStatus("IN_PROGRESS");
         repository.save(profile);
 
-        return digiLockerService.generateAuthorizationUrl(state);
+        return digiLockerService.generateAuthorizationUrl(state, codeChallenge);
     }
 
     @Transactional
@@ -45,7 +49,7 @@ public class KycProfileService {
             .orElseThrow(() -> new RuntimeException("Invalid state token. Verification flow expired or hijacked."));
 
         // Exchange code for tokens
-        Map<String, String> tokens = digiLockerService.exchangeCodeForTokens(code);
+        Map<String, String> tokens = digiLockerService.exchangeCodeForTokens(code, profile.getCodeVerifier());
         String accessToken = tokens.get("access_token");
         String refreshToken = tokens.get("refresh_token");
         String digiLockerId = tokens.get("digilockerid");

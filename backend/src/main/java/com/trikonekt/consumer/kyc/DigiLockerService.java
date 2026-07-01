@@ -52,7 +52,7 @@ public class DigiLockerService {
         return "mock".equalsIgnoreCase(clientId) || clientId.isBlank();
     }
 
-    public String generateAuthorizationUrl(String state) {
+    public String generateAuthorizationUrl(String state, String codeChallenge) {
         if (isMockMode()) {
             // Redirect internally to the mock handler route
             return "/api/kyc/callback?code=mock_code_12345&state=" + state;
@@ -60,10 +60,12 @@ public class DigiLockerService {
         return authorizeUrl + "?response_type=code"
                 + "&client_id=" + clientId
                 + "&redirect_uri=" + redirectUri
-                + "&state=" + state;
+                + "&state=" + state
+                + "&code_challenge=" + codeChallenge
+                + "&code_challenge_method=S256";
     }
 
-    public Map<String, String> exchangeCodeForTokens(String code) {
+    public Map<String, String> exchangeCodeForTokens(String code, String codeVerifier) {
         if (isMockMode() || code.startsWith("mock_")) {
             Map<String, String> tokens = new HashMap<>();
             tokens.put("access_token", "mock_access_token_" + System.currentTimeMillis());
@@ -82,6 +84,9 @@ public class DigiLockerService {
             map.add("client_id", clientId);
             map.add("client_secret", clientSecret);
             map.add("redirect_uri", redirectUri);
+            if (codeVerifier != null && !codeVerifier.isBlank()) {
+                map.add("code_verifier", codeVerifier);
+            }
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
             ResponseEntity<JsonNode> response = restTemplate.postForEntity(tokenUrl, request, JsonNode.class);

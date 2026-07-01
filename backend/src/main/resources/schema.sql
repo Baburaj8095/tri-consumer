@@ -93,6 +93,10 @@ CREATE TABLE IF NOT EXISTS kyc_profile (
   remarks TEXT,
   verified_at TIMESTAMP,
   verified_by_id BIGINT,
+  code_verifier VARCHAR(255),
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE kyc_profile ADD COLUMN IF NOT EXISTS code_verifier VARCHAR(255);
+

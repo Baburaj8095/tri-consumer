@@ -62,7 +62,7 @@ public class KycProfileRepository {
                     status = ?, digilocker_id = ?, access_token_encrypted = ?, refresh_token_encrypted = ?,
                     name = ?, dob = ?, gender = ?, email = ?, mobile = ?, address = ?, photo = ?,
                     aadhaar_last4 = ?, pan_number = ?, issued_documents_json = ?, state = ?, remarks = ?,
-                    verified_at = ?, verified_by_id = ?, updated_at = CURRENT_TIMESTAMP
+                    verified_at = ?, verified_by_id = ?, code_verifier = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE user_id = ?
                 """;
             jdbcTemplate.update(sql,
@@ -70,6 +70,7 @@ public class KycProfileRepository {
                 p.getName(), p.getDob(), p.getGender(), p.getEmail(), p.getMobile(), p.getAddress(), p.getPhoto(),
                 p.getAadhaarLast4(), p.getPanNumber(), p.getIssuedDocumentsJson(), p.getState(), p.getRemarks(),
                 p.getVerifiedAt() != null ? Timestamp.from(p.getVerifiedAt()) : null, p.getVerifiedById(),
+                p.getCodeVerifier(),
                 p.getUserId()
             );
         } else {
@@ -77,14 +78,15 @@ public class KycProfileRepository {
                 INSERT INTO kyc_profile (
                     user_id, status, digilocker_id, access_token_encrypted, refresh_token_encrypted,
                     name, dob, gender, email, mobile, address, photo, aadhaar_last4, pan_number,
-                    issued_documents_json, state, remarks, verified_at, verified_by_id, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                    issued_documents_json, state, remarks, verified_at, verified_by_id, code_verifier, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
                 """;
             jdbcTemplate.update(sql,
                 p.getUserId(), p.getStatus(), p.getDigilockerId(), p.getAccessTokenEncrypted(), p.getRefreshTokenEncrypted(),
                 p.getName(), p.getDob(), p.getGender(), p.getEmail(), p.getMobile(), p.getAddress(), p.getPhoto(),
                 p.getAadhaarLast4(), p.getPanNumber(), p.getIssuedDocumentsJson(), p.getState(), p.getRemarks(),
-                p.getVerifiedAt() != null ? Timestamp.from(p.getVerifiedAt()) : null, p.getVerifiedById()
+                p.getVerifiedAt() != null ? Timestamp.from(p.getVerifiedAt()) : null, p.getVerifiedById(),
+                p.getCodeVerifier()
             );
         }
     }
@@ -278,6 +280,7 @@ public class KycProfileRepository {
         p.setIssuedDocumentsJson(rs.getString("issued_documents_json"));
         p.setState(rs.getString("state"));
         p.setRemarks(rs.getString("remarks"));
+        p.setCodeVerifier(rs.getString("code_verifier"));
         Timestamp verifiedAt = rs.getTimestamp("verified_at");
         p.setVerifiedAt(verifiedAt != null ? verifiedAt.toInstant() : null);
         long vById = rs.getLong("verified_by_id");

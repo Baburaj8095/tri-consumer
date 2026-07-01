@@ -21,6 +21,7 @@ public class KycProfile {
     private String issuedDocumentsJson;
     private String state;
     private String remarks;
+    private String codeVerifier;
     private Instant verifiedAt;
     private Long verifiedById;
     private Instant createdAt;
@@ -93,4 +94,7 @@ public class KycProfile {
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCodeVerifier() { return codeVerifier; }
+    public void setCodeVerifier(String codeVerifier) { this.codeVerifier = codeVerifier; }
 }

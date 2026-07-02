@@ -1,5 +1,5 @@
 export const env = {
-  apiBaseUrl: '',
+  apiBaseUrl: 'https://www.trikonekt.com',
   captainApiUrl: 'https://api-captain.trikonektbusiness.com/api',
   mapboxApiKey: '',
 };

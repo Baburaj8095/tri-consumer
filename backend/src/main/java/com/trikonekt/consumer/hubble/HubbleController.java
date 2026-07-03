@@ -85,12 +85,13 @@ public class HubbleController {
    */
   @GetMapping("/iframe-url")
   public ResponseEntity<ApiResponse<HubbleIframeResponse>> getIframeUrl(
-      @RequestHeader(value = "Authorization", required = false) String authHeader) {
+      @RequestHeader(value = "Authorization", required = false) String authHeader,
+      @RequestParam(defaultValue = "web") String platform) {
 
     if (!config.isConfigured()) {
       return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
           .body(ApiResponse.fail("Hubble is not configured on this server. Required: " +
-              "app.hubble.client-id, app.hubble.jwt-private-key-pem, app.hubble.sdk-base-url"));
+              "app.hubble.client-id, HUBBLE_CLIENT_SECRET, app.hubble.jwt-private-key-pem, app.hubble.sdk-base-url"));
     }
 
     User user = resolveUserFromBearerToken(authHeader);
@@ -105,7 +106,7 @@ public class HubbleController {
           List.of("consumer")
       );
 
-      String iframeUrl = jwtService.buildIframeUrl(ssoToken);
+      String iframeUrl = jwtService.buildIframeUrl(ssoToken, platform);
       return ResponseEntity.ok(ApiResponse.ok("Hubble iframe URL generated",
           new HubbleIframeResponse(iframeUrl, 60)));
 

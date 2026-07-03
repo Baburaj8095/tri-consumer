@@ -6,7 +6,7 @@ export function LoadingScreen({ message = 'Loading...' }: { message?: string }) 
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
-        <Image source={require('../../assets/TRIKONEKT.png')} style={styles.logo} resizeMode="contain" />
+        <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" accessibilityLabel="Trikonekt logo" />
       </View>
       <ActivityIndicator size="large" color={colors.primary} style={styles.spinner} />
       <Text style={styles.message}>{message}</Text>
@@ -16,8 +16,8 @@ export function LoadingScreen({ message = 'Loading...' }: { message?: string }) 
 
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff' },
-  logoContainer: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 4, marginBottom: 24 },
-  logo: { width: 70, height: 70 },
+  logoContainer: { width: 156, height: 156, borderRadius: 78, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 14, elevation: 6, marginBottom: 28 },
+  logo: { width: 142, height: 142 },
   spinner: { marginBottom: 12 },
   message: { color: colors.textSecondary, fontWeight: '700', fontSize: 14 },
 });

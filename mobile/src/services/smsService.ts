@@ -14,8 +14,11 @@ export default class SMSService {
   }
 
   splitMobile(mobile: string) {
-    const digits = String(mobile || '').replace(/[^0-9]/g, '');
-    if (digits.length > 10 && digits.startsWith('91')) return { countryCode: '+91', nationalNumber: digits.slice(2) };
+    const raw = String(mobile || '').trim();
+    const digits = raw.replace(/[^0-9]/g, '');
+    if (raw.startsWith('+91') || (digits.length > 10 && digits.startsWith('91'))) return { countryCode: '+91', nationalNumber: digits.slice(2) };
+    if (raw.startsWith('+44')) return { countryCode: '+44', nationalNumber: digits.slice(2) };
+    if (raw.startsWith('+1')) return { countryCode: '+1', nationalNumber: digits.slice(1) };
     return { countryCode: '+91', nationalNumber: digits.slice(-10) };
   }
 

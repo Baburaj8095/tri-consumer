@@ -34,15 +34,22 @@ import {
   TriZoneScreen,
 } from '../screens/ServicePlaceholders';
 import { colors } from '../theme/colors';
+import { useAuthStore } from '../store/authStore';
+import { LoadingScreen } from '../screens/LoadingScreen';
+import { GiftCardsScreen } from '../screens/GiftCardsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
   useInitialHydration();
+  const { hydrated, token } = useAuthStore();
+
+  if (!hydrated) return <LoadingScreen message="Restoring your session..." />;
 
   return (
     <Stack.Navigator
-      initialRouteName="Login"
+      key={token ? 'authenticated' : 'guest'}
+      initialRouteName={token ? 'ConsumerHome' : 'Login'}
       screenOptions={{
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
@@ -50,8 +57,10 @@ export function AppNavigator() {
         contentStyle: { backgroundColor: colors.background },
       }}
     >
+      {!token ? <>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      </> : <>
       <Stack.Screen name="ConsumerHome" component={ConsumerHomeScreen} options={{ title: 'Tri Consumer' }} />
       <Stack.Screen name="Delivery" component={DeliveryScreen} />
       <Stack.Screen name="NearbyStores" component={NearbyStoresScreen} options={{ title: 'Nearby Stores' }} />
@@ -69,6 +78,7 @@ export function AppNavigator() {
       <Stack.Screen name="TriInventoryBilling" component={TriInventoryBillingScreen} options={{ title: 'Inventory Billing' }} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="ConsumerKYC" component={ConsumerKYCScreen} options={{ title: 'KYC' }} />
+      <Stack.Screen name="GiftCards" component={GiftCardsScreen} options={{ title: 'Gift Cards' }} />
       <Stack.Screen name="ShopDetails" component={ShopDetailsScreen} options={{ title: 'Shop Details' }} />
       <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ title: 'Product Details' }} />
       <Stack.Screen name="StorePayment" component={StorePaymentScreen} options={{ title: 'Store Payment' }} />
@@ -78,6 +88,7 @@ export function AppNavigator() {
       <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} options={{ title: 'Order Details' }} />
       <Stack.Screen name="TrackOrder" component={TrackOrderScreen} options={{ title: 'Track Order' }} />
+      </>}
     </Stack.Navigator>
   );
 }

@@ -86,9 +86,13 @@ public class HubbleJwtService {
    * Build the full Hubble Web SDK iframe URL.
    * Mirrors Django's core/hubble.py → build_hubble_web_sdk_url()
    *
-   * Format: {sdkBaseUrl}/?clientId={id}&token={jwt}[&theme={theme}]
+   * Format: {sdkBaseUrl}/?clientId={id}&appSecret={secret}&token={jwt}[&wrap-plt=rn][&theme={theme}]
    */
   public String buildIframeUrl(String token) {
+    return buildIframeUrl(token, "web");
+  }
+
+  public String buildIframeUrl(String token, String platform) {
     if (token == null || token.isBlank()) throw new IllegalArgumentException("token is required");
     if (config.getSdkBaseUrl().isBlank())  throw new IllegalStateException("HUBBLE_SDK_BASE_URL is not configured");
     if (config.getClientId().isBlank())    throw new IllegalStateException("HUBBLE_CLIENT_ID is not configured");
@@ -96,7 +100,12 @@ public class HubbleJwtService {
     String base = config.getSdkBaseUrl().replaceAll("/+$", "");
     StringBuilder url = new StringBuilder(base)
         .append("/?clientId=").append(encode(config.getClientId()))
+        .append("&appSecret=").append(encode(config.getClientSecret()))
         .append("&token=").append(encode(token));
+
+    if ("rn".equalsIgnoreCase(platform)) {
+      url.append("&wrap-plt=rn");
+    }
 
     if (!config.getSdkTheme().isBlank()) {
       url.append("&theme=").append(encode(config.getSdkTheme()));

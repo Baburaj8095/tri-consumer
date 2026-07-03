@@ -22,6 +22,9 @@ public class HubbleConfig {
   @Value("${app.hubble.jwt-private-key-pem:}")
   private String jwtPrivateKeyPem;
 
+  @Value("${HUBBLE_CLIENT_SECRET:}")
+  private String clientSecret;
+
   @Value("${app.hubble.sdk-base-url:https://sdk.myhubble.money/experience-center}")
   private String sdkBaseUrl;
 
@@ -36,6 +39,7 @@ public class HubbleConfig {
 
   public String getClientId()            { return clientId == null ? "" : clientId.trim(); }
   public String getJwtPrivateKeyPem()    { return jwtPrivateKeyPem == null ? "" : jwtPrivateKeyPem.trim(); }
+  public String getClientSecret()        { return clientSecret == null ? "" : clientSecret.trim(); }
   public String getSdkBaseUrl()          { return sdkBaseUrl == null ? "" : sdkBaseUrl.trim(); }
   public String getWebhookSecret()       { return webhookSecret == null ? "" : webhookSecret.trim(); }
   public String getWebhookIpAllowlist()  { return webhookIpAllowlist == null ? "" : webhookIpAllowlist.trim(); }
@@ -43,6 +47,6 @@ public class HubbleConfig {
 
   /** True only if minimum required fields are set. */
   public boolean isConfigured() {
-    return !getClientId().isBlank() && !getJwtPrivateKeyPem().isBlank() && !getSdkBaseUrl().isBlank();
+    return !getClientId().isBlank() && !getClientSecret().isBlank() && !getJwtPrivateKeyPem().isBlank() && !getSdkBaseUrl().isBlank();
   }
 }

@@ -64,9 +64,10 @@ public class KycController {
     }
 
     @PostMapping("/start")
-    public ApiResponse<Map<String, String>> startKyc(@RequestHeader("Authorization") String authHeader) {
+    public ApiResponse<Map<String, String>> startKyc(@RequestHeader("Authorization") String authHeader,
+                                                      @RequestParam(defaultValue = "web") String platform) {
         UserResponse user = userService.currentUser(authHeader);
-        String authUrl = kycProfileService.startKyc(user.getId(), null);
+        String authUrl = kycProfileService.startKyc(user.getId(), platform);
 
         Map<String, String> data = new HashMap<>();
         data.put("authorization_url", authUrl);
@@ -78,7 +79,7 @@ public class KycController {
                                                @RequestParam(value = "code", required = false) String code,
                                                @RequestParam(value = "error", required = false) String error,
                                                @RequestParam(value = "error_description", required = false) String errorDesc) {
-        String baseRedirectUrl = consumerFrontendUrl;
+        String baseRedirectUrl = state.startsWith("rn_") ? "trikonekt://kyc" : consumerFrontendUrl;
         
         try {
             // Determine user type to redirect correctly
@@ -87,7 +88,7 @@ public class KycController {
                 long userId = profileOpt.get().getUserId();
                 // We don't have the Bearer token in callback, so we query the role from database
                 boolean isBusiness = checkIsBusinessUser(userId);
-                baseRedirectUrl = isBusiness ? businessFrontendUrl : consumerFrontendUrl;
+                baseRedirectUrl = isBusiness ? businessFrontendUrl : (state.startsWith("rn_") ? "trikonekt://kyc" : consumerFrontendUrl);
             }
 
             if (error != null && !error.isEmpty()) {

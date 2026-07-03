@@ -1,8 +1,7 @@
 import { apiClient } from '../api/client';
 
 export async function fetchHubbleIframeUrl() {
-  // TODO: In React Native, render returned iframeUrl with WebView if gift cards are enabled.
-  const response = await apiClient.get('/api/hubble/iframe-url');
+  const response = await apiClient.get('/api/hubble/iframe-url', { params: { platform: 'rn' } });
   return response.data?.data || response.data;
 }
 

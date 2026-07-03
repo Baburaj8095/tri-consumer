@@ -90,7 +90,7 @@ Each placeholder preserves screen names, navigation flow, API integration points
 2. Replace `react-icons` with Expo-compatible icons such as `@expo/vector-icons`.
 3. Add `expo-location` for native permission/current-location support.
 4. Add `expo-camera` or another scanner package for `ConsumerScanner`.
-5. Decide whether Hubble gift cards use a native WebView, SDK, or browser/deep-link strategy.
+5. Hubble gift cards now use the documented React Native WebView integration with a server-issued SSO URL, SDK action events, controlled external navigation, native back handling, and UPI scheme support.
 6. Replace web payment redirects with `Linking`, native SDKs, or a WebView flow.
 7. Add full form validation and native UX for OTP, registration, KYC, address, checkout, and profile editing.
 8. Add unit tests for services and stores.
@@ -147,4 +147,7 @@ npx eas-cli build --platform ios
 - Upgraded Cart to native line items, quantity controls and bill summary.
 - Upgraded Secure Checkout, Shop Details, Product Details and My Orders to stronger native shells.
 - TypeScript validation passes after native UI upgrades.
+- Home now follows the complete web/Amazon-style commerce section order while retaining approved mock merchandising content for this version.
+- Online, Nearby Stores, and Near Me are live-only flows; API failures show retryable errors rather than mock inventory.
+- TriZone remains intentionally mock/presentational for the current release.
 

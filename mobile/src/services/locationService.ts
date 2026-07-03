@@ -1,5 +1,6 @@
 import { env } from '../constants/env';
 import { LocationInfo } from '../types/domain';
+import * as Location from 'expo-location';
 
 export const DEFAULT_LOCATION: LocationInfo = {
   lat: 12.9716,
@@ -56,4 +57,32 @@ export async function searchLocations(query: string, token = env.mapboxApiKey): 
     const pincode = context.find(item => item.id.startsWith('postcode'))?.text || '';
     return { id: feature.id, formattedAddress: feature.place_name, area: feature.text, city, pincode, lat: feature.center[1], lng: feature.center[0] };
   });
+}
+
+export async function getCurrentNativeLocation(): Promise<LocationInfo> {
+  const permission = await Location.requestForegroundPermissionsAsync();
+  if (permission.status !== Location.PermissionStatus.GRANTED) throw new Error('Location permission was not granted.');
+  const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+  const { latitude: lat, longitude: lng } = position.coords;
+  const [place] = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+  if (!place) return reverseGeocode(lat, lng);
+  const area = place.district || place.street || place.subregion || 'Selected Area';
+  const city = place.city || place.subregion || 'Selected City';
+  return { lat, lng, area, city, state: place.region || '', country: place.country || 'India', pincode: place.postalCode || '', formattedAddress: [area, city, place.region, place.country].filter(Boolean).join(', '), lastUpdated: Date.now() };
+}
+
+export async function getLocationFromPincode(pincode: string): Promise<LocationInfo> {
+  const matches = await Location.geocodeAsync(`${pincode}, India`);
+  if (!matches.length) throw new Error('PIN code location was not found.');
+  const { latitude: lat, longitude: lng } = matches[0];
+  const location = await getAddressForCoordinates(lat, lng);
+  return { ...location, pincode: location.pincode || pincode };
+}
+
+async function getAddressForCoordinates(lat: number, lng: number): Promise<LocationInfo> {
+  const [place] = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+  if (!place) return reverseGeocode(lat, lng);
+  const area = place.district || place.street || place.subregion || 'Selected Area';
+  const city = place.city || place.subregion || 'Selected City';
+  return { lat, lng, area, city, state: place.region || '', country: place.country || 'India', pincode: place.postalCode || '', formattedAddress: [area, city, place.region, place.country].filter(Boolean).join(', '), lastUpdated: Date.now() };
 }

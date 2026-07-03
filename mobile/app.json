@@ -2,12 +2,23 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "trikonekt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Trikonekt uses your location to show nearby stores and calculate delivery availability.",
+        "NSCameraUsageDescription": "Trikonekt uses the camera to scan merchant and service QR codes.",
+        "LSApplicationQueriesSchemes": [
+          "upi",
+          "gpay",
+          "phonepe",
+          "paytmmp"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,13 +29,34 @@
       },
       "predictiveBackGestureEnabled": false
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Trikonekt to use your location for nearby stores and delivery."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Trikonekt to scan QR codes."
+        }
+      ],
+      "expo-notifications",
+      "./plugins/withAndroidUpiQueries",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "splash": {
-      "image": "./assets/TRIKONEKT.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
     }
   }
 }

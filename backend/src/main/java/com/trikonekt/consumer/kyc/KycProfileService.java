@@ -31,7 +31,7 @@ public class KycProfileService {
             return newProfile;
         });
 
-        String state = UUID.randomUUID().toString();
+        String state = ("rn".equalsIgnoreCase(redirectUri) ? "rn_" : "") + UUID.randomUUID();
         String codeVerifier = PkceUtil.generateCodeVerifier();
         String codeChallenge = PkceUtil.generateCodeChallenge(codeVerifier);
 

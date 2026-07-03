@@ -21,8 +21,19 @@ import { useLocationStore } from '../store/locationStore';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { products } from '../constants/mockData';
+import { getCurrentNativeLocation, getLocationFromPincode } from '../services/locationService';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const homeCategories = [
+  ['Mobiles', 'phone-portrait-outline', 'Delivery'], ['Fashion', 'shirt-outline', 'Delivery'], ['Daily Needs', 'basket-outline', 'Delivery'],
+  ['Electronics', 'laptop-outline', 'Delivery'], ['Home', 'home-outline', 'Delivery'], ['Beauty', 'sparkles-outline', 'Delivery'],
+  ['Kids & Toys', 'game-controller-outline', 'Delivery'], ['More', 'grid-outline', 'TriZone'],
+] as const;
+const homeStores = [
+  { id: 'hs1', name: 'Fresh Mart', category: 'Daily needs', area: 'Near you', icon: 'basket-outline' },
+  { id: 'hs2', name: 'Style Street', category: 'Fashion', area: 'Near you', icon: 'shirt-outline' },
+  { id: 'hs3', name: 'Digital World', category: 'Electronics', area: 'Near you', icon: 'phone-portrait-outline' },
+] as const;
 
 export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ConsumerHome'>) {
   const { location, saveLocation, hydrate: hydrateLocation } = useLocationStore();
@@ -33,6 +44,7 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pincodeModalOpen, setPincodeModalOpen] = useState(false);
   const [pincodeInput, setPincodeInput] = useState('');
+  const [locating, setLocating] = useState(false);
   
   // Hydrate stores on mount
   useEffect(() => {
@@ -52,17 +64,17 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
       Alert.alert('Invalid PIN code', 'Please enter a valid 6-digit PIN code.');
       return;
     }
-    await saveLocation({
-      lat: 17.3297, // Kalaburagi coordinates approx
-      lng: 76.8343,
-      area: 'Borabai Nagar',
-      city: 'Kalaburagi',
-      state: 'Karnataka',
-      country: 'India',
-      pincode: pincodeInput,
-      formattedAddress: `Borabai Nagar, Kalaburagi, Karnataka, India`,
-    });
-    setPincodeModalOpen(false);
+    setLocating(true);
+    try { await saveLocation(await getLocationFromPincode(pincodeInput)); setPincodeModalOpen(false); }
+    catch (error) { Alert.alert('Location unavailable', error instanceof Error ? error.message : 'Unable to find this PIN code.'); }
+    finally { setLocating(false); }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setLocating(true);
+    try { await saveLocation(await getCurrentNativeLocation()); setPincodeModalOpen(false); }
+    catch (error) { Alert.alert('Location unavailable', error instanceof Error ? error.message : 'Unable to read your location.'); }
+    finally { setLocating(false); }
   };
 
   return (
@@ -240,6 +252,45 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
           </View>
         </ScrollView>
 
+        <HomeSection title="Gift Cards" subtitle="Shop, gift and earn rewards" action="View all" onAction={() => navigation.navigate('GiftCards')}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalSection}>
+            {['All Gift Cards', 'Brand Gift Cards', 'Tri Vouchers', 'Rewards'].map((label, index) => <Pressable key={label} style={[styles.miniFeatureCard, { backgroundColor: ['#fff7ed', '#eff6ff', '#fdf4ff', '#ecfdf5'][index] }]} onPress={() => navigation.navigate('GiftCards')}><Ionicons name={index === 3 ? 'trophy-outline' : 'gift-outline'} size={26} color={colors.primary} /><Text style={styles.miniFeatureTitle}>{label}</Text></Pressable>)}
+          </ScrollView>
+        </HomeSection>
+
+        <HomeSection title="TriAdz Arena" subtitle="Fresh ads, brand deals and sponsored offers" action="Explore" onAction={() => navigation.navigate('Ads')}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalSection}>
+            {[['Watch & Earn', 'Earn points for every ad', '#172554'], ['Brand Rush', 'Limited-time sponsored offers', '#4c1d95'], ['Cashback Days', 'Extra rewards on purchases', '#064e3b']].map(([title, copy, color]) => <Pressable key={title} style={[styles.adArenaCard, { backgroundColor: color }]} onPress={() => navigation.navigate('Ads')}><Text style={styles.adArenaTag}>SPONSORED</Text><Text style={styles.adArenaTitle}>{title}</Text><Text style={styles.adArenaCopy}>{copy}</Text></Pressable>)}
+          </ScrollView>
+        </HomeSection>
+
+        <HomeSection title="All Categories">
+          <View style={styles.categoryGrid}>{homeCategories.map(([label, icon, route]) => <Pressable key={label} style={styles.categoryItem} onPress={() => navigation.navigate(route)}><View style={styles.categoryIcon}><Ionicons name={icon} size={23} color={colors.primary} /></View><Text style={styles.categoryLabel}>{label}</Text></Pressable>)}</View>
+        </HomeSection>
+
+        <View style={styles.cashbackBanner}><View style={{ flex: 1 }}><Text style={styles.cashbackEyebrow}>TRIKONEKT CASHBACK</Text><Text style={styles.cashbackTitle}>Shop more. Earn more.</Text><Text style={styles.cashbackCopy}>Unlock rewards across online and nearby shopping.</Text></View><Ionicons name="wallet-outline" size={54} color="#fff" /></View>
+
+        <View style={styles.actionBannerWrap}>
+          <Pressable style={styles.actionBanner} onPress={() => navigation.navigate('Society')}><View style={styles.actionIcon}><Ionicons name="people-outline" size={23} color={colors.primary} /></View><View style={{ flex: 1 }}><Text style={styles.actionTitle}>For Better Society</Text><Text style={styles.actionCopy}>Join our community initiatives</Text></View><Text style={styles.actionCta}>Join</Text></Pressable>
+          <Pressable style={styles.actionBanner} onPress={() => navigation.navigate('BusinessRegistration')}><View style={styles.actionIcon}><Ionicons name="storefront-outline" size={23} color={colors.primary} /></View><View style={{ flex: 1 }}><Text style={styles.actionTitle}>List Your Business</Text><Text style={styles.actionCopy}>Grow with Trikonekt today</Text></View><Text style={styles.actionCta}>List Now</Text></Pressable>
+        </View>
+
+        <HomeSection title="Most visited products" subtitle="Trending choices based on daily visits" action="View all" onAction={() => navigation.navigate('Delivery')}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalSection}>{products.map(product => <HomeProduct key={`mv-${product.id}`} product={product} onPress={() => navigation.navigate('ProductDetails', { id: String(product.id) })} />)}</ScrollView>
+        </HomeSection>
+
+        <HomeSection title="Clothing Deals for You" subtitle="Compact deals from your catalogue">
+          <View style={styles.compactProductGrid}>{products.map(product => <HomeProduct key={`cl-${product.id}`} product={product} compact onPress={() => navigation.navigate('ProductDetails', { id: String(product.id) })} />)}</View>
+        </HomeSection>
+
+        <HomeSection title="Nearby Stores" subtitle="Top verified stores near you" action="View all" onAction={() => navigation.navigate('NearbyStores')}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalSection}>{homeStores.map(store => <Pressable key={store.id} style={styles.homeStoreCard} onPress={() => navigation.navigate('NearbyStores')}><View style={styles.storeIcon}><Ionicons name={store.icon} size={30} color={colors.primary} /></View><Text style={styles.homeStoreTitle}>{store.name}</Text><Text style={styles.homeStoreCopy}>{store.category}</Text><Text style={styles.homeStoreArea}>{store.area}</Text></Pressable>)}</ScrollView>
+        </HomeSection>
+
+        <HomeSection title="Personalized Deals for You">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalSection}>{products.slice().reverse().map(product => <HomeProduct key={`p-${product.id}`} product={product} badge="Best match" onPress={() => navigation.navigate('ProductDetails', { id: String(product.id) })} />)}</ScrollView>
+        </HomeSection>
+
       </ScrollView>
 
       {/* Pincode Input Modal */}
@@ -247,6 +298,7 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
         <Pressable style={styles.modalBackdrop} onPress={() => setPincodeModalOpen(false)}>
           <View style={styles.pincodeModalContent} onStartShouldSetResponder={() => true}>
             <Text style={styles.modalTitle}>Deliver to PIN Code</Text>
+            <Pressable style={[styles.modalButton, styles.modalButtonSave]} onPress={handleUseCurrentLocation} disabled={locating}><Text style={styles.modalButtonTextSave}>{locating ? 'Locating...' : 'Use current location'}</Text></Pressable>
             <TextInput
               style={styles.pincodeTextInput}
               placeholder="Enter 6-digit PIN code"
@@ -261,7 +313,7 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
                 <Text style={styles.modalButtonTextCancel}>Cancel</Text>
               </Pressable>
               <Pressable style={[styles.modalButton, styles.modalButtonSave]} onPress={handleUpdatePincode}>
-                <Text style={styles.modalButtonTextSave}>Save</Text>
+                <Text style={styles.modalButtonTextSave}>{locating ? 'Saving...' : 'Save'}</Text>
               </Pressable>
             </View>
           </View>
@@ -332,6 +384,11 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
                 <Ionicons name="person-outline" size={22} color={colors.primary} />
                 <Text style={styles.quickActionTitle}>KYC Verify</Text>
                 <Text style={styles.quickActionSubtitle}>Aadhaar & Payout</Text>
+              </Pressable>
+              <Pressable style={styles.quickActionCard} onPress={() => { setDrawerOpen(false); navigation.navigate('GiftCards'); }}>
+                <Ionicons name="gift-outline" size={22} color={colors.primary} />
+                <Text style={styles.quickActionTitle}>Gift Cards</Text>
+                <Text style={styles.quickActionSubtitle}>Shop with Hubble</Text>
               </Pressable>
             </View>
 
@@ -405,6 +462,14 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
 
     </View>
   );
+}
+
+function HomeSection({ title, subtitle, action, onAction, children }: React.PropsWithChildren<{ title: string; subtitle?: string; action?: string; onAction?: () => void }>) {
+  return <View style={styles.homeSection}><View style={styles.homeSectionHeader}><View style={{ flex: 1 }}><Text style={styles.sectionTitle}>{title}</Text>{subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}</View>{action ? <Pressable onPress={onAction}><Text style={styles.viewAllText}>{action}</Text></Pressable> : null}</View>{children}</View>;
+}
+
+function HomeProduct({ product, compact, badge, onPress }: { product: typeof products[number]; compact?: boolean; badge?: string; onPress: () => void }) {
+  return <Pressable style={[styles.homeProductCard, compact && styles.homeProductCompact]} onPress={onPress}><View><Image source={{ uri: product.image }} style={[styles.homeProductImage, compact && styles.homeProductImageCompact]} />{badge ? <Text style={styles.productBadge}>{badge}</Text> : null}<Text style={styles.discountBadge}>{product.discount}</Text></View><Text style={styles.homeProductName} numberOfLines={2}>{product.name}</Text><View style={styles.homePriceRow}><Text style={styles.homeNewPrice}>{product.newPrice}</Text><Text style={styles.homeOldPrice}>{product.oldPrice}</Text></View><Text style={styles.amazonDelivery}>FREE Delivery</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
@@ -492,6 +557,31 @@ const styles = StyleSheet.create({
   dealCountdown: { color: 'rgba(0,0,0,0.45)', fontSize: 11, fontWeight: '800', position: 'absolute', top: 14, right: 16 },
   dealMainTitle: { fontSize: 20, fontWeight: '900', color: '#1e293b' },
   dealSubText: { fontSize: 13, fontWeight: '800', color: '#475569', marginTop: 2 },
+  homeSection: { backgroundColor: '#fff', marginHorizontal: 10, marginBottom: 14, borderRadius: 18, paddingVertical: 16, borderWidth: 1, borderColor: '#edf0f3' },
+  homeSectionHeader: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 14, marginBottom: 12 },
+  horizontalSection: { paddingHorizontal: 14, gap: 12 },
+  miniFeatureCard: { width: 126, minHeight: 104, borderRadius: 16, padding: 14, justifyContent: 'space-between', borderWidth: 1, borderColor: '#eef2f7' },
+  miniFeatureTitle: { color: colors.text, fontWeight: '900', fontSize: 13, marginTop: 12 },
+  adArenaCard: { width: 230, height: 132, borderRadius: 18, padding: 16, justifyContent: 'flex-end' },
+  adArenaTag: { position: 'absolute', top: 14, left: 14, color: 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '900', letterSpacing: 0.8 },
+  adArenaTitle: { color: '#fff', fontSize: 20, fontWeight: '900' },
+  adArenaCopy: { color: 'rgba(255,255,255,0.76)', fontSize: 12, fontWeight: '700', marginTop: 4 },
+  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8 },
+  categoryItem: { width: '25%', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 3 },
+  categoryIcon: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#fff7ed', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#ffedd5' },
+  categoryLabel: { color: colors.text, fontSize: 11, fontWeight: '800', textAlign: 'center', marginTop: 7 },
+  cashbackBanner: { marginHorizontal: 10, marginBottom: 14, borderRadius: 20, padding: 18, backgroundColor: '#0f766e', flexDirection: 'row', alignItems: 'center' },
+  cashbackEyebrow: { color: '#99f6e4', fontSize: 10, fontWeight: '900', letterSpacing: 0.8 }, cashbackTitle: { color: '#fff', fontSize: 20, fontWeight: '900', marginTop: 5 }, cashbackCopy: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 4, maxWidth: 240 },
+  actionBannerWrap: { marginHorizontal: 10, marginBottom: 14, gap: 10 },
+  actionBanner: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#e5e7eb', flexDirection: 'row', alignItems: 'center', gap: 12 },
+  actionIcon: { width: 46, height: 46, borderRadius: 16, backgroundColor: '#fff7ed', alignItems: 'center', justifyContent: 'center' }, actionTitle: { color: colors.text, fontWeight: '900', fontSize: 15 }, actionCopy: { color: colors.textSecondary, fontSize: 12, marginTop: 3 }, actionCta: { color: colors.primary, fontWeight: '900', fontSize: 12 },
+  homeProductCard: { width: 168, backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 9 },
+  homeProductCompact: { width: '48.4%', marginBottom: 10 }, compactProductGrid: { paddingHorizontal: 12, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
+  homeProductImage: { width: '100%', height: 142, borderRadius: 10, backgroundColor: '#f3f4f6' }, homeProductImageCompact: { height: 124 },
+  productBadge: { position: 'absolute', top: 7, left: 7, color: '#fff', backgroundColor: '#7c3aed', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 3, overflow: 'hidden', fontSize: 9, fontWeight: '900' },
+  discountBadge: { position: 'absolute', bottom: 7, left: 7, color: '#fff', backgroundColor: '#dc2626', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, overflow: 'hidden', fontSize: 9, fontWeight: '900' },
+  homeProductName: { color: colors.text, fontWeight: '700', fontSize: 13, lineHeight: 18, minHeight: 36, marginTop: 8 }, homePriceRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }, homeNewPrice: { color: colors.text, fontWeight: '900', fontSize: 15 }, homeOldPrice: { color: colors.muted, textDecorationLine: 'line-through', fontSize: 11 }, amazonDelivery: { color: '#007600', fontWeight: '800', fontSize: 10, marginTop: 5 },
+  homeStoreCard: { width: 186, borderRadius: 16, padding: 14, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e5e7eb' }, storeIcon: { height: 88, borderRadius: 12, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }, homeStoreTitle: { color: colors.text, fontSize: 15, fontWeight: '900' }, homeStoreCopy: { color: colors.textSecondary, fontSize: 11, marginTop: 3 }, homeStoreArea: { color: colors.primary, fontSize: 10, fontWeight: '800', marginTop: 8 },
   
   // Modal Backdrop
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' },

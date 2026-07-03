@@ -7,7 +7,7 @@ import { AppNavigator } from './navigation/AppNavigator';
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
+      <NavigationContainer linking={{ prefixes: ['trikonekt://'], config: { screens: { ConsumerKYC: 'kyc' } } }}>
         <StatusBar style="dark" />
         <AppNavigator />
       </NavigationContainer>

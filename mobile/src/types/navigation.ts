@@ -18,6 +18,7 @@ export type RootStackParamList = {
   TriInventoryBilling: undefined;
   Profile: undefined;
   ConsumerKYC: undefined;
+  GiftCards: undefined;
   ShopDetails: { id: string; mode?: 'nearby-delivery'; lat?: number; lng?: number };
   ProductDetails: { id: string };
   StorePayment: { id: string };

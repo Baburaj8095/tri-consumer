@@ -8,6 +8,7 @@ type AuthStore = {
   hydrated: boolean;
   hydrate: () => Promise<void>;
   setSession: (payload: AuthPayload) => Promise<void>;
+  updateUser: (user: AuthUser) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -19,6 +20,11 @@ export const useAuthStore = create<AuthStore>(set => ({
   setSession: async payload => {
     const token = await storeAuth(payload);
     set({ token, user: payload.data?.user || payload.user || null });
+  },
+  updateUser: async user => {
+    const token = await getAccessToken();
+    await storeAuth({ access: token, user });
+    set({ user });
   },
   logout: async () => {
     await clearAuth();

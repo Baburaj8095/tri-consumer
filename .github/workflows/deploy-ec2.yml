@@ -104,6 +104,7 @@ jobs:
       - name: Build Android App with EAS
         working-directory: mobile
         run: |
+          set -eo pipefail
           eas build --platform android --profile preview --non-interactive 2>&1 | tee eas-build.log
           
           # Extract build details URL

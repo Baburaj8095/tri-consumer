@@ -173,7 +173,11 @@ function RegisterForm() {
       if (!isMobileVerified) newErrors.mobileNumber = 'Please verify your mobile number to continue';
     } else if (currentStep === 2) {
       if (!formData.fullName.trim()) newErrors.fullName = 'Full Name is required';
-      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Enter a valid email address';
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email ID is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Enter a valid email address';
+      }
       if (!formData.password.trim()) newErrors.password = 'Password is required';
       else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     } else if (currentStep === 3) {
@@ -461,7 +465,7 @@ function RegisterForm() {
                   </div>
                   
                   <div className="form-group">
-                    <label className="field-label" htmlFor="email">Email ID</label>
+                    <label className="field-label" htmlFor="email">Email ID <span style={{ color: '#ff3b30' }}>*</span></label>
                     <input
                       id="email"
                       name="email"

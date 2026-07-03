@@ -73,7 +73,26 @@ public class UserRepository {
   }
 
   public Optional<User> findByMobile(String mobile) {
-    List<User> users = jdbcTemplate.query(SELECT_USER_SQL + " WHERE u.phone = ?", this::mapUser, mobile);
+    if (mobile == null || mobile.isBlank()) {
+      return Optional.empty();
+    }
+    String digits = mobile.replaceAll("[^0-9]", "");
+    String national = digits;
+    String prefixed = digits;
+    if (digits.length() == 10) {
+      prefixed = "91" + digits;
+    } else if (digits.length() == 12 && digits.startsWith("91")) {
+      national = digits.substring(2);
+    } else if (digits.length() > 10 && digits.startsWith("91")) {
+      national = digits.substring(digits.length() - 10);
+    }
+
+    List<User> users = jdbcTemplate.query(
+        SELECT_USER_SQL + " WHERE u.phone = ? OR u.phone = ?",
+        this::mapUser,
+        national,
+        prefixed
+    );
     return users.stream().findFirst();
   }
 

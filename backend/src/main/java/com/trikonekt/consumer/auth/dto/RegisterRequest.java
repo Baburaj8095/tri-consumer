@@ -12,6 +12,7 @@ public class RegisterRequest {
   @NotBlank
   private String mobile;
   private String countryCode;
+  @NotBlank(message = "Email is required")
   @Email
   private String email;
   private String pinCode;

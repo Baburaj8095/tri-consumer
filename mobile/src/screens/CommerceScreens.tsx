@@ -129,7 +129,7 @@ export function DeliveryScreen({ navigation }: NativeStackScreenProps<RootStackP
               product={item} 
               onPress={() => navigation.navigate('ProductDetails', { id: String(item.id) })} 
               onAdd={() => {
-                void addProduct(item);
+                void addProduct(item, { orderChannel: 'ONLINE_DELIVERY' });
                 Alert.alert('Success', `${item.title || item.name || 'Product'} added to cart!`);
               }} 
             />
@@ -654,7 +654,11 @@ export function ShopDetailsScreen({ route, navigation }: NativeStackScreenProps<
                   product={item} 
                   onPress={() => navigation.navigate('ProductDetails', { id: String(item.id) })} 
                   onAdd={() => {
-                    void addProduct(item, { shopId: Number(shopId), shopName: shopDetails.name });
+                    void addProduct(item, { 
+                      shopId: Number(shopId), 
+                      shopName: shopDetails.name,
+                      orderChannel: isNearby ? 'NEARBY_DELIVERY' : 'ONLINE_DELIVERY'
+                    });
                     Alert.alert('Success', `${item.title || item.name || 'Product'} added to cart!`);
                   }} 
                 />

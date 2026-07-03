@@ -129,3 +129,59 @@ jobs:
           echo "2. Once the build completes successfully on Expo, click the **Download** button on the Expo Build page to download the \`.apk\` file." >> $GITHUB_STEP_SUMMARY
           echo "3. Alternatively, scan the QR code displayed on the Expo Build page directly on your Android device to install the application." >> $GITHUB_STEP_SUMMARY
 
+  android-build-local:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Generate Native Android Project
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx expo prebuild --platform android --no-install --non-interactive
+
+      - name: Build Android Debug APK
+        working-directory: mobile/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trikonekt-android-apk
+          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Write Summary
+        run: |
+          echo "### 📦 Runner-compiled Android Build Completed!" >> $GITHUB_STEP_SUMMARY
+          echo "The debug APK was built locally on the GitHub runner and uploaded as a GitHub Actions run artifact." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### How to Download the Local APK:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go back to the **Summary** page of this GitHub Actions run." >> $GITHUB_STEP_SUMMARY
+          echo "2. Scroll down to the bottom of the page to the **Artifacts** section." >> $GITHUB_STEP_SUMMARY
+          echo "3. Click on the **trikonekt-android-apk** artifact to download the ZIP file containing the APK." >> $GITHUB_STEP_SUMMARY
+          echo "4. Unzip the file, copy the \`app-debug.apk\` to your Android device, and install it." >> $GITHUB_STEP_SUMMARY
+
+

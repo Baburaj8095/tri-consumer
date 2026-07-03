@@ -156,10 +156,6 @@ export function ConsumerHeader({
             </View>
           ) : (
             <>
-              <Pressable style={styles.walletBadge} onPress={() => navigation.navigate('TriPay')}>
-                <Ionicons name="wallet-outline" size={14} color="#fff" style={{ marginRight: 4 }} />
-                <Text style={styles.walletBadgeText}>₹ 1,828.34</Text>
-              </Pressable>
 
               {/* Header Icons */}
               <View style={styles.headerIconsRow}>

@@ -77,3 +77,54 @@ jobs:
           sudo nginx -t
           sudo systemctl reload nginx
           EOF
+
+  android-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android App with EAS
+        working-directory: mobile
+        run: |
+          eas build --platform android --profile preview --non-interactive 2>&1 | tee eas-build.log
+          
+          # Extract build details URL
+          BUILD_URL=$(grep -o -E 'https://expo\.dev/accounts/[^/]+/projects/[^/]+/builds/[a-f0-9-]+' eas-build.log | head -n 1 || true)
+          if [ -z "$BUILD_URL" ]; then
+            BUILD_URL=$(grep -o -E 'https://expo\.dev/[^\s]+' eas-build.log | head -n 1 || true)
+          fi
+          
+          echo "EAS Build URL: $BUILD_URL"
+          
+          # Write to Step Summary
+          echo "### 📱 Expo Android Build Started/Completed!" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$BUILD_URL" ]; then
+            echo "- **Expo Build Details URL**: [$BUILD_URL]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Could not parse Expo Build Details URL automatically. Check console logs." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### How to Download the APK:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Click on the **Expo Build Details URL** above to go to the Expo Build Dashboard." >> $GITHUB_STEP_SUMMARY
+          echo "2. Once the build completes successfully on Expo, click the **Download** button on the Expo Build page to download the \`.apk\` file." >> $GITHUB_STEP_SUMMARY
+          echo "3. Alternatively, scan the QR code displayed on the Expo Build page directly on your Android device to install the application." >> $GITHUB_STEP_SUMMARY
+

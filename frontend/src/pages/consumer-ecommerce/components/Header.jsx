@@ -433,7 +433,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
             {/* Orders History Button */}
             <IconButton
               component={Link}
-              to="/orders"
+              to="/consumer-ecommerce/my-orders"
               sx={{
                 color: '#FFFFFF',
                 bgcolor: 'rgba(255,255,255,0.16)',
@@ -814,7 +814,7 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
                 gap: '12px'
               }}>
                 <div 
-                  onClick={() => { setIsMenuOpen(false); navigate('/orders'); }}
+                  onClick={() => { setIsMenuOpen(false); navigate('/consumer-ecommerce/my-orders'); }}
                   style={{
                     background: '#ffffff',
                     border: '1px solid #e2e8f0',

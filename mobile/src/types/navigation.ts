@@ -25,7 +25,6 @@ export type RootStackParamList = {
   SecureCheckout: { id: string; amount?: number; onlineOrderId?: string };
   UpiPayment: { id: string; amount?: number; refId?: string; onlineOrderId?: string };
   MyOrders: undefined;
-  Orders: undefined;
   OrderDetails: { id: string };
   TrackOrder: { id: string };
 };

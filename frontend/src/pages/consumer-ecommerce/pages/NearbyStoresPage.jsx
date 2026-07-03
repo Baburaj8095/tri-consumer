@@ -78,7 +78,7 @@ export default function NearbyStoresPage() {
       distance: shop.distance_km != null ? `${shop.distance_km} Km` : 'Nearby',
       status: 'Open now',
       phone: shop.contact_number || shop.phone || '',
-      image: shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+      image: shop.shop_image || '',
       homeDeliveryEnabled: Boolean(shop.home_delivery_enabled),
       deliveryRadiusKm: Math.min(Number(shop.delivery_radius_km) || 5, 25),
       distanceKm: shop.distance_km,

@@ -7,6 +7,7 @@ import {
   LuMessageSquare, LuInfo, LuMapPin, LuStar, LuShare2, LuShoppingBag, LuPlus, LuMinus
 } from 'react-icons/lu';
 import { useLocation as useGeoLocation } from '../context/LocationContext';
+import fallbackImg from '../../../images/fallback_img.png';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
 
@@ -174,7 +175,7 @@ export default function ShopDetailsPage() {
       <Box sx={{ position: 'relative', width: '100%', height: 200, overflow: 'hidden' }}>
         <Box 
           component="img"
-          src={shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80'} 
+          src={shop.shop_image || fallbackImg} 
           alt={shopName} 
           sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

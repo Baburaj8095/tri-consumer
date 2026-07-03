@@ -47,7 +47,7 @@ function App() {
           <Route path="/consumer-ecommerce/my-orders" element={<MyOrdersPage />} />
           
           {/* Refinement Routes */}
-          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders" element={<Navigate to="/consumer-ecommerce/my-orders" replace />} />
           <Route path="/orders/:id" element={<OrderDetailsPage />} />
           <Route path="/track-order/:id" element={<TrackOrderPage />} />
 

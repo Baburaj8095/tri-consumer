@@ -7,7 +7,8 @@ import {
   LuShoppingBag, LuTruck, LuX, LuTimer 
 } from 'react-icons/lu';
 import { getAccessToken, tryTokenRefresh } from '../../../services/authStorage';
-import BottomNav from '../components/BottomNav.jsx';
+import TriAppShell from '../../../components/ui/TriAppShell';
+import TriHeader from '../../../components/ui/TriHeader';
 import '../consumerEcommerce.css';
 
 const CAPTAIN_API_URL = process.env.REACT_APP_CAPTAIN_API_URL || 'https://api-captain.trikonektbusiness.com/api';
@@ -17,7 +18,7 @@ export default function MyOrdersPage() {
   const [payments, setPayments] = useState([]);
   const [onlineOrders, setOnlineOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(0); // 0 = All, 1 = Orders, 2 = Giftcards, 3 = Recharges
+  const [activeTab, setActiveTab] = useState(0); // 0 = Offline Payment, 1 = Online Orders
 
   const loadAllHistory = async (authToken) => {
     try {
@@ -153,7 +154,7 @@ export default function MyOrdersPage() {
     }
   };
 
-  // Combine and sort both lists chronologically for the "All" tab
+  // Combine and sort both lists chronologically
   const allHistorySorted = useMemo(() => {
     const combined = [
       ...payments.map(p => ({
@@ -170,6 +171,9 @@ export default function MyOrdersPage() {
     return combined.sort((a, b) => b.dateParsed - a.dateParsed);
   }, [payments, onlineOrders]);
 
+  const offlinePayments = useMemo(() => allHistorySorted.filter(item => item.recordType === 'OFFLINE_PAYMENT'), [allHistorySorted]);
+  const onlineHistoryOrders = useMemo(() => allHistorySorted.filter(item => item.recordType === 'ONLINE_ORDER'), [allHistorySorted]);
+
   if (loading) {
     return (
       <Box sx={{ display: 'grid', placeItems: 'center', minHeight: '100vh', bgcolor: '#f8fafc' }}>
@@ -179,251 +183,130 @@ export default function MyOrdersPage() {
   }
 
   return (
-    <div className="ce-app" style={{ paddingTop: 84, paddingBottom: 80, minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Header */}
-      <header className="ce-compact-page-header">
-        <Link to="/consumer-ecommerce" aria-label="Back"><LuChevronLeft /></Link>
-        <div>
-          <h1>My Orders</h1>
-          <p>Your transaction history & deliveries</p>
-        </div>
-        <span><LuStore /></span>
-      </header>
+    <TriAppShell bottomNavIndex={1} hideBottomNav={false}>
+      <TriHeader title="My Orders" subtitle="Your transaction history & deliveries" onBack={() => navigate('/consumer-ecommerce')} />
 
-      {/* Tabs */}
-      <Box sx={{ bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', zIndex: 10 }}>
-        <Tabs 
-          value={activeTab} 
-          onChange={(e, val) => setActiveTab(val)}
-          variant="fullWidth"
-          sx={{
-            '& .MuiTabs-indicator': {
-              backgroundColor: '#f97316',
-            },
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontWeight: 800,
-              color: '#64748b',
-              fontSize: '0.85rem',
-              '&.Mui-selected': {
-                color: '#f97316'
+      <Box sx={{ width: '100%', maxWidth: '430px', mx: 'auto', mt: 2, px: 2, pb: 4 }}>
+        {/* Tabs */}
+        <Box sx={{ bgcolor: '#fff', borderBottom: '1px solid #e2e8f0', zIndex: 10, borderRadius: '12px', overflow: 'hidden', mb: 3 }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(e, val) => setActiveTab(val)}
+            variant="fullWidth"
+            sx={{
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#f97316',
+              },
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 800,
+                color: '#64748b',
+                fontSize: '0.85rem',
+                py: 1.5,
+                '&.Mui-selected': {
+                  color: '#f97316'
+                }
               }
-            }
-          }}
-        >
-          <Tab label="All Tracks" />
-          <Tab label="Delivery Orders" />
-          <Tab label="Giftcards" />
-          <Tab label="Recharges" />
-        </Tabs>
-      </Box>
+            }}
+          >
+            <Tab label="Offline Payment" />
+            <Tab label="Online Orders" />
+          </Tabs>
+        </Box>
 
-      {/* List Container */}
-      <Container maxWidth="xs" sx={{ mt: 3, px: 2 }}>
-
-        {/* Tab 0: All Tracks (Merged Payments and Orders) */}
+        {/* Tab 0: Offline Payment */}
         {activeTab === 0 && (
-          allHistorySorted.length === 0 ? (
+          offlinePayments.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
               <LuInfo size={48} color="#94a3b8" style={{ marginBottom: '16px' }} />
               <Typography sx={{ fontWeight: 800, color: '#64748b', mb: 0.5 }}>
-                No records yet
+                No offline payments yet
               </Typography>
               <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                Join the Trikonekt offline or online delivery tracks to see your list here.
+                Join the Trikonekt offline pay tracks to see your list here.
               </Typography>
             </Box>
           ) : (
-            allHistorySorted.map((item) => {
-              if (item.recordType === 'OFFLINE_PAYMENT') {
-                return (
-                  <Card 
-                    key={`pm-${item.id}`} 
-                    sx={{ 
-                      borderRadius: '16px', mb: 2, border: '1px solid #e2e8f0', 
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.02)', overflow: 'hidden'
-                    }}
-                  >
-                    <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(249, 115, 22, 0.1)', color: '#f97316', display: 'grid', placeItems: 'center' }}>
-                            <LuStore size={18} />
-                          </Box>
-                          <Box>
-                            <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
-                              {item.shopName}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
-                              OFFLINE PAY
-                            </Typography>
-                          </Box>
-                        </Stack>
-                        {getOfflineStatusChip(item.status)}
-                      </Stack>
-
-                      <Stack spacing={0.5} sx={{ mb: 2 }}>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
-                          <LuHash size={13} />
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                            Ref: {item.refId}
-                          </Typography>
-                        </Stack>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
-                          <LuCalendar size={13} />
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                            {formatDate(item.createdAt)}
-                          </Typography>
-                        </Stack>
-                      </Stack>
-
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
-                        <Box>
-                          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
-                            AMOUNT PAID
-                          </Typography>
-                          <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a' }}>
-                            ₹{item.amount.toFixed(2)}
-                          </Typography>
-                        </Box>
-                        {(item.status === 'APPROVED' || item.status === 'SUCCESS') && (
-                          <Box sx={{ textAlign: 'right' }}>
-                            <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 800, display: 'block' }}>
-                              +₹{(item.amount * 0.05).toFixed(2)} Cashback
-                            </Typography>
-                          </Box>
-                        )}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                );
-              } else {
-                // Return Online Delivery order item
-                return (
-                  <Card 
-                    key={`order-${item.id}`} 
-                    sx={{ 
-                      borderRadius: '16px', mb: 2, border: '1px solid #cbd5e1', 
-                      boxShadow: '0 4px 12px rgba(234, 88, 12, 0.04)', overflow: 'hidden'
-                    }}
-                  >
-                    <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(234, 88, 12, 0.1)', color: '#ea580c', display: 'grid', placeItems: 'center' }}>
-                            <LuShoppingBag size={18} />
-                          </Box>
-                          <Box>
-                            <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
-                              {item.shopName}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#ea580c', fontWeight: 800 }}>
-                              ONLINE B2C DELIVERY
-                            </Typography>
-                          </Box>
-                        </Stack>
-                        {getOnlineStatusChip(item.status)}
-                      </Stack>
-
-                      {/* Items bullet summary */}
-                      <Box sx={{ mb: 2, bgcolor: '#f8fafc', p: 1.5, borderRadius: '10px' }}>
-                        <Typography sx={{ fontSize: '0.8rem', color: '#475569', fontWeight: 700, mb: 0.5 }}>
-                          Order Items:
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500, lineHeight: 1.4 }}>
-                          {item.items ? item.items.map(it => `${it.product_title || it.productTitle || 'Product'} (x${it.quantity})`).join(', ') : 'Category Product'}
-                        </Typography>
-                        {item.notes && (
-                          <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#94a3b8', fontStyle: 'italic' }}>
-                            Instructions: "{item.notes}"
-                          </Typography>
-                        )}
+            offlinePayments.map((item) => (
+              <Card 
+                key={`pm-${item.id}`} 
+                sx={{ 
+                  borderRadius: '16px', mb: 2, border: '1px solid #e2e8f0', 
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.02)', overflow: 'hidden'
+                }}
+              >
+                <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(249, 115, 22, 0.1)', color: '#f97316', display: 'grid', placeItems: 'center' }}>
+                        <LuStore size={18} />
                       </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
+                          {item.shopName}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                          OFFLINE PAY
+                        </Typography>
+                      </Box>
+                    </Stack>
+                    {getOfflineStatusChip(item.status)}
+                  </Stack>
 
-                      <Stack spacing={0.5} sx={{ mb: 2 }}>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
-                          <LuHash size={13} />
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                            Order ID: #{item.id}
-                          </Typography>
-                        </Stack>
-                        <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
-                          <LuCalendar size={13} />
-                          <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
-                            {formatDate(item.createdAt)}
-                          </Typography>
-                        </Stack>
-                      </Stack>
+                  <Stack spacing={0.5} sx={{ mb: 2 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
+                      <LuHash size={13} />
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                        Ref: {item.refId}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ color: '#64748b' }}>
+                      <LuCalendar size={13} />
+                      <Typography sx={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                        {formatDate(item.createdAt)}
+                      </Typography>
+                    </Stack>
+                  </Stack>
 
-                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
-                        <Box>
-                          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
-                            TOTAL DIRECT DEBIT
-                          </Typography>
-                          <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#ea580c' }}>
-                            ₹{item.total.toFixed(2)}
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 600 }}>
-                            via {item.paymentMethod || 'ONLINE'} • Status: {item.paymentStatus || 'PENDING'}
-                          </Typography>
-                        </Box>
-
-                        {isNearbyDeliveryOrder(item) && item.status === 'COMPLETED' && !isOrderPaid(item) && !getOfflinePaymentId(item) && (
-                          <Button 
-                            variant="contained" 
-                            size="small"
-                            onClick={() => handlePayDeliveryOrder(item)}
-                            sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px', bgcolor: '#f97316', boxShadow: 'none' }}
-                          >
-                            Pay Store
-                          </Button>
-                        )}
-
-                        {isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) && (
-                          <Chip label="Pay approval pending" size="small" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 800, borderRadius: '6px' }} />
-                        )}
-
-                        {item.status === 'PENDING_CONFIRMATION' && (
-                          <Button 
-                            variant="outlined" 
-                            color="error" 
-                            size="small"
-                            onClick={() => handleCancelOrder(item.id)}
-                            sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px' }}
-                          >
-                            Cancel
-                          </Button>
-                        )}
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                );
-              }
-            })
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                        AMOUNT PAID
+                      </Typography>
+                      <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0f172a' }}>
+                        ₹{item.amount.toFixed(2)}
+                      </Typography>
+                    </Box>
+                    {(item.status === 'APPROVED' || item.status === 'SUCCESS') && (
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 800, display: 'block' }}>
+                          +₹{(item.amount * 0.05).toFixed(2)} Cashback
+                        </Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            ))
           )
         )}
 
-        {/* Tab 1: Delivery Orders only */}
+        {/* Tab 1: Online Orders */}
         {activeTab === 1 && (
-          onlineOrders.length === 0 ? (
+          onlineHistoryOrders.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
               <LuShoppingBag size={48} color="#94a3b8" style={{ marginBottom: '16px' }} />
               <Typography sx={{ fontWeight: 800, color: '#64748b', mb: 0.5 }}>
                 No active delivery orders
               </Typography>
               <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-                You haven't ordered any delivery packages yet. Browse our online eligible catalogs to get started!
+                You haven't ordered any delivery packages yet.
               </Typography>
-              <Link to="/consumer-ecommerce/near-me" style={{ textDecoration: 'none' }}>
-                <Button variant="contained" sx={{ mt: 3, bgcolor: '#ea580c', fontWeight: 800, textTransform: 'none', borderRadius: '10px' }}>
-                  Browse Shops
-                </Button>
-              </Link>
             </Box>
           ) : (
-            onlineOrders.map((item) => (
+            onlineHistoryOrders.map((item) => (
               <Card 
-                key={`orders-only-${item.id}`} 
+                key={`order-${item.id}`} 
                 sx={{ 
                   borderRadius: '16px', mb: 2, border: '1px solid #cbd5e1', 
                   boxShadow: '0 4px 12px rgba(234, 88, 12, 0.04)', overflow: 'hidden'
@@ -439,9 +322,9 @@ export default function MyOrdersPage() {
                         <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
                           {item.shopName}
                         </Typography>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#ea580c' }}>
-                          ONLINE STATE CONTROL
-                        </span>
+                        <Typography variant="caption" sx={{ color: '#ea580c', fontWeight: 800 }}>
+                          {isNearbyDeliveryOrder(item) ? 'ONLINE B2C DELIVERY' : 'NATIONAL DELIVERY'}
+                        </Typography>
                       </Box>
                     </Stack>
                     {getOnlineStatusChip(item.status)}
@@ -482,15 +365,15 @@ export default function MyOrdersPage() {
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
                         TOTAL AMOUNT
                       </Typography>
-                      <Typography sx={{ fontSize: '1.25rem', fontWeight: 900, color: '#ea580c' }}>
+                      <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#ea580c' }}>
                         ₹{item.total.toFixed(2)}
                       </Typography>
                       <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 600 }}>
-                        via {item.paymentMethod || 'ONLINE'} • Payment: {item.paymentStatus || 'PENDING'}
+                        via {item.paymentMethod || 'ONLINE'} • Status: {item.paymentStatus || 'PENDING'}
                       </Typography>
                     </Box>
 
-                    {isNearbyDeliveryOrder(item) && item.status === 'COMPLETED' && !isOrderPaid(item) && !getOfflinePaymentId(item) && (
+                    {isNearbyDeliveryOrder(item) && item.status === 'COMPLETED' && !isOrderPaid(item) && !getOfflinePaymentId(item) ? (
                       <Button 
                         variant="contained" 
                         size="small"
@@ -499,13 +382,9 @@ export default function MyOrdersPage() {
                       >
                         Pay Store
                       </Button>
-                    )}
-
-                    {isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) && (
+                    ) : isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) ? (
                       <Chip label="Pay approval pending" size="small" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 800, borderRadius: '6px' }} />
-                    )}
-
-                    {item.status === 'PENDING_CONFIRMATION' && (
+                    ) : item.status === 'PENDING_CONFIRMATION' ? (
                       <Button 
                         variant="outlined" 
                         color="error" 
@@ -515,42 +394,24 @@ export default function MyOrdersPage() {
                       >
                         Cancel
                       </Button>
-                    )}
+                    ) : item.status !== 'CANCELLED' ? (
+                      <Button 
+                        variant="contained" 
+                        size="small"
+                        onClick={() => navigate(`/track-order/${item.id}`)}
+                        sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px', bgcolor: '#ea580c', '&:hover': { bgcolor: '#c2410c' }, boxShadow: 'none' }}
+                      >
+                        Track Order
+                      </Button>
+                    ) : null}
                   </Stack>
                 </CardContent>
               </Card>
             ))
           )
         )}
-
-        {/* Tab 2: Giftcards Mock Placeholder */}
-        {activeTab === 2 && (
-          <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
-            <LuInfo size={48} color="#94a3b8" style={{ marginBottom: '16px' }} />
-            <Typography sx={{ fontWeight: 800, color: '#64748b', mb: 0.5 }}>
-              No Active Gift Adz or Coupons
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-              Gift Adz wallet purchases and virtual tickets will resolve here once acquired.
-            </Typography>
-          </Box>
-        )}
-
-        {/* Tab 3: Recharges Mock Placeholder */}
-        {activeTab === 3 && (
-          <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
-            <LuInfo size={48} color="#94a3b8" style={{ marginBottom: '16px' }} />
-            <Typography sx={{ fontWeight: 800, color: '#64748b', mb: 0.5 }}>
-              No Mobile / Utility Recharges
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#94a3b8' }}>
-              All Tri Pay utility transaction statements are securely stored on our centralized network blocks.
-            </Typography>
-          </Box>
-        )}
-
-      </Container>
-    </div>
+      </Box>
+    </TriAppShell>
   );
 }
 

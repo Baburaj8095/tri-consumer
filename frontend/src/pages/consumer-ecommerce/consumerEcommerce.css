@@ -12822,6 +12822,22 @@ body.ce-menu-open .ce-nearby-rail {
   box-shadow: 0 -10px 30px rgba(0,0,0,0.08);
   animation: ceBottomSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+@media (min-width: 768px) {
+  .location-picker-overlay {
+    align-items: center;
+  }
+  .location-picker-card {
+    border-radius: var(--ce-radius-xl);
+    padding: 30px;
+    max-height: 80vh;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+    animation: ceModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+@keyframes ceModalFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
 @keyframes ceBottomSheet {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -12871,18 +12887,29 @@ body.ce-menu-open .ce-nearby-rail {
 .location-picker-current {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   width: 100%;
   padding: 14px 16px;
-  background: rgba(249, 115, 22, 0.08);
-  color: var(--ce-primary);
-  border: 1.5px dashed rgba(249, 115, 22, 0.3);
+  background: var(--ce-primary);
+  color: #fff;
+  border: none;
   border-radius: var(--ce-radius-md);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--ce-font-body);
   cursor: pointer;
   margin-bottom: 24px;
-  text-align: left;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
+}
+.location-picker-current:hover {
+  background: #ea580c;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3);
+  transform: translateY(-1px);
+}
+.location-picker-current:active {
+  transform: translateY(0);
 }
 .location-picker-section-title {
   font-size: 14px;

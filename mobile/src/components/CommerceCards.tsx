@@ -1,9 +1,8 @@
-import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { CartItem, Product, Shop } from '../types/domain';
 
-const fallbackImage = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80';
+const fallbackImage = require('../../assets/fallback_img.png');
 
 export function SectionHeader({ title, actionLabel, onAction }: { title: string; actionLabel?: string; onAction?: () => void }) {
   return (
@@ -27,15 +26,43 @@ export function ServiceTile({ title, subtitle, onPress }: { title: string; subti
 export function ProductCard({ product, onPress, onAdd }: { product: Product; onPress: () => void; onAdd: () => void }) {
   const title = product.title || product.name || 'Product';
   const price = Number(product.price || 0);
+  const mrp = Number(product.mrp || price * 1.25);
+  const discount = Math.round(((mrp - price) / mrp) * 100);
+  
+  const isGroceryOrFruit = /fruit|apple|banana|mango|berry|orange|vegetable|onion|potato|tomato|milk|paneer|curd|atta|rice|flour/i.test(title);
+  const weightLabel = isGroceryOrFruit ? '500 g' : '1 Unit';
+
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.productCard, pressed && styles.pressed]}>
-      <Image source={{ uri: product.image || product.image_url || fallbackImage }} style={styles.productImage} />
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: product.image || product.image_url || fallbackImage }} style={styles.productImage} />
+        {discount > 0 && (
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountBadgeText}>{discount}% OFF</Text>
+          </View>
+        )}
+        <View style={styles.ratingBadge}>
+          <Text style={styles.ratingBadgeText}>4.3 ★</Text>
+        </View>
+      </View>
       <View style={styles.productBody}>
         <Text numberOfLines={2} style={styles.productTitle}>{title}</Text>
-        <Text style={styles.productMeta}>{product.shop_name || 'Tri Consumer Store'}</Text>
-        <View style={styles.productBottomRow}>
+        <Text style={styles.weightLabel}>{weightLabel}</Text>
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, flexWrap: 'wrap' }}>
           <Text style={styles.productPrice}>₹{price.toFixed(0)}</Text>
-          <Pressable onPress={onAdd} style={styles.addButton}><Text style={styles.addButtonText}>ADD</Text></Pressable>
+          {mrp > price && (
+            <Text style={styles.productOldPrice}>₹{mrp.toFixed(0)}</Text>
+          )}
+        </View>
+        
+        <Text style={styles.productMeta} numberOfLines={1}>{product.shop_name || 'Tri Consumer Store'}</Text>
+        
+        <View style={styles.productBottomRow}>
+          <Text style={styles.cashbackBadge}>10% Cashback</Text>
+          <Pressable onPress={onAdd} style={styles.addButton}>
+            <Text style={styles.addButtonText}>ADD</Text>
+          </Pressable>
         </View>
       </View>
     </Pressable>
@@ -47,7 +74,7 @@ export function StoreCard({ store, onPress }: { store: Shop; onPress: () => void
   const location = store.city || store.address || 'Local Area';
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.storeCard, pressed && styles.pressed]}>
-      <Image source={{ uri: store.shop_image || fallbackImage }} style={styles.storeImage} />
+      <Image source={store.shop_image ? { uri: store.shop_image } : fallbackImage} style={styles.storeImage} />
       <View style={styles.storeBody}>
         <View style={styles.storeTopRow}>
           <Text numberOfLines={1} style={styles.storeTitle}>{name}</Text>
@@ -67,7 +94,7 @@ export function StoreCard({ store, onPress }: { store: Shop; onPress: () => void
 export function CartLineItem({ item, onIncrement, onDecrement }: { item: CartItem; onIncrement: () => void; onDecrement: () => void }) {
   return (
     <View style={styles.cartItem}>
-      <Image source={{ uri: item.image || fallbackImage }} style={styles.cartImage} />
+      <Image source={item.image ? { uri: item.image } : fallbackImage} style={styles.cartImage} />
       <View style={styles.cartBody}>
         <Text numberOfLines={2} style={styles.cartTitle}>{item.title}</Text>
         <Text style={styles.cartPrice}>₹{item.price.toFixed(0)}</Text>
@@ -103,13 +130,21 @@ const styles = StyleSheet.create({
   serviceIconText: { color: colors.primary, fontWeight: '900', fontSize: 13 },
   serviceTitle: { color: colors.text, fontWeight: '900', fontSize: 13 },
   serviceSubtitle: { color: colors.textSecondary, fontSize: 11, marginTop: 2 },
-  productCard: { width: 172, backgroundColor: colors.surface, borderRadius: 22, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', marginRight: 14 },
+  productCard: { width: (Dimensions.get('window').width - 44) / 2, backgroundColor: colors.surface, borderRadius: 22, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', marginBottom: 14 },
+  imageContainer: { position: 'relative' },
+  discountBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#ff7a00', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, zIndex: 1 },
+  discountBadgeText: { color: '#fff', fontSize: 9, fontWeight: '900' },
+  ratingBadge: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, zIndex: 1 },
+  ratingBadgeText: { color: '#10b981', fontSize: 9, fontWeight: '900' },
   productImage: { width: '100%', height: 124, backgroundColor: colors.border },
   productBody: { padding: 12 },
   productTitle: { color: colors.text, fontWeight: '900', minHeight: 38, lineHeight: 19 },
-  productMeta: { color: colors.muted, fontSize: 11, marginTop: 4 },
-  productBottomRow: { marginTop: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  weightLabel: { color: colors.textSecondary, fontSize: 11, fontWeight: '700', marginTop: 4 },
   productPrice: { color: colors.text, fontWeight: '900', fontSize: 16 },
+  productOldPrice: { color: colors.muted, textDecorationLine: 'line-through', fontSize: 12, marginLeft: 6, fontWeight: '600' },
+  productMeta: { color: colors.muted, fontSize: 10, marginTop: 4 },
+  productBottomRow: { marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cashbackBadge: { color: '#b45309', fontSize: 8, fontWeight: '800', backgroundColor: '#fef3c7', paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4 },
   addButton: { backgroundColor: colors.primary, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
   addButtonText: { color: '#fff', fontWeight: '900', fontSize: 11 },
   storeCard: { backgroundColor: colors.surface, borderRadius: 22, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', marginBottom: 14 },

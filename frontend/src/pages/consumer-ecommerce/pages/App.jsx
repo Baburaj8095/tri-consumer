@@ -595,7 +595,7 @@ export default function App() {
                     distance: shop.distance_km != null ? `${shop.distance_km.toFixed(1)} KM` : '0.8 KM',
                     status: 'Open now',
                     phone: shop.contact_number || shop.phone || '',
-                    image: shop.shop_image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=360&q=80',
+                    image: shop.shop_image || '',
                     latitude: shop.latitude || shop.lat,
                     longitude: shop.longitude || shop.lng,
                   };

@@ -24,9 +24,9 @@
       "package": "com.trikonekt.consumer",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "monochromeImage": "./assets/logo.png"
       },
       "predictiveBackGestureEnabled": false,
       "permissions": [

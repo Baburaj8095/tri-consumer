@@ -119,7 +119,7 @@ export function AppNavigator() {
       <Stack.Screen name="TriInventoryBilling" component={TriInventoryBillingScreen} options={{ title: 'Inventory Billing' }} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="ConsumerKYC" component={ConsumerKYCScreen} options={{ title: 'KYC' }} />
-      <Stack.Screen name="GiftCards" component={GiftCardsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="GiftCards" component={GiftCardsScreen} options={{ title: 'Gift Cards' }} />
       <Stack.Screen name="ShopDetails" component={ShopDetailsScreen} options={{ title: 'Shop Details' }} />
       <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} options={{ title: 'Product Details' }} />
       <Stack.Screen name="StorePayment" component={StorePaymentScreen} options={{ title: 'Store Payment' }} />

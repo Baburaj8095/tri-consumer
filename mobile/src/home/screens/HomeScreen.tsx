@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Pressable, Text } from 'react-native';
+import { View, StyleSheet, Pressable, Text, RefreshControl } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { FlashList } from '@shopify/flash-list';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -25,7 +24,6 @@ import { useHomeNavigation } from '../utils/HomeNavigationCoordinator';
 import { AnalyticsService } from '../services/AnalyticsService';
 import { LoadingScreen } from '../../screens/LoadingScreen';
 
-const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as any;
 
 export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ConsumerHome'>) {
   const insets = useSafeAreaInsets();
@@ -72,17 +70,7 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
       />
 
       {/* Main vertical scrolling layout */}
-      <AnimatedFlashList
-        data={blocks}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }: { item: any }) => (
-          <DynamicHomeRenderer
-            blocks={[item]}
-            contentData={contentData}
-            navigation={navigation}
-            coordinator={coordinator}
-          />
-        )}
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ 
           paddingTop: contentPaddingTop, 
@@ -90,10 +78,17 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
         }}
         scrollEventThrottle={16}
         onScroll={headerAnim.scrollHandler}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        estimatedItemSize={200}
-      />
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={[colors.primary]} />
+        }
+      >
+        <DynamicHomeRenderer
+          blocks={blocks}
+          contentData={contentData}
+          navigation={navigation}
+          coordinator={coordinator}
+        />
+      </Animated.ScrollView>
 
       {/* Custom Bottom Tab Bar Overlay */}
       <View style={[styles.bottomTabBar, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>

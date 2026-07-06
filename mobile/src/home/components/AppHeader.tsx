@@ -280,7 +280,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       {/* Slide-in Account Profile Drawer */}
       <Modal animationType="slide" transparent={true} visible={drawerOpen} onRequestClose={() => setDrawerOpen(false)}>
         <View style={styles.drawerBackdrop}>
-          <Pressable style={styles.drawerDismiss} onPress={() => setDrawerOpen(false)} />
           <View style={styles.drawerContent}>
             
             {/* Drawer Header */}
@@ -389,6 +388,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             </View>
 
           </View>
+          <Pressable style={styles.drawerDismiss} onPress={() => setDrawerOpen(false)} />
         </View>
       </Modal>
     </View>
@@ -398,6 +398,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: zIndex.header,
   },
   headerBanner: {
@@ -650,7 +654,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingTop: Platform.OS === 'ios' ? 44 : 20,
     paddingHorizontal: 18,
-    ...shadows.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 0 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   drawerHeader: {
     flexDirection: 'row',

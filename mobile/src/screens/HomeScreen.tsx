@@ -17,7 +17,6 @@ import {
 import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
 import { FlashList } from '@shopify/flash-list';
 
-const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -506,15 +505,26 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
   return (
     <View style={styles.container}>
       <ConsumerHeader navigation={navigation} mode="home" scrollY={scrollY} />
-      <AnimatedFlashList
-        data={SECTIONS}
-        keyExtractor={(item: any) => item.id}
-        renderItem={({ item }: { item: any }) => item.render()}
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
         scrollEventThrottle={16}
         onScroll={scrollHandler}
-      />
+      >
+        {renderServices()}
+        {renderExplore()}
+        {renderDeals()}
+        {renderGiftCards()}
+        {renderAdz()}
+        {renderFeatures()}
+        {renderCategories()}
+        {renderCashback()}
+        {renderBanners()}
+        {renderVisited()}
+        {renderClothing()}
+        {renderNearby()}
+        {renderPersonalized()}
+      </Animated.ScrollView>
 
       {/* Custom Bottom Tab Bar */}
       <View style={[styles.bottomTabBar, { height: 60 + insets.bottom, paddingBottom: insets.bottom }]}>

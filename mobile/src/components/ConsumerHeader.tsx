@@ -117,13 +117,16 @@ export function ConsumerHeader({
 
   // Reanimated Animated styles
   const headerAnimatedStyle = useAnimatedStyle(() => {
+    const expandedHeight = insets.top + 136;
+    const collapsedHeight = insets.top + 60;
+
     const height = isCompactHeader
-      ? (title ? 100 : 90)
-      : interpolate(activeScrollY.value, [0, 80], [180, 110], 'clamp');
+      ? (title ? insets.top + 106 : insets.top + 136)
+      : interpolate(activeScrollY.value, [0, 80], [expandedHeight, collapsedHeight], 'clamp');
 
     const paddingBottom = isCompactHeader
-      ? 16
-      : interpolate(activeScrollY.value, [0, 80], [16, 8], 'clamp');
+      ? 12
+      : interpolate(activeScrollY.value, [0, 80], [12, 6], 'clamp');
 
     return {
       height,
@@ -133,7 +136,7 @@ export function ConsumerHeader({
 
   const fullHeaderAnimatedStyle = useAnimatedStyle(() => {
     const opacity = isCompactHeader
-      ? 0
+      ? 1
       : interpolate(activeScrollY.value, [0, 50], [1, 0], 'clamp');
 
     return {
@@ -364,7 +367,6 @@ export function ConsumerHeader({
       {/* Slide-in Profile Drawer Modal */}
       <Modal animationType="slide" transparent={true} visible={drawerOpen} onRequestClose={() => setDrawerOpen(false)}>
         <View style={styles.drawerBackdrop}>
-          <Pressable style={styles.drawerDismissArea} onPress={() => setDrawerOpen(false)} />
           <View style={styles.drawerContent}>
             
             {/* Drawer Header */}
@@ -468,6 +470,7 @@ export function ConsumerHeader({
             </View>
 
           </View>
+          <Pressable style={styles.drawerDismissArea} onPress={() => setDrawerOpen(false)} />
         </View>
       </Modal>
     </View>
@@ -560,7 +563,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 44 : 20,
     paddingHorizontal: 18,
     shadowColor: '#000',
-    shadowOffset: { width: -4, height: 0 },
+    shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 8

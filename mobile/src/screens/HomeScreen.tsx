@@ -10,7 +10,8 @@ import {
   View,
   Dimensions,
   Platform,
-  Alert
+  Alert,
+  LayoutAnimation
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,6 +42,7 @@ const homeStores = [
 export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'ConsumerHome'>) {
   const { hydrate: hydrateLocation } = useLocationStore();
   const { hydrate: hydrateCart } = useCartStore();
+  const [isHeaderScrolled, setIsHeaderScrolled] = useState(false);
   
   // Hydrate stores on mount
   useEffect(() => {
@@ -48,10 +50,25 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
     hydrateCart();
   }, []);
 
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const shouldCollapse = offsetY > 40;
+    if (shouldCollapse !== isHeaderScrolled) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsHeaderScrolled(shouldCollapse);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <ConsumerHeader navigation={navigation} mode="home" />
-      <ScrollView style={styles.scrollStyle} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
+      <ConsumerHeader navigation={navigation} mode="home" isScrolled={isHeaderScrolled} />
+      <ScrollView 
+        style={styles.scrollStyle} 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={{ paddingBottom: 80 }}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
+      >
 
         {/* Section 1: Explore Near Me Section */}
         <Pressable style={styles.exploreNearMeCard} onPress={() => navigation.navigate('NearMe')}>

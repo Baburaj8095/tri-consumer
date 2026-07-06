@@ -28,6 +28,7 @@ interface ConsumerHeaderProps {
   showBack?: boolean;
   title?: string;
   subtitle?: string;
+  isScrolled?: boolean;
 }
 
 export function ConsumerHeader({ 
@@ -36,7 +37,8 @@ export function ConsumerHeader({
   onSearch, 
   showBack = false,
   title,
-  subtitle
+  subtitle,
+  isScrolled = false
 }: ConsumerHeaderProps) {
   const { location, saveLocation, hydrate: hydrateLocation } = useLocationStore();
   const { cart, hydrate: hydrateCart } = useCartStore();
@@ -107,160 +109,197 @@ export function ConsumerHeader({
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       
       {/* Curved Orange Header Section */}
-      <View style={[styles.headerBanner, isCompact && styles.headerBannerCompact, { paddingTop: insets.top + 10 }]}>
-        <View style={styles.headerTopRow}>
-          
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
-            {showBack && (
-              <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#fff" />
-              </Pressable>
-            )}
-
-            {title ? (
-              <View style={{ flex: 1 }}>
-                <Text style={styles.headerTitleText} numberOfLines={1}>{title}</Text>
-                {subtitle ? <Text style={styles.headerSubtitleText} numberOfLines={1}>{subtitle}</Text> : null}
+      <View style={[styles.headerBanner, isCompact && styles.headerBannerCompact, isScrolled && styles.headerBannerScrolled, { paddingTop: isScrolled ? insets.top + 8 : insets.top + 10 }]}>
+        {isScrolled ? (
+          <View style={[styles.headerTopRow, { marginBottom: 0, gap: 10, alignItems: 'center' }]}>
+            {/* User Profile Avatar with Camera Icon */}
+            <Pressable onPress={() => setDrawerOpen(true)} style={styles.avatarWrapper}>
+              <View style={[styles.avatarCircle, { width: 34, height: 34, borderRadius: 17, borderWidth: 1 }]}>
+                {profilePic ? (
+                  <Image source={{ uri: profilePic }} style={{ width: '100%', height: '100%', borderRadius: 17 }} />
+                ) : (
+                  <Ionicons name="person" size={16} color={colors.primary} />
+                )}
               </View>
-            ) : (
-              <>
-                {/* User Profile Avatar with Camera Icon */}
-                <Pressable onPress={() => setDrawerOpen(true)} style={styles.avatarWrapper}>
-                  <View style={styles.avatarCircle}>
-                    <Ionicons name="person" size={20} color={colors.primary} />
-                  </View>
-                  <View style={styles.cameraBadge}>
-                    <Ionicons name="camera" size={8} color="#fff" />
-                  </View>
-                </Pressable>
+              <View style={[styles.cameraBadge, { padding: 2, right: -1, bottom: -1 }]}>
+                <Ionicons name="camera" size={6} color="#fff" />
+              </View>
+            </Pressable>
 
-                {/* Greeting & Wallet Balance */}
-                <View style={styles.greetingContainer}>
-                  <Text style={styles.greetingKicker}>{greetingText}</Text>
-                  <Text style={styles.greetingName} numberOfLines={1}>{displayName}</Text>
-                </View>
-              </>
-            )}
-          </View>
-
-          {title ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Pressable style={styles.headerLocationPill} onPress={() => setPincodeModalOpen(true)}>
-                <Ionicons name="location" size={12} color={colors.primary} style={{ marginRight: 2 }} />
-                <Text style={styles.headerLocationPillText} numberOfLines={1}>{displayCity}</Text>
-                <Ionicons name="chevron-down" size={12} color="#475569" style={{ marginLeft: 2 }} />
-              </Pressable>
-              <Pressable style={styles.iconButton}>
-                <Ionicons name="notifications-outline" size={20} color="#fff" />
-              </Pressable>
+            {/* Search Container */}
+            <View style={[styles.searchContainer, { height: 36, borderRadius: 18, borderWidth: 1, flex: 1 }]}>
+              <Ionicons name="search-outline" size={16} color={colors.muted} style={{ marginRight: 6 }} />
+              <TextInput
+                style={[styles.searchInput, { fontSize: 12, paddingVertical: 0 }]}
+                placeholder="Search services, products & stores..."
+                placeholderTextColor={colors.muted}
+                value={searchQuery}
+                onChangeText={handleSearchChange}
+              />
+              <Ionicons name="qr-code-outline" size={16} color={colors.muted} style={{ marginRight: 8 }} onPress={() => navigation.navigate('ConsumerScanner')} />
+              <Ionicons name="mic-outline" size={16} color={colors.muted} />
             </View>
-          ) : (
-            <>
 
-              {/* Header Icons */}
-              <View style={styles.headerIconsRow}>
-                <Pressable style={styles.iconButton}>
-                  <Ionicons name="notifications-outline" size={20} color="#fff" />
-                </Pressable>
-                <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Society')}>
-                  <Ionicons name="chatbubble-ellipses-outline" size={20} color="#fff" />
-                </Pressable>
-                <Pressable style={styles.iconButton} onPress={() => navigation.navigate('ConsumerScanner')}>
-                  <Ionicons name="scan-outline" size={20} color="#fff" />
-                </Pressable>
-                <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Cart')}>
-                  <View>
-                    <Ionicons name="bag-handle-outline" size={20} color="#fff" />
-                    {cartCount > 0 && (
-                      <View style={styles.badgeContainer}>
-                        <Text style={styles.badgeText}>{cartCount}</Text>
-                      </View>
-                    )}
+            {/* Cart Button */}
+            <Pressable style={[styles.iconButton, { padding: 2 }]} onPress={() => navigation.navigate('Cart')}>
+              <View>
+                <Ionicons name="bag-handle-outline" size={20} color="#fff" />
+                {cartCount > 0 && (
+                  <View style={[styles.badgeContainer, { width: 12, height: 12, top: -2, right: -2 }]}>
+                    <Text style={[styles.badgeText, { fontSize: 7 }]}>{cartCount}</Text>
                   </View>
+                )}
+              </View>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <View style={styles.headerTopRow}>
+              
+              <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}>
+                {showBack && (
+                  <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color="#fff" />
+                  </Pressable>
+                )}
+
+                {title ? (
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.headerTitleText} numberOfLines={1}>{title}</Text>
+                    {subtitle ? <Text style={styles.headerSubtitleText} numberOfLines={1}>{subtitle}</Text> : null}
+                  </View>
+                ) : (
+                  <>
+                    {/* User Profile Avatar with Camera Icon */}
+                    <Pressable onPress={() => setDrawerOpen(true)} style={styles.avatarWrapper}>
+                      <View style={styles.avatarCircle}>
+                        {profilePic ? (
+                          <Image source={{ uri: profilePic }} style={{ width: '100%', height: '100%', borderRadius: 20 }} />
+                        ) : (
+                          <Ionicons name="person" size={20} color={colors.primary} />
+                        )}
+                      </View>
+                      <View style={styles.cameraBadge}>
+                        <Ionicons name="camera" size={8} color="#fff" />
+                      </View>
+                    </Pressable>
+
+                    {/* Greeting & Wallet Balance */}
+                    <View style={styles.greetingContainer}>
+                      <Text style={styles.greetingKicker}>{greetingText}</Text>
+                      <Text style={styles.greetingName} numberOfLines={1}>{displayName}</Text>
+                    </View>
+                  </>
+                )}
+              </View>
+
+              {title ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Pressable style={styles.headerLocationPill} onPress={() => setPincodeModalOpen(true)}>
+                    <Ionicons name="location" size={12} color={colors.primary} style={{ marginRight: 2 }} />
+                    <Text style={styles.headerLocationPillText} numberOfLines={1}>{displayCity}</Text>
+                    <Ionicons name="chevron-down" size={12} color="#475569" style={{ marginLeft: 2 }} />
+                  </Pressable>
+                  <Pressable style={styles.iconButton}>
+                    <Ionicons name="notifications-outline" size={20} color="#fff" />
+                  </Pressable>
+                </View>
+              ) : (
+                <>
+                  {/* Header Icons */}
+                  <View style={styles.headerIconsRow}>
+                    <Pressable style={styles.iconButton}>
+                      <Ionicons name="notifications-outline" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Society')}>
+                      <Ionicons name="chatbubble-ellipses-outline" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable style={styles.iconButton} onPress={() => navigation.navigate('ConsumerScanner')}>
+                      <Ionicons name="scan-outline" size={20} color="#fff" />
+                    </Pressable>
+                    <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Cart')}>
+                      <View>
+                        <Ionicons name="bag-handle-outline" size={20} color="#fff" />
+                        {cartCount > 0 && (
+                          <View style={styles.badgeContainer}>
+                            <Text style={styles.badgeText}>{cartCount}</Text>
+                          </View>
+                        )}
+                      </View>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </View>
+
+            {/* Delivery Location Section */}
+            {!title && (
+              <Pressable onPress={() => setPincodeModalOpen(true)} style={styles.deliveryRow}>
+                <Ionicons name="location-outline" size={14} color="#ffd9cc" />
+                <Text style={styles.deliveryLabel}>DELIVER TO </Text>
+                <Text style={styles.deliveryValue} numberOfLines={1}>{displayArea}, {displayCity}</Text>
+                <Ionicons name="chevron-down" size={14} color="#fff" style={{ marginLeft: 4 }} />
+              </Pressable>
+            )}
+
+            {/* Search bar & Join Prime button */}
+            <View style={styles.searchRow}>
+              <View style={styles.searchContainer}>
+                <Ionicons name="search-outline" size={18} color={colors.muted} style={{ marginRight: 6 }} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search services, products & stores..."
+                  placeholderTextColor={colors.muted}
+                  value={searchQuery}
+                  onChangeText={handleSearchChange}
+                />
+                <Ionicons name="qr-code-outline" size={18} color={colors.muted} style={{ marginRight: 8 }} onPress={() => navigation.navigate('ConsumerScanner')} />
+                <Ionicons name="mic-outline" size={18} color={colors.muted} />
+              </View>
+
+              {!isCompact && (
+                <Pressable style={styles.joinPrimeButton} onPress={() => navigation.navigate('Society')}>
+                  <Ionicons name="ribbon-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
+                  <Text style={styles.joinPrimeText}>Join Prime</Text>
+                </Pressable>
+              )}
+            </View>
+
+            {/* Quick Services Row (only in standard/home mode) */}
+            {!isCompact && (
+              <View style={styles.servicesGrid}>
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriPay')}>
+                  <Text style={styles.serviceIconRupee}>₹</Text>
+                  <Text style={styles.serviceLabel}>Tri Pay</Text>
+                </Pressable>
+
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriZone')}>
+                  <Ionicons name="grid-outline" size={20} color={colors.primary} />
+                  <Text style={styles.serviceLabel}>Tri Zone</Text>
+                </Pressable>
+
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriEat')}>
+                  <Ionicons name="restaurant-outline" size={20} color={colors.primary} />
+                  <Text style={styles.serviceLabel}>Tri Eat</Text>
+                </Pressable>
+
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriPickDrop')}>
+                  <Ionicons name="bicycle-outline" size={20} color={colors.primary} />
+                  <Text style={styles.serviceLabel}>Tri Drop</Text>
+                </Pressable>
+
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriTrip')}>
+                  <Ionicons name="car-outline" size={20} color={colors.primary} />
+                  <Text style={styles.serviceLabel}>Travel</Text>
+                </Pressable>
+
+                <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('NearbyStores')}>
+                  <Ionicons name="storefront-outline" size={20} color={colors.primary} />
+                  <Text style={styles.serviceLabel}>Nearby</Text>
                 </Pressable>
               </View>
-            </>
-          )}
-        </View>
-
-        {/* Delivery Location Section */}
-        {!title && (
-          <Pressable onPress={() => setPincodeModalOpen(true)} style={styles.deliveryRow}>
-            <Ionicons name="location-outline" size={14} color="#ffd9cc" />
-            <Text style={styles.deliveryLabel}>DELIVER TO </Text>
-            <Text style={styles.deliveryValue} numberOfLines={1}>{displayArea}, {displayCity}</Text>
-            <Ionicons name="chevron-down" size={14} color="#fff" style={{ marginLeft: 4 }} />
-          </Pressable>
-        )}
-
-        {/* Search bar & Join Prime button */}
-        <View style={styles.searchRow}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search-outline" size={18} color={colors.muted} style={{ marginRight: 6 }} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search services, products & stores..."
-              placeholderTextColor={colors.muted}
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-            />
-            <Ionicons name="qr-code-outline" size={18} color={colors.muted} style={{ marginRight: 8 }} onPress={() => navigation.navigate('ConsumerScanner')} />
-            <Ionicons name="mic-outline" size={18} color={colors.muted} />
-          </View>
-
-          {!isCompact && (
-            <Pressable style={styles.joinPrimeButton} onPress={() => navigation.navigate('Society')}>
-              <Ionicons name="ribbon-outline" size={14} color={colors.primary} style={{ marginRight: 4 }} />
-              <Text style={styles.joinPrimeText}>Join Prime</Text>
-            </Pressable>
-          )}
-        </View>
-
-        {/* Quick Services Row (only in standard/home mode) */}
-        {!isCompact && (
-          <View style={styles.servicesGrid}>
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriPay')}>
-              <View style={styles.serviceCircle}>
-                <Text style={styles.serviceIconRupee}>₹</Text>
-              </View>
-              <Text style={styles.serviceLabel}>Tri Pay</Text>
-            </Pressable>
-
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriZone')}>
-              <View style={styles.serviceCircle}>
-                <Ionicons name="grid-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.serviceLabel}>Tri Zone</Text>
-            </Pressable>
-
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriEat')}>
-              <View style={styles.serviceCircle}>
-                <Ionicons name="restaurant-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.serviceLabel}>Tri Eat</Text>
-            </Pressable>
-
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriPickDrop')}>
-              <View style={styles.serviceCircle}>
-                <Ionicons name="bicycle-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.serviceLabel}>Tri Drop</Text>
-            </Pressable>
-
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('TriTrip')}>
-              <View style={styles.serviceCircle}>
-                <Ionicons name="car-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.serviceLabel}>Travel</Text>
-            </Pressable>
-
-            <Pressable style={styles.serviceItem} onPress={() => navigation.navigate('NearbyStores')}>
-              <View style={styles.serviceCircle}>
-                <Ionicons name="storefront-outline" size={20} color={colors.primary} />
-              </View>
-              <Text style={styles.serviceLabel}>Nearby</Text>
-            </Pressable>
-          </View>
+            )}
+          </>
         )}
       </View>
 
@@ -435,6 +474,15 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24
   },
+  headerBannerScrolled: {
+    paddingBottom: 8,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4
+  },
   headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -462,11 +510,26 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 13, color: colors.text, fontWeight: '600' },
   joinPrimeButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff7ed', height: 42, borderRadius: 18, paddingHorizontal: 12, borderWidth: 1.5, borderColor: '#FF7A00', shadowColor: 'rgba(255, 122, 0, 0.1)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 1 },
   joinPrimeText: { color: colors.primary, fontSize: 11, fontWeight: '800' },
-  servicesGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 },
-  serviceItem: { alignItems: 'center', width: '16.5%' },
+  servicesGrid: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 18, gap: 4 },
+  serviceItem: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
+    marginHorizontal: 1,
+  },
   serviceCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#e2e8f0', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  serviceIconRupee: { color: colors.primary, fontWeight: '800', fontSize: 18 },
-  serviceLabel: { fontSize: 10, fontWeight: '800', color: '#ffffff', marginTop: 8, textAlign: 'center' },
+  serviceIconRupee: { color: colors.primary, fontWeight: '800', fontSize: 16 },
+  serviceLabel: { fontSize: 9.5, fontWeight: '800', color: '#1e293b', marginTop: 6, textAlign: 'center' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' },
   pincodeModalContent: { backgroundColor: '#fff', width: SCREEN_WIDTH * 0.88, borderRadius: 28, padding: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 10 },
   modalTitle: { fontSize: 20, fontWeight: '900', color: colors.text, marginBottom: 20, textAlign: 'center' },

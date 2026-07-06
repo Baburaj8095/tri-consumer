@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import { useInitialHydration } from '../hooks/useInitialHydration';
 import { LoginScreen, RegisterScreen } from '../screens/AuthScreens';
-import { ConsumerHomeScreen } from '../screens/HomeScreen';
+import { ConsumerHomeScreen } from '../home/screens/HomeScreen';
 import {
   CartScreen,
   DeliveryScreen,

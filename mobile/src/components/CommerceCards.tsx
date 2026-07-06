@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   serviceSubtitle: { color: colors.textSecondary, fontSize: 11, marginTop: 2 },
   productCard: { width: (Dimensions.get('window').width - 44) / 2, backgroundColor: colors.surface, borderRadius: 22, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', marginBottom: 14 },
   imageContainer: { position: 'relative' },
-  discountBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#ff7a00', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, zIndex: 1 },
+  discountBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: colors.primary, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, zIndex: 1 },
   discountBadgeText: { color: '#fff', fontSize: 9, fontWeight: '900' },
   ratingBadge: { position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3, zIndex: 1 },
   ratingBadgeText: { color: '#10b981', fontSize: 9, fontWeight: '900' },

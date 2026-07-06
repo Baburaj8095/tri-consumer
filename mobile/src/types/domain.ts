@@ -1,4 +1,4 @@
-export type AuthUser = { id?: string | number; username?: string; fullName?: string; full_name?: string; mobile?: string; email?: string };
+export type AuthUser = { id?: string | number; username?: string; fullName?: string; full_name?: string; mobile?: string; email?: string; profilePic?: string };
 export type AuthPayload = { access?: string; token?: string; refresh?: string; user?: AuthUser; data?: AuthPayload };
 export type LocationInfo = { id?: string; lat: number; lng: number; area: string; city: string; state?: string; country?: string; pincode?: string; formattedAddress: string; lastUpdated?: number };
 export type Product = { id: string | number; productId?: string | number; title?: string; name?: string; price: number; mrp?: number; image?: string; image_url?: string; shop_id?: string | number; shop_name?: string };

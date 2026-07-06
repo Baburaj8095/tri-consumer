@@ -41,10 +41,8 @@ interface AppHeaderProps {
   coordinator: HomeNavigationCoordinator;
   scrollY: SharedValue<number>;
   headerAnimatedStyle: any;
-  greetingAnimatedStyle: any;
-  deliveryAnimatedStyle: any;
-  servicesAnimatedStyle: any;
-  searchAnimatedStyle: any;
+  expandedHeaderAnimatedStyle: any;
+  compactHeaderAnimatedStyle: any;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -52,10 +50,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   coordinator,
   scrollY,
   headerAnimatedStyle,
-  greetingAnimatedStyle,
-  deliveryAnimatedStyle,
-  servicesAnimatedStyle,
-  searchAnimatedStyle,
+  expandedHeaderAnimatedStyle,
+  compactHeaderAnimatedStyle,
 }) => {
   const { location, saveLocation, hydrate: hydrateLocation } = useLocationStore();
   const { cart, hydrate: hydrateCart } = useCartStore();
@@ -117,123 +113,169 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
 
       {/* Folding Curved Banner wrapper */}
-      <Animated.View style={[styles.headerBanner, headerAnimatedStyle, { paddingTop: insets.top + spacing.xs }]}>
+      <Animated.View style={[styles.headerBanner, headerAnimatedStyle, { paddingTop: insets.top + spacing.xs, overflow: 'hidden' }]}>
         
-        {/* Expanded Top Area (Greeting + Profile + Icons) */}
-        <Animated.View style={[styles.topRow, greetingAnimatedStyle]}>
-          {/* Profile Click Target with 44x44 target bounding box */}
+        {/* Expanded Header View */}
+        <Animated.View style={[expandedHeaderAnimatedStyle, { flex: 1, width: '100%' }]}>
+          {/* Expanded Top Area (Greeting + Profile + Icons) */}
+          <View style={styles.topRow}>
+            {/* Profile Click Target with 44x44 target bounding box */}
+            <Pressable
+              style={styles.avatarClickArea}
+              onPress={() => setDrawerOpen(true)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Open Account Menu"
+            >
+              <View style={styles.avatarCircle}>
+                {profilePic ? (
+                  <Image source={{ uri: profilePic }} style={styles.avatarImage} />
+                ) : (
+                  <Ionicons name="person" size={iconSizes.md} color={colors.primary} />
+                )}
+              </View>
+              <View style={styles.cameraBadge}>
+                <Ionicons name="camera" size={6} color="#fff" />
+              </View>
+            </Pressable>
+
+            {/* User Greetings */}
+            <View style={styles.greetingWrapper}>
+              <Text style={styles.greetingKicker}>{greetingText}</Text>
+              <Text style={styles.greetingName} numberOfLines={1}>{displayName}</Text>
+            </View>
+
+            {/* Right Header Navigation Icons */}
+            <View style={styles.iconsRow}>
+              <Pressable style={styles.iconButton} hitSlop={spacing.xs}>
+                <Ionicons name="notifications-outline" size={iconSizes.md} color="#fff" />
+              </Pressable>
+              <Pressable style={styles.iconButton} onPress={() => coordinator.goToService('Society')} hitSlop={spacing.xs}>
+                <Ionicons name="chatbubble-ellipses-outline" size={iconSizes.md} color="#fff" />
+              </Pressable>
+              <Pressable style={styles.iconButton} onPress={() => coordinator.goToCart()} hitSlop={spacing.xs}>
+                <View>
+                  <Ionicons name="bag-handle-outline" size={iconSizes.md} color="#fff" />
+                  {cartCount > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{cartCount}</Text>
+                    </View>
+                  )}
+                </View>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Expanded Location Bar */}
+          <View style={styles.deliveryContainer}>
+            <Pressable
+              onPress={() => setPincodeModalOpen(true)}
+              style={styles.deliveryRow}
+              accessibilityRole="button"
+              accessibilityLabel={`Deliver to ${displayArea}, Pincode ${displayPincode}`}
+            >
+              <Ionicons name="location-outline" size={14} color="#ffd9cc" />
+              <Text style={styles.deliveryLabel}>DELIVER TO </Text>
+              <Text style={styles.deliveryValue} numberOfLines={1}>{displayArea}, {displayCity}</Text>
+              <Ionicons name="chevron-down" size={14} color="#fff" style={{ marginLeft: 4 }} />
+            </Pressable>
+          </View>
+
+          {/* Dynamic Sticky Search Bar */}
+          <View style={styles.searchWrapper}>
+            <StickySearch
+              query={searchQuery}
+              onChangeQuery={(text) => {
+                setSearchQuery(text);
+              }}
+              onScanPress={() => coordinator.goToScanner()}
+              onMicPress={() => Alert.alert('Voice Search', 'Voice recognition starting...')}
+            />
+          </View>
+
+          {/* Quick Services Square Cards (Folds on Scroll Phase 2) */}
+          <View style={styles.servicesWrapper}>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.servicesScroll}
+              data={quickServices}
+              keyExtractor={(item) => item.label}
+              renderItem={({ item }) => {
+                const isRupee = item.label === 'Tri Pay';
+                const iconName =
+                  item.label === 'Tri Zone' ? 'grid-outline' :
+                  item.label === 'Tri Eat' ? 'restaurant-outline' :
+                  item.label === 'Tri Drop' ? 'bicycle-outline' :
+                  item.label === 'Tri Trip' ? 'car-outline' :
+                  item.label === 'Nearby Stores' ? 'storefront-outline' : 'card-outline';
+
+                return (
+                  <Pressable
+                    style={styles.serviceCard}
+                    onPress={() => coordinator.goToService(item.route)}
+                    accessibilityRole="button"
+                    accessibilityLabel={item.label}
+                  >
+                    <View style={styles.serviceIconBg}>
+                      {isRupee ? (
+                        <Text style={styles.serviceRupee}>₹</Text>
+                      ) : (
+                        <Ionicons name={iconName as any} size={iconSizes.lg} color={colors.primary} />
+                      )}
+                    </View>
+                    <Text style={styles.serviceLabel}>{item.label}</Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        </Animated.View>
+
+        {/* Compact Header View (Option 1) */}
+        <Animated.View style={[styles.compactHeaderRow, compactHeaderAnimatedStyle, { top: insets.top + 10 }]}>
+          {/* Profile Click Target */}
           <Pressable
-            style={styles.avatarClickArea}
+            style={styles.compactAvatarClickArea}
             onPress={() => setDrawerOpen(true)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
             accessibilityLabel="Open Account Menu"
           >
-            <View style={styles.avatarCircle}>
+            <View style={styles.compactAvatarCircle}>
               {profilePic ? (
-                <Image source={{ uri: profilePic }} style={styles.avatarImage} />
+                <Image source={{ uri: profilePic }} style={styles.compactAvatarImage} />
               ) : (
-                <Ionicons name="person" size={iconSizes.md} color={colors.primary} />
+                <Ionicons name="person" size={16} color={colors.primary} />
               )}
             </View>
-            <View style={styles.cameraBadge}>
-              <Ionicons name="camera" size={6} color="#fff" />
-            </View>
           </Pressable>
 
-          {/* User Greetings */}
-          <View style={styles.greetingWrapper}>
-            <Text style={styles.greetingKicker}>{greetingText}</Text>
-            <Text style={styles.greetingName} numberOfLines={1}>{displayName}</Text>
+          {/* Compact Search Bar */}
+          <View style={styles.compactSearchWrapper}>
+            <StickySearch
+              query={searchQuery}
+              onChangeQuery={setSearchQuery}
+              onScanPress={() => coordinator.goToScanner()}
+              onMicPress={() => Alert.alert('Voice Search', 'Voice recognition starting...')}
+              style={{ height: 36, borderRadius: radius.round }}
+            />
           </View>
 
-          {/* Right Header Navigation Icons */}
-          <View style={styles.iconsRow}>
-            <Pressable style={styles.iconButton} hitSlop={spacing.xs}>
-              <Ionicons name="notifications-outline" size={iconSizes.md} color="#fff" />
-            </Pressable>
-            <Pressable style={styles.iconButton} onPress={() => coordinator.goToService('Society')} hitSlop={spacing.xs}>
-              <Ionicons name="chatbubble-ellipses-outline" size={iconSizes.md} color="#fff" />
-            </Pressable>
-            <Pressable style={styles.iconButton} onPress={() => coordinator.goToCart()} hitSlop={spacing.xs}>
-              <View>
-                <Ionicons name="bag-handle-outline" size={iconSizes.md} color="#fff" />
-                {cartCount > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{cartCount}</Text>
-                  </View>
-                )}
-              </View>
-            </Pressable>
-          </View>
-        </Animated.View>
-
-        {/* Expanded Location Bar */}
-        <Animated.View style={[styles.deliveryContainer, deliveryAnimatedStyle]}>
-          <Pressable
-            onPress={() => setPincodeModalOpen(true)}
-            style={styles.deliveryRow}
+          {/* Cart Icon */}
+          <Pressable 
+            style={styles.compactCartButton} 
+            onPress={() => coordinator.goToCart()}
             accessibilityRole="button"
-            accessibilityLabel={`Deliver to ${displayArea}, Pincode ${displayPincode}`}
+            accessibilityLabel="Open Cart"
           >
-            <Ionicons name="location-outline" size={14} color="#ffd9cc" />
-            <Text style={styles.deliveryLabel}>DELIVER TO </Text>
-            <Text style={styles.deliveryValue} numberOfLines={1}>{displayArea}, {displayCity}</Text>
-            <Ionicons name="chevron-down" size={14} color="#fff" style={{ marginLeft: 4 }} />
+            <Ionicons name="bag-handle-outline" size={20} color="#fff" />
+            {cartCount > 0 && (
+              <View style={styles.compactBadge}>
+                <Text style={styles.compactBadgeText}>{cartCount}</Text>
+              </View>
+            )}
           </Pressable>
-        </Animated.View>
-
-        {/* Dynamic Sticky Search Bar */}
-        <Animated.View style={[styles.searchWrapper, searchAnimatedStyle]}>
-          <StickySearch
-            query={searchQuery}
-            onChangeQuery={(text) => {
-              setSearchQuery(text);
-              if (navigation.setParams) {
-                // Keep search query consistent if screen handles it
-              }
-            }}
-            onScanPress={() => coordinator.goToScanner()}
-            onMicPress={() => Alert.alert('Voice Search', 'Voice recognition starting...')}
-          />
-        </Animated.View>
-
-        {/* Quick Services Square Cards (Folds on Scroll Phase 2) */}
-        <Animated.View style={[styles.servicesWrapper, servicesAnimatedStyle]}>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.servicesScroll}
-            data={quickServices}
-            keyExtractor={(item) => item.label}
-            renderItem={({ item }) => {
-              const isRupee = item.label === 'Tri Pay';
-              const iconName =
-                item.label === 'Tri Zone' ? 'grid-outline' :
-                item.label === 'Tri Eat' ? 'restaurant-outline' :
-                item.label === 'Tri Drop' ? 'bicycle-outline' :
-                item.label === 'Tri Trip' ? 'car-outline' :
-                item.label === 'Nearby Stores' ? 'storefront-outline' : 'card-outline';
-
-              return (
-                <Pressable
-                  style={styles.serviceCard}
-                  onPress={() => coordinator.goToService(item.route)}
-                  accessibilityRole="button"
-                  accessibilityLabel={item.label}
-                >
-                  <View style={styles.serviceIconBg}>
-                    {isRupee ? (
-                      <Text style={styles.serviceRupee}>₹</Text>
-                    ) : (
-                      <Ionicons name={iconName as any} size={iconSizes.lg} color={colors.primary} />
-                    )}
-                  </View>
-                  <Text style={styles.serviceLabel}>{item.label}</Text>
-                </Pressable>
-              );
-            }}
-          />
         </Animated.View>
       </Animated.View>
 
@@ -842,5 +884,64 @@ const styles = StyleSheet.create({
     color: colors.danger,
     fontSize: 14,
     fontWeight: '800',
+  },
+  compactHeaderRow: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+  },
+  compactAvatarClickArea: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactAvatarCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  compactAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  compactSearchWrapper: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+  compactCartButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: colors.danger,
+    borderRadius: 8,
+    minWidth: 14,
+    height: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
+  },
+  compactBadgeText: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '900',
   },
 });

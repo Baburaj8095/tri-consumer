@@ -63,10 +63,8 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
         coordinator={coordinator}
         scrollY={headerAnim.scrollY}
         headerAnimatedStyle={headerAnim.headerAnimatedStyle}
-        greetingAnimatedStyle={headerAnim.greetingAnimatedStyle}
-        deliveryAnimatedStyle={headerAnim.deliveryAnimatedStyle}
-        servicesAnimatedStyle={headerAnim.servicesAnimatedStyle}
-        searchAnimatedStyle={headerAnim.searchAnimatedStyle}
+        expandedHeaderAnimatedStyle={headerAnim.expandedHeaderAnimatedStyle}
+        compactHeaderAnimatedStyle={headerAnim.compactHeaderAnimatedStyle}
       />
 
       {/* Main vertical scrolling layout */}

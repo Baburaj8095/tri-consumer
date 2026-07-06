@@ -117,11 +117,11 @@ export function ConsumerHeader({
 
   // Reanimated Animated styles
   const headerAnimatedStyle = useAnimatedStyle(() => {
-    const expandedHeight = insets.top + 136;
+    const expandedHeight = insets.top + 162;
     const collapsedHeight = insets.top + 60;
 
     const height = isCompactHeader
-      ? (title ? insets.top + 106 : insets.top + 136)
+      ? (title ? insets.top + 124 : insets.top + 162)
       : interpolate(activeScrollY.value, [0, 80], [expandedHeight, collapsedHeight], 'clamp');
 
     const paddingBottom = isCompactHeader

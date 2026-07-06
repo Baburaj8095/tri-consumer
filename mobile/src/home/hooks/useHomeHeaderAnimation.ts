@@ -19,15 +19,14 @@ export function useHomeHeaderAnimation() {
 
   // Base heights
   const statusBarHeight = insets.top;
-  const HEADER_MAX_HEIGHT = 250 + statusBarHeight; // Expanded
-  const HEADER_MID_HEIGHT = 140 + statusBarHeight; // Phase 1 collapse (Search + Services)
-  const HEADER_MIN_HEIGHT = 80 + statusBarHeight;  // Phase 2 collapse (Search only)
+  const HEADER_MAX_HEIGHT = 244 + statusBarHeight; // Expanded height to fit all content
+  const HEADER_MIN_HEIGHT = 56 + statusBarHeight;  // Option 1: Compact single-row height
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     const height = interpolate(
       scrollY.value,
-      [0, 60, 140],
-      [HEADER_MAX_HEIGHT, HEADER_MID_HEIGHT, HEADER_MIN_HEIGHT],
+      [0, 100],
+      [HEADER_MAX_HEIGHT, HEADER_MIN_HEIGHT],
       Extrapolation.CLAMP
     );
 
@@ -36,30 +35,10 @@ export function useHomeHeaderAnimation() {
     };
   });
 
-  const greetingAnimatedStyle = useAnimatedStyle(() => {
+  const expandedHeaderAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
-      [0, 40],
-      [1, 0],
-      Extrapolation.CLAMP
-    );
-    const scale = interpolate(
-      scrollY.value,
-      [0, 40],
-      [1, 0.9],
-      Extrapolation.CLAMP
-    );
-
-    return {
-      opacity,
-      transform: [{ scale }],
-    };
-  });
-
-  const deliveryAnimatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, 45],
+      [0, 80],
       [1, 0],
       Extrapolation.CLAMP
     );
@@ -69,46 +48,16 @@ export function useHomeHeaderAnimation() {
     };
   });
 
-  const servicesAnimatedStyle = useAnimatedStyle(() => {
-    // Stays fully visible in Phase 1, fades out in Phase 2
+  const compactHeaderAnimatedStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
-      [60, 120],
-      [1, 0],
-      Extrapolation.CLAMP
-    );
-
-    const translateY = interpolate(
-      scrollY.value,
-      [0, 60, 140],
-      [0, -10, -70], // Slides up slightly in Phase 1, scrolls off completely in Phase 2
+      [70, 100],
+      [0, 1],
       Extrapolation.CLAMP
     );
 
     return {
       opacity,
-      transform: [{ translateY }],
-    };
-  });
-
-  const searchAnimatedStyle = useAnimatedStyle(() => {
-    // Search is always visible but moves slightly to align in the sticky collapsed state
-    const translateY = interpolate(
-      scrollY.value,
-      [0, 60, 140],
-      [0, -5, -12],
-      Extrapolation.CLAMP
-    );
-
-    const scale = interpolate(
-      scrollY.value,
-      [0, 140],
-      [1, 0.98],
-      Extrapolation.CLAMP
-    );
-
-    return {
-      transform: [{ translateY }, { scale }],
     };
   });
 
@@ -116,10 +65,10 @@ export function useHomeHeaderAnimation() {
     scrollY,
     scrollHandler,
     headerAnimatedStyle,
-    greetingAnimatedStyle,
-    deliveryAnimatedStyle,
-    servicesAnimatedStyle,
-    searchAnimatedStyle,
+    expandedHeaderAnimatedStyle,
+    compactHeaderAnimatedStyle,
     HEADER_MAX_HEIGHT,
+    HEADER_MIN_HEIGHT,
   };
 }
+

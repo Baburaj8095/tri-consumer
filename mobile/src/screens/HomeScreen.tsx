@@ -30,6 +30,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { products, quickServices } from '../constants/mockData';
 import { ConsumerHeader } from '../components/ConsumerHeader';
+import { showToast } from '../components/BaseScreen';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -612,7 +613,7 @@ function HomeProduct({ product, compact, badge, onPress }: { product: typeof pro
                 price: parseFloat(product.newPrice.replace(/[^0-9.]/g, '')),
                 image: product.image
               });
-              Alert.alert('Success', `${product.name} added to cart!`);
+              showToast(`${product.name} added to cart!`);
             }}
           >
             <Ionicons name="cart-outline" size={12} color="#fff" />

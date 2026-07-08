@@ -9,6 +9,7 @@ import { shadows } from '../../theme/shadows';
 import { spacing } from '../../theme/spacing';
 import { Skeleton } from './Skeletons';
 import { AnalyticsService } from '../services/AnalyticsService';
+import { showToast } from '../../components/BaseScreen';
 
 interface ProductCardProps {
   product: Product;
@@ -33,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
       price,
       image: product.image || product.image_url,
     });
-    Alert.alert('Success', `${title} added to cart!`);
+    showToast(`${title} added to cart!`);
   };
 
   const handlePress = () => {

@@ -55,7 +55,8 @@ export default function TrackOrderPage() {
             isNearby: o.order_channel === 'NEARBY_DELIVERY',
             awbNumber: o.awb_number,
             courierName: o.courier_name,
-            trackingUrl: o.tracking_url
+            trackingUrl: o.tracking_url,
+            items: o.items || []
           });
         }
       } catch (err) {
@@ -77,7 +78,11 @@ export default function TrackOrderPage() {
         shopName: 'Fresh Mart',
         status: 'DELIVERED',
         location: '#123, 5th Cross, Indiranagar, Bangalore, Karnataka - 560038',
-        isNearby: true
+        isNearby: true,
+        items: [
+          { product_title: 'Fortune Sunflower Oil 1L', quantity: 2, price: 160.00 },
+          { product_title: 'Organic Tomato 1kg', quantity: 1, price: 40.00 }
+        ]
       },
       '1001': {
         id: '1001',
@@ -85,7 +90,11 @@ export default function TrackOrderPage() {
         shopName: 'Fresh Mart',
         status: 'DELIVERED',
         location: '#123, 5th Cross, Indiranagar, Bangalore, Karnataka - 560038',
-        isNearby: true
+        isNearby: true,
+        items: [
+          { product_title: 'Fortune Sunflower Oil 1L', quantity: 2, price: 160.00 },
+          { product_title: 'Organic Tomato 1kg', quantity: 1, price: 40.00 }
+        ]
       },
       '1002': {
         id: '1002',
@@ -93,7 +102,11 @@ export default function TrackOrderPage() {
         shopName: 'Health Store',
         status: 'SHIPPED',
         location: '#123, 5th Cross, Indiranagar, Bangalore, Karnataka - 560038',
-        isNearby: false
+        isNearby: false,
+        items: [
+          { product_title: 'Chyawanprash 500g', quantity: 1, price: 245.00 },
+          { product_title: 'Honey 250g', quantity: 2, price: 120.00 }
+        ]
       },
       '1003': {
         id: '1003',
@@ -101,7 +114,10 @@ export default function TrackOrderPage() {
         shopName: 'Tech World',
         status: 'CONFIRMED',
         location: '#123, 5th Cross, Indiranagar, Bangalore, Karnataka - 560038',
-        isNearby: false
+        isNearby: false,
+        items: [
+          { product_title: 'Wireless Mouse', quantity: 1, price: 699.00 }
+        ]
       },
       '1004': {
         id: '1004',
@@ -109,7 +125,10 @@ export default function TrackOrderPage() {
         shopName: 'Book Land',
         status: 'CANCELLED',
         location: '#123, 5th Cross, Indiranagar, Bangalore, Karnataka - 560038',
-        isNearby: true
+        isNearby: true,
+        items: [
+          { product_title: 'The Alchemist', quantity: 1, price: 299.00 }
+        ]
       }
     };
     return mockDb[id] || mockDb['1001'];
@@ -252,6 +271,24 @@ export default function TrackOrderPage() {
             </div>
           )}
         </div>
+
+        {/* Order Items Section */}
+        {displayTrack.items && displayTrack.items.length > 0 && (
+          <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+            <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '0 0 12px 0', color: '#0f172a' }}>Order Items</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {displayTrack.items.map((item, index) => (
+                <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: index < displayTrack.items.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div>
+                    <h4 style={{ fontSize: '14px', fontWeight: 600, margin: '0 0 2px 0', color: '#0f172a' }}>{item.product_title || item.productTitle}</h4>
+                    <span style={{ fontSize: '12px', color: '#64748b' }}>Qty: {item.quantity}</span>
+                  </div>
+                  <strong style={{ fontSize: '14px', color: '#0f172a' }}>₹{((item.price || item.product_price || item.productPrice || 0) * item.quantity).toFixed(2)}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

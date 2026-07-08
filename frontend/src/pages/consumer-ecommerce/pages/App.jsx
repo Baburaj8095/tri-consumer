@@ -276,7 +276,7 @@ function PromoDealCarousel({ title, subtitle, deals, onActiveChange }) {
     }, 4300);
 
     return () => window.clearInterval(interval);
-  }, []);
+  }, [deals]);
 
   useEffect(() => () => {
     if (frameRef.current) {

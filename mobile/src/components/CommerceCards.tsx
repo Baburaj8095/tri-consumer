@@ -35,7 +35,7 @@ export function ProductCard({ product, onPress, onAdd }: { product: Product; onP
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.productCard, pressed && styles.pressed]}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: product.image || product.image_url || fallbackImage }} style={styles.productImage} />
+        <Image source={(product.image || product.image_url) ? { uri: product.image || product.image_url } : fallbackImage} style={styles.productImage} />
         {discount > 0 && (
           <View style={styles.discountBadge}>
             <Text style={styles.discountBadgeText}>{discount}% OFF</Text>

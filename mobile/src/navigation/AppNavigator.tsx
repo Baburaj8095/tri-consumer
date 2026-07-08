@@ -98,7 +98,7 @@ export function AppNavigator() {
           statusBarTranslucent: true
         }} 
       />
-      <Stack.Screen name="Ads" component={AdsScreen} />
+      <Stack.Screen name="Ads" component={AdsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Society" component={SocietyScreen} />
       <Stack.Screen name="BusinessRegistration" component={BusinessRegistrationScreen} options={{ title: 'Business' }} />
       <Stack.Screen name="ConsumerScanner" component={ConsumerScannerScreen} options={{ title: 'Scanner' }} />

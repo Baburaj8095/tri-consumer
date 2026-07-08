@@ -268,7 +268,7 @@ export default function MyOrdersPage() {
                     </Stack>
                   </Stack>
 
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px solid #f1f5f9' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 1.5, borderTop: '1px solid #f1f5f9', flexWrap: 'wrap', gap: 1 }}>
                     <Box>
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
                         AMOUNT PAID
@@ -277,7 +277,16 @@ export default function MyOrdersPage() {
                         ₹{item.amount.toFixed(2)}
                       </Typography>
                     </Box>
-                    {(item.status === 'APPROVED' || item.status === 'SUCCESS') && (
+                    {item.online_order_id || item.onlineOrderId ? (
+                      <Button 
+                        variant="contained" 
+                        size="small"
+                        onClick={() => navigate(`/track-order/${item.online_order_id || item.onlineOrderId}`)}
+                        sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '8px', bgcolor: '#ea580c', '&:hover': { bgcolor: '#c2410c' }, boxShadow: 'none' }}
+                      >
+                        Track Order
+                      </Button>
+                    ) : (item.status === 'APPROVED' || item.status === 'SUCCESS') && (
                       <Box sx={{ textAlign: 'right' }}>
                         <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 800, display: 'block' }}>
                           +₹{(item.amount * 0.05).toFixed(2)} Cashback
@@ -313,16 +322,16 @@ export default function MyOrdersPage() {
                 }}
               >
                 <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(234, 88, 12, 0.1)', color: '#ea580c', display: 'grid', placeItems: 'center' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0, flex: '1 1 auto' }}>
+                      <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(234, 88, 12, 0.1)', color: '#ea580c', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                         <LuShoppingBag size={18} />
                       </Box>
-                      <Box>
-                        <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem' }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {item.shopName}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#ea580c', fontWeight: 800 }}>
+                        <Typography variant="caption" sx={{ color: '#ea580c', fontWeight: 800, display: 'block' }}>
                           {isNearbyDeliveryOrder(item) ? 'ONLINE B2C DELIVERY' : 'NATIONAL DELIVERY'}
                         </Typography>
                       </Box>
@@ -384,7 +393,7 @@ export default function MyOrdersPage() {
                       </Button>
                     ) : isNearbyDeliveryOrder(item) && getOfflinePaymentId(item) && !isOrderPaid(item) ? (
                       <Chip label="Pay approval pending" size="small" sx={{ bgcolor: 'rgba(245, 158, 11, 0.1)', color: '#d97706', fontWeight: 800, borderRadius: '6px' }} />
-                    ) : item.status === 'PENDING_CONFIRMATION' ? (
+                    ) : (item.status && item.status.toUpperCase() === 'PENDING_CONFIRMATION') ? (
                       <Button 
                         variant="outlined" 
                         color="error" 
@@ -394,7 +403,7 @@ export default function MyOrdersPage() {
                       >
                         Cancel
                       </Button>
-                    ) : item.status !== 'CANCELLED' ? (
+                    ) : (item.status && !['CANCELLED', 'REJECTED', 'FAILED'].includes(item.status.toUpperCase())) ? (
                       <Button 
                         variant="contained" 
                         size="small"

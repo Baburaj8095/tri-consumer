@@ -199,12 +199,14 @@ export default function OrderDetailsPage() {
             <LuCalendar size={14} />
             <span>Placed on {formatDate(displayOrder.date)}</span>
           </div>
-          <Link
-            to={`/track-order/${displayOrder.id}`}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '44px', width: '100%', background: 'rgba(249, 115, 22, 0.08)', color: '#f97316', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '14px' }}
-          >
-            Track Order Live
-          </Link>
+          {displayOrder.status && !['cancelled', 'rejected', 'failed'].includes(displayOrder.status.toLowerCase()) && (
+            <Link
+              to={`/track-order/${displayOrder.id}`}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '44px', width: '100%', background: 'rgba(249, 115, 22, 0.08)', color: '#f97316', borderRadius: '8px', textDecoration: 'none', fontWeight: 700, fontSize: '14px' }}
+            >
+              Track Order Live
+            </Link>
+          )}
         </div>
 
         {/* Order Items Section */}

@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleS
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '../components/AppButton';
-import { BaseScreen } from '../components/BaseScreen';
+import { BaseScreen, showToast } from '../components/BaseScreen';
 import { InfoCard } from '../components/InfoCard';
 import { CartLineItem, OrderCard, ProductCard, SectionHeader, StoreCard } from '../components/CommerceCards';
 import { catalogService } from '../services/catalogService';
@@ -130,7 +130,7 @@ export function DeliveryScreen({ navigation }: NativeStackScreenProps<RootStackP
               onPress={() => navigation.navigate('ProductDetails', { id: String(item.id) })} 
               onAdd={() => {
                 void addProduct(item, { orderChannel: 'ONLINE_DELIVERY' });
-                Alert.alert('Success', `${item.title || item.name || 'Product'} added to cart!`);
+                showToast(`${item.title || item.name || 'Product'} added to cart!`);
               }} 
             />
           ))}
@@ -337,18 +337,51 @@ function BillRow({ label, value, bold }: { label: string; value: number; bold?: 
 
 export function MyOrdersScreen({ navigation }: NativeStackScreenProps<RootStackParamList, 'MyOrders'>) {
   const [tab, setTab] = useState(0); // 0 = Offline Payment, 1 = Online Orders
-  const [records, setRecords] = useState<Array<{ id: string | number; recordType: string; status?: string; createdAt?: string; created_at?: string }>>([]);
+  const [records, setRecords] = useState<Array<{ id: string | number; recordType: string; status?: string; createdAt?: string; created_at?: string; online_order_id?: string | number; onlineOrderId?: string | number }>>([]);
 
   useEffect(() => {
-    void Promise.all([orderService.getOfflinePayments(), orderService.getOrders()])
-      .then(([payments, orders]) => {
+    let active = true;
+    const fetchHistory = async () => {
+      let payments: any[] = [];
+      let orders: any[] = [];
+      try {
+        payments = await orderService.getOfflinePayments();
+      } catch (err) {
+        console.warn('Failed to fetch offline payments:', err);
+      }
+      try {
+        orders = await orderService.getOrders();
+      } catch (err) {
+        console.warn('Failed to fetch online orders:', err);
+      }
+      if (active) {
         setRecords([
-          ...(payments || []).map((p: { id: string | number; status?: string }) => ({ ...p, recordType: 'OFFLINE_PAYMENT' })),
-          ...(orders || []).map((o: { id: string | number; status?: string }) => ({ ...o, recordType: 'ONLINE_ORDER' }))
+          ...(Array.isArray(payments) ? payments : []).map((p: any) => ({ ...p, recordType: 'OFFLINE_PAYMENT' })),
+          ...(Array.isArray(orders) ? orders : []).map((o: any) => ({ ...o, recordType: 'ONLINE_ORDER' }))
         ]);
-      })
-      .catch(() => setRecords([]));
+      }
+    };
+    void fetchHistory();
+    return () => { active = false; };
   }, []);
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return 'Recent activity';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (_) {
+      return dateStr;
+    }
+  };
 
   const filtered = records.filter(r => r.recordType === (tab === 0 ? 'OFFLINE_PAYMENT' : 'ONLINE_ORDER'));
 
@@ -367,11 +400,18 @@ export function MyOrdersScreen({ navigation }: NativeStackScreenProps<RootStackP
           <OrderCard 
             key={`${item.recordType}-${item.id}`} 
             title={item.recordType === 'OFFLINE_PAYMENT' ? `Offline Pay #${item.id}` : `Order #${item.id}`} 
-            subtitle={item.createdAt || item.created_at || 'Recent activity'} 
+            subtitle={formatDate(item.createdAt || item.created_at)} 
             status={item.status} 
             onPress={() => {
               if (item.recordType === 'ONLINE_ORDER') {
                 navigation.navigate('OrderDetails', { id: String(item.id) });
+              } else if (item.recordType === 'OFFLINE_PAYMENT') {
+                const onlineOrderId = item.online_order_id || item.onlineOrderId;
+                if (onlineOrderId) {
+                  navigation.navigate('TrackOrder', { id: String(onlineOrderId) });
+                } else {
+                  Alert.alert('Offline Payment', `ID: ${item.id}\nStatus: ${item.status || 'Pending'}`);
+                }
               }
             }} 
           />
@@ -659,7 +699,7 @@ export function ShopDetailsScreen({ route, navigation }: NativeStackScreenProps<
                       shopName: shopDetails.name,
                       orderChannel: isNearby ? 'NEARBY_DELIVERY' : 'ONLINE_DELIVERY'
                     });
-                    Alert.alert('Success', `${item.title || item.name || 'Product'} added to cart!`);
+                    showToast(`${item.title || item.name || 'Product'} added to cart!`);
                   }} 
                 />
               ))}
@@ -701,14 +741,24 @@ export function ProductDetailsScreen({ route, navigation }: NativeStackScreenPro
   useEffect(() => {
     void catalogService.getOnlineProducts({ limit: 100 }).then(data => {
       const list: Product[] = Array.isArray(data) ? data : [];
-      setProduct(list.find(item => String(item.id) === String(route.params.id)) || null);
-    }).catch(() => setProduct(null));
+      let found = list.find(item => String(item.id) === String(route.params.id));
+      if (!found) {
+        found = fallbackNativeProducts.find(item => String(item.id) === String(route.params.id));
+      }
+      setProduct(found || null);
+    }).catch(() => {
+      const found = fallbackNativeProducts.find(item => String(item.id) === String(route.params.id));
+      setProduct(found || null);
+    });
   }, [route.params.id]);
   const title = product?.title || product?.name || `Product #${route.params.id}`;
   const price = Number(product?.price || 0);
   const mrp = Number(product?.mrp || price * 1.2 || 0);
+  const imageSource = (product?.image || product?.image_url) 
+    ? { uri: product.image || product.image_url } 
+    : fallbackImage;
   return <BaseScreen scroll={false}><ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-    <Image source={{ uri: product?.image || product?.image_url || fallbackImage }} style={styles.productHero} />
+    <Image source={imageSource} style={styles.productHero} />
     <Text style={styles.pageTitle}>{title}</Text><Text style={styles.pageSubtitle}>{product?.shop_name || 'Tri Consumer Store'}</Text>
     <View style={styles.priceRow}><Text style={styles.detailPrice}>₹{price.toFixed(0)}</Text>{mrp > price ? <Text style={styles.mrpText}>₹{mrp.toFixed(0)}</Text> : null}<Text style={styles.offerPill}>Best price</Text></View>
     <InfoCard title="Product Highlights" subtitle="Fresh product details, variants, seller information and recommendations are preserved in the native flow. Add to cart continues to use the shared cart store." />
@@ -718,7 +768,7 @@ export function ProductDetailsScreen({ route, navigation }: NativeStackScreenPro
       onPress={() => {
         if (product) {
           void addProduct(product);
-          Alert.alert('Success', `${title} added to cart!`);
+          showToast(`${title} added to cart!`);
         } else {
           Alert.alert('Product unavailable', 'Product data is still loading.');
         }
@@ -756,15 +806,17 @@ export function UpiPaymentScreen({ route, navigation }: NativeStackScreenProps<R
 }
 
 export function OrderDetailsScreen({ route, navigation }: NativeStackScreenProps<RootStackParamList, 'OrderDetails'>) {
-  const [order, setOrder] = useState<Record<string, unknown> | null>(null);
+  const [order, setOrder] = useState<Record<string, any> | null>(null);
   const [loading, setLoading] = useState(false);
   useEffect(() => { setLoading(true); void orderService.getOrderDetails(route.params.id).then(data => setOrder(data?.data || data || null)).catch(() => setOrder(null)).finally(() => setLoading(false)); }, [route.params.id]);
   const status = String(order?.status || 'Pending');
+  const canTrack = order && !['cancelled', 'rejected', 'failed'].includes(status.toLowerCase());
+  const canCancel = order && ['pending', 'placed', 'pending_confirmation', 'draft'].includes(status.toLowerCase());
   return <BaseScreen>
     <View style={styles.orderDetailCard}><Text style={styles.statusLarge}>{status}</Text><Text style={styles.pageSubtitle}>{loading ? 'Loading order information...' : 'Order summary, payment state and item details.'}</Text>{Object.entries(order || {}).slice(0, 6).map(([key, value]) => <View key={key} style={styles.detailRow}><Text style={styles.detailKey}>{key.replace(/_/g, ' ')}</Text><Text style={styles.detailValue}>{String(value ?? '-')}</Text></View>)}</View>
     {!order ? <InfoCard title="Order data unavailable" subtitle="The native details layout is ready. Live data will populate when the API returns this order." /> : null}
-    <AppButton label="Track order" onPress={() => navigation.navigate('TrackOrder', { id: route.params.id })} />
-    <AppButton label="Cancel order" variant="secondary" onPress={() => Alert.alert('Cancel order?', 'This action cannot be undone after the merchant processes it.', [{ text: 'Keep order', style: 'cancel' }, { text: 'Cancel order', style: 'destructive', onPress: async () => { try { const next = await orderService.cancelOrder(route.params.id); setOrder(next?.data || next || order); Alert.alert('Cancelled', 'Order cancellation request submitted.'); } catch (err) { Alert.alert('Cancel failed', formatErrorMessage(err)); } } }])} />
+    {canTrack ? <AppButton label="Track order" onPress={() => navigation.navigate('TrackOrder', { id: route.params.id })} /> : null}
+    {canCancel ? <AppButton label="Cancel order" variant="secondary" onPress={() => Alert.alert('Cancel order?', 'This action cannot be undone after the merchant processes it.', [{ text: 'Keep order', style: 'cancel' }, { text: 'Cancel order', style: 'destructive', onPress: async () => { try { const next = await orderService.cancelOrder(route.params.id); setOrder(next?.data || next || order); Alert.alert('Cancelled', 'Order cancellation request submitted.'); } catch (err) { Alert.alert('Cancel failed', formatErrorMessage(err)); } } }])} /> : null}
   </BaseScreen>;
 }
 
@@ -796,11 +848,12 @@ export function TrackOrderScreen({ route }: NativeStackScreenProps<RootStackPara
 
   const status = String(order?.status || order?.order_status || 'PENDING').toUpperCase();
   const statusIndex: Record<string, number> = { 
-    PENDING: 0, PLACED: 0, PAYMENT_PENDING: 0, 
+    PENDING: 0, PLACED: 0, PAYMENT_PENDING: 0, PENDING_CONFIRMATION: 0,
     PAID: 1, PAYMENT_VERIFIED: 1, 
-    ACCEPTED: 2, CONFIRMED: 2, 
-    PACKED: 3, READY: 3, 
-    OUT_FOR_DELIVERY: 4, DELIVERED: 5 
+    ACCEPTED: 2, CONFIRMED: 2, PREPARING: 2,
+    PACKED: 3, READY: 3, SHIPPED: 3,
+    OUT_FOR_DELIVERY: 4, DISPATCHED: 4, 
+    DELIVERED: 5, COMPLETED: 5, CANCELLED: 0
   };
   const completedIndex = statusIndex[status] ?? 0;
 
@@ -830,11 +883,27 @@ export function TrackOrderScreen({ route }: NativeStackScreenProps<RootStackPara
         ))}
       </View>
 
+      {/* Order Items */}
+      {order?.items && order.items.length > 0 ? (
+        <View style={styles.orderDetailCard}>
+          <Text style={[styles.bold, { marginBottom: 12 }]}>Order Items</Text>
+          {order.items.map((item: any, index: number) => (
+            <View key={index} style={[styles.detailRow, { borderTopWidth: index === 0 ? 0 : 1, borderTopColor: colors.border, paddingVertical: 10, marginVertical: 0 }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.bold}>{item.product_title || item.productTitle || 'Product'}</Text>
+                <Text style={[styles.pageSubtitle, { marginBottom: 0, marginTop: 4 }]}>Qty: {item.quantity}</Text>
+              </View>
+              <Text style={[styles.bold, { color: colors.primary }]}>₹{((item.price || item.product_price || 0) * item.quantity).toFixed(0)}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       {/* Address Info */}
       {order?.address ? (
         <View style={styles.orderDetailCard}>
           <Text style={styles.bold}>Delivery Address</Text>
-          <Text style={[styles.pageSubtitle, { marginTop: 6, lineHeight: 18 }]}>
+          <Text style={[styles.pageSubtitle, { marginTop: 6, lineHeight: 18, marginBottom: 0 }]}>
             {String(order.address)}
           </Text>
         </View>
@@ -844,10 +913,10 @@ export function TrackOrderScreen({ route }: NativeStackScreenProps<RootStackPara
       {awbNumber ? (
         <View style={styles.orderDetailCard}>
           <Text style={styles.bold}>Courier Details</Text>
-          <Text style={[styles.pageSubtitle, { marginTop: 4 }]}>
+          <Text style={[styles.pageSubtitle, { marginTop: 4, marginBottom: 0 }]}>
             Partner: {String(courierName || 'Shiprocket Fleet')}
           </Text>
-          <Text style={[styles.pageSubtitle, { marginTop: 2 }]}>
+          <Text style={[styles.pageSubtitle, { marginTop: 2, marginBottom: 0 }]}>
             AWB: {String(awbNumber)}
           </Text>
           {trackingUrl ? (

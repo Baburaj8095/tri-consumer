@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Image,
   Modal,
@@ -51,6 +51,58 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
   const { hydrate: hydrateCart } = useCartStore();
   const insets = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
+
+  const dealsRef = useRef<any>(null);
+  const adzRef = useRef<any>(null);
+  const cashbackRef = useRef<any>(null);
+
+  const [dealsIndex, setDealsIndex] = useState(0);
+  const [adzIndex, setAdzIndex] = useState(0);
+  const [cashbackIndex, setCashbackIndex] = useState(0);
+
+  const dealsData = [
+    { key: 'd1', bg: '#02524b', title: 'Home Upgrade Fest', label: 'Prime early access', discount: '40-70% OFF', extra: 'Combo price crash', status: 'HOT', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80', bullets: ['• 5% cashback unlocked', '• HDFC no-cost EMI', '• Prime doorstep setup'], btn: 'SHOP SETS' },
+    { key: 'd2', bg: '#1e3a8a', title: 'Grocery Saver', label: 'Fresh drops', discount: 'Daily deals', extra: 'Flat 30% OFF', status: '', img: 'https://images.unsplash.com/photo-1543083505-590d222c2a2f?auto=format&fit=crop&w=300&q=80', bullets: ['• Rs. 99 Tri Coins cashback', '• UPI bonus offer', '• Prime 20-min slots'], btn: 'FILL BASKET' },
+    { key: 'd3', bg: '#581c87', title: 'Style Carnival', label: 'Trending', discount: 'Min 50% OFF', extra: 'Buy 1 Get 1', status: '', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80', bullets: ['• Extra ₹500 coupon code', '• Free 2-day shipping', '• No-question returns'], btn: 'SHOP STYLE' }
+  ];
+
+  const adzData = [
+    { key: 'ad1', bg: '#4a044e', title: 'Brand Gift Adz', label: 'Hot Brand Offer', discount: 'Flat 40% OFF', extra: 'Free gift vouchers', status: 'HOT', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80', bullets: ['• Rs. 500 flat cashback', '• Verified merchant check', '• No min purchase value'], btn: 'GRAB NOW' },
+    { key: 'ad2', bg: '#064e3b', title: 'Weekly Shopping', label: 'Trending', discount: 'Min 60% OFF', extra: 'Combo deals', status: '', img: 'https://images.unsplash.com/photo-1543083505-590d222c2a2f?auto=format&fit=crop&w=300&q=80', bullets: ['• Double Tri Coins active', '• Free doorstep delivery', '• HDFC credit card offer'], btn: 'SHOP NOW' }
+  ];
+
+  const cashbackData = [
+    { title: 'Get 20% Cashback on electronics', percent: '10% CB', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80' },
+    { title: 'Get 20% Cashback on beauty', percent: '20% CB', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80' },
+    { title: 'Get 15% Cashback on footwear', percent: '15% CB', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const next = (dealsIndex + 1) % dealsData.length;
+      dealsRef.current?.scrollToIndex({ index: next, animated: true });
+      setDealsIndex(next);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [dealsIndex]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const next = (adzIndex + 1) % adzData.length;
+      adzRef.current?.scrollToIndex({ index: next, animated: true });
+      setAdzIndex(next);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [adzIndex]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const next = (cashbackIndex + 1) % cashbackData.length;
+      cashbackRef.current?.scrollToIndex({ index: next, animated: true });
+      setCashbackIndex(next);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [cashbackIndex]);
 
   const scrollHandler = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -110,6 +162,15 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
     </Pressable>
   );
 
+  const handleDealsScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 266; // 250 card width + 16 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== dealsIndex && calculatedIndex >= 0 && calculatedIndex < dealsData.length) {
+      setDealsIndex(calculatedIndex);
+    }
+  };
+
   const renderDeals = () => (
     <View>
       <View style={styles.sectionHeaderRow}>
@@ -123,15 +184,13 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
       </View>
 
       <FlashList 
+        ref={dealsRef}
         horizontal 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.dealsList}
-        data={[
-          { key: 'd1', bg: '#02524b', title: 'Home Upgrade Fest', label: 'Prime early access', discount: '40-70% OFF', extra: 'Combo price crash', status: 'HOT', img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=300&q=80', bullets: ['• 5% cashback unlocked', '• HDFC no-cost EMI', '• Prime doorstep setup'], btn: 'SHOP SETS' },
-          { key: 'd2', bg: '#1e3a8a', title: 'Grocery Saver', label: 'Fresh drops', discount: 'Daily deals', extra: 'Flat 30% OFF', status: '', img: 'https://images.unsplash.com/photo-1543083505-590d222c2a2f?auto=format&fit=crop&w=300&q=80', bullets: ['• Rs. 99 Tri Coins cashback', '• UPI bonus offer', '• Prime 20-min slots'], btn: 'FILL BASKET' },
-          { key: 'd3', bg: '#581c87', title: 'Style Carnival', label: 'Trending', discount: 'Min 50% OFF', extra: 'Buy 1 Get 1', status: '', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80', bullets: ['• Extra ₹500 coupon code', '• Free 2-day shipping', '• No-question returns'], btn: 'SHOP STYLE' }
-        ]}
+        data={dealsData}
         keyExtractor={item => item.key}
+        onMomentumScrollEnd={handleDealsScroll}
         renderItem={({ item }) => (
           <View style={[styles.dealCard, { backgroundColor: item.bg }]}>
             <View style={styles.dealCardTop}>
@@ -198,6 +257,15 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
     </View>
   );
 
+  const handleAdzScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 266; // 250 card width + 16 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== adzIndex && calculatedIndex >= 0 && calculatedIndex < adzData.length) {
+      setAdzIndex(calculatedIndex);
+    }
+  };
+
   const renderAdz = () => (
     <View>
       <View style={styles.giftCardSectionHeader}>
@@ -211,14 +279,13 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
       </View>
 
       <FlashList 
+        ref={adzRef}
         horizontal 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.dealsList}
-        data={[
-          { key: 'ad1', bg: '#4a044e', title: 'Brand Gift Adz', label: 'Hot Brand Offer', discount: 'Flat 40% OFF', extra: 'Free gift vouchers', status: 'HOT', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80', bullets: ['• Rs. 500 flat cashback', '• Verified merchant check', '• No min purchase value'], btn: 'GRAB NOW' },
-          { key: 'ad2', bg: '#064e3b', title: 'Weekly Shopping', label: 'Trending', discount: 'Min 60% OFF', extra: 'Combo deals', status: '', img: 'https://images.unsplash.com/photo-1543083505-590d222c2a2f?auto=format&fit=crop&w=300&q=80', bullets: ['• Double Tri Coins active', '• Free doorstep delivery', '• HDFC credit card offer'], btn: 'SHOP NOW' }
-        ]}
+        data={adzData}
         keyExtractor={item => item.key}
+        onMomentumScrollEnd={handleAdzScroll}
         renderItem={({ item }) => (
           <View style={[styles.dealCard, { backgroundColor: item.bg }]}>
             <View style={styles.dealCardTop}>
@@ -296,6 +363,15 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
     </View>
   );
 
+  const handleCashbackScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 204; // 190 card width + 14 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== cashbackIndex && calculatedIndex >= 0 && calculatedIndex < cashbackData.length) {
+      setCashbackIndex(calculatedIndex);
+    }
+  };
+
   const renderCashback = () => (
     <View>
       <View style={styles.giftCardSectionHeader}>
@@ -305,15 +381,13 @@ export function ConsumerHomeScreen({ navigation }: NativeStackScreenProps<RootSt
         </View>
       </View>
       <FlashList 
+        ref={cashbackRef}
         horizontal 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={styles.dealsList}
-        data={[
-          { title: 'Get 20% Cashback on electronics', percent: '10% CB', img: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=300&q=80' },
-          { title: 'Get 20% Cashback on beauty', percent: '20% CB', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80' },
-          { title: 'Get 15% Cashback on footwear', percent: '15% CB', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' }
-        ]}
+        data={cashbackData}
         keyExtractor={(item, index) => String(index)}
+        onMomentumScrollEnd={handleCashbackScroll}
         renderItem={({ item }) => (
           <Pressable style={styles.cashbackAdCard} onPress={() => navigation.navigate('Ads')}>
             <Image source={{ uri: item.img }} style={styles.cashbackAdImg} />

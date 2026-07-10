@@ -62,6 +62,28 @@ const LiveDeals = ({ content, coordinator }: any) => {
     { key: 'd3', bg: '#581c87', title: 'Style Carnival', label: 'Trending', discount: 'Min 50% OFF', extra: 'Buy 1 Get 1', status: '', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80', bullets: ['• Extra ₹500 coupon code', '• Free 2-day shipping', '• No-question returns'], btn: 'SHOP STYLE' }
   ];
 
+  const flatListRef = React.useRef<FlatList>(null);
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (data.length <= 1) return;
+    const timer = setInterval(() => {
+      const nextIndex = (index + 1) % data.length;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setIndex(nextIndex);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [index, data.length]);
+
+  const handleScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 266; // 250 card width + 16 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== index && calculatedIndex >= 0 && calculatedIndex < data.length) {
+      setIndex(calculatedIndex);
+    }
+  };
+
   return (
     <View style={styles.dealContainer}>
       <SectionTitle
@@ -70,11 +92,18 @@ const LiveDeals = ({ content, coordinator }: any) => {
         onAction={() => coordinator.goToService('Delivery')}
       />
       <FlatList
+        ref={flatListRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dealsList}
         data={data}
         keyExtractor={item => item.key}
+        onMomentumScrollEnd={handleScroll}
+        getItemLayout={(data, idx) => ({
+          length: 266,
+          offset: 266 * idx,
+          index: idx,
+        })}
         renderItem={({ item }) => (
           <Pressable 
             style={[styles.dealCard, { backgroundColor: item.bg }]}
@@ -174,6 +203,28 @@ const TriAdz = ({ coordinator }: any) => {
     { key: 'ad2', bg: '#064e3b', title: 'Weekly Shopping', label: 'Trending', discount: 'Min 60% OFF', extra: 'Combo deals', status: '', img: 'https://images.unsplash.com/photo-1543083505-590d222c2a2f?auto=format&fit=crop&w=300&q=80', btn: 'SHOP NOW' }
   ];
 
+  const flatListRef = React.useRef<FlatList>(null);
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (data.length <= 1) return;
+    const timer = setInterval(() => {
+      const nextIndex = (index + 1) % data.length;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setIndex(nextIndex);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [index, data.length]);
+
+  const handleScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 266; // 250 card width + 16 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== index && calculatedIndex >= 0 && calculatedIndex < data.length) {
+      setIndex(calculatedIndex);
+    }
+  };
+
   return (
     <View style={styles.sectionContainer}>
       <SectionTitle
@@ -182,11 +233,18 @@ const TriAdz = ({ coordinator }: any) => {
         onAction={() => coordinator.goToService('Ads')}
       />
       <FlatList
+        ref={flatListRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dealsList}
         data={data}
         keyExtractor={item => item.key}
+        onMomentumScrollEnd={handleScroll}
+        getItemLayout={(data, idx) => ({
+          length: 266,
+          offset: 266 * idx,
+          index: idx,
+        })}
         renderItem={({ item }) => (
           <Pressable 
             style={[styles.dealCard, { backgroundColor: item.bg }]}
@@ -286,6 +344,28 @@ const Cashback = ({ coordinator }: any) => {
     { title: 'Get 15% Cashback on footwear', percent: '15% CB', img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80' }
   ];
 
+  const flatListRef = React.useRef<FlatList>(null);
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (data.length <= 1) return;
+    const timer = setInterval(() => {
+      const nextIndex = (index + 1) % data.length;
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+      setIndex(nextIndex);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [index, data.length]);
+
+  const handleScroll = (event: any) => {
+    const contentOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 202; // 190 card width + 12 spacing
+    const calculatedIndex = Math.round(contentOffset / itemWidth);
+    if (calculatedIndex !== index && calculatedIndex >= 0 && calculatedIndex < data.length) {
+      setIndex(calculatedIndex);
+    }
+  };
+
   return (
     <View style={styles.sectionContainer}>
       <SectionTitle
@@ -293,11 +373,18 @@ const Cashback = ({ coordinator }: any) => {
         subtitle="Warm offers from featured brands"
       />
       <FlatList
+        ref={flatListRef}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dealsList}
         data={data}
         keyExtractor={(item, idx) => String(idx)}
+        onMomentumScrollEnd={handleScroll}
+        getItemLayout={(data, idx) => ({
+          length: 202,
+          offset: 202 * idx,
+          index: idx,
+        })}
         renderItem={({ item }) => (
           <Pressable 
             style={styles.cashbackCard}

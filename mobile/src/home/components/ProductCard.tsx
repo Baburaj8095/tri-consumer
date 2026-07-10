@@ -14,9 +14,10 @@ import { showToast } from '../../components/BaseScreen';
 interface ProductCardProps {
   product: Product;
   onPress: () => void;
+  onAdd?: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress, onAdd }) => {
   const addProduct = useCartStore(state => state.addProduct);
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -28,13 +29,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) =>
 
   const handleAddToCart = () => {
     AnalyticsService.trackCartAction('add', product.id, 1);
-    void addProduct({
-      id: product.id,
-      title,
-      price,
-      image: product.image || product.image_url,
-    });
-    showToast(`${title} added to cart!`);
+    if (onAdd) {
+      onAdd();
+    } else {
+      void addProduct({
+        id: product.id,
+        title,
+        price,
+        image: product.image || product.image_url,
+      });
+      showToast(`${title} added to cart!`);
+    }
   };
 
   const handlePress = () => {

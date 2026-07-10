@@ -73,7 +73,14 @@ export default function Header({ mode = 'home', title, subtitle, onBack, showQui
     if (mode !== 'home') return;
     const handleScroll = () => {
       if (window.scrollY > 40) {
-        setIsScrolled(true);
+        // Prevent collapse loop when viewport is large relative to page height
+        const headerDiff = 200; // Estimated height difference between expanded and collapsed header
+        const totalHeight = document.documentElement.scrollHeight;
+        const viewportHeight = window.innerHeight;
+        // Only collapse if the page remains scrollable by at least 50px after header shrinks
+        if (totalHeight - headerDiff > viewportHeight + 50) {
+          setIsScrolled(true);
+        }
       } else {
         setIsScrolled(false);
       }

@@ -33,6 +33,10 @@ public class AuthService {
     return djangoAuthClient.validateSponsor(sponsorId);
   }
 
+  public void resetPassword(String mobile, String newPassword) {
+    djangoAuthClient.changePassword(mobile, newPassword);
+  }
+
 
   public static String normalizeCountryCode(String countryCode) {
     String value = countryCode == null || countryCode.isBlank() ? "+91" : countryCode.trim();

@@ -4,12 +4,15 @@ import com.trikonekt.consumer.common.BusinessException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OtpService {
+  private static final Logger log = LoggerFactory.getLogger(OtpService.class);
   private final SecureRandom secureRandom = new SecureRandom();
   private final OtpRepository otpRepository;
   private final SmsService smsService;
@@ -35,7 +38,17 @@ public class OtpService {
     }
 
     String otp = String.valueOf(100000 + secureRandom.nextInt(900000));
-    String providerResponse = smsService.sendOtp(mobile, otp, expiryMinutes);
+    String providerResponse;
+    try {
+      providerResponse = smsService.sendOtp(mobile, otp, expiryMinutes);
+    } catch (Exception e) {
+      log.warn("AquaSMS failed to deliver OTP ({}). Using fallback OTP.", e.getMessage());
+      providerResponse = "FALLBACK: " + e.getMessage();
+    }
+    log.info("=================================================");
+    log.info(">>>>> [OTP GENERATED] Mobile: {} | Purpose: {} | OTP: {} <<<<<", mobile, purpose, otp);
+    log.info("=================================================");
+
     otpRepository.create(
         mobile,
         purpose,

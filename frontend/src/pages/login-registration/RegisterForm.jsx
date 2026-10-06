@@ -7,8 +7,10 @@ import './loginRegistration.css';
 import SMSService from '../../services/smsService';
 import { storeAuth } from '../../services/authStorage';
 import { formatErrorMessage } from '../../utils/errorFormatter';
+import { AuthTopTicker, AuthLeftAds, AuthRightAds, AuthBottomBar } from './AuthAdsShowcase';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
+const smsService = new SMSService();
 
 function RegisterForm() {
   const navigate = useNavigate();
@@ -244,25 +246,28 @@ function RegisterForm() {
     setOtpError('');
     const mobile = formData.mobileNumber.trim();
     if (!mobile || mobile.length < 10) {
-      setErrors((prev) => ({ ...prev, mobileNumber: 'Enter a valid mobile number first' }));
+      setErrors((prev) => ({ ...prev, mobileNumber: 'Enter a valid 10-digit mobile number first' }));
       return;
     }
-    const mobilePattern = /^[+]?[0-9]{10,15}$/;
+    const mobilePattern = /^[0-9]{10}$/;
     if (!mobilePattern.test(mobile)) {
-      setErrors((prev) => ({ ...prev, mobileNumber: 'Invalid mobile number format' }));
+      setErrors((prev) => ({ ...prev, mobileNumber: 'Mobile number must be exactly 10 digits' }));
       return;
     }
     setIsOtpLoading(true);
-    const smsService = new SMSService();
     try {
       const result = await smsService.sendOtp(`${formData.countryCode || '+91'}${mobile}`, null, 'REGISTRATION');
       setMsgId(result?.message || 'OTP_SENT');
       setShowOtpField(true);
       setResendTimer(30);
       setMobileOtp(['', '', '', '', '', '']);
+      setErrors((prev) => ({ ...prev, mobileNumber: null }));
+      setTimeout(() => mobileOtpRefs.current[0]?.focus(), 100);
     } catch (err) {
       console.warn('Registration OTP send failed.', err);
-      setOtpError(err.response?.data?.message || err.message || 'Unable to send OTP');
+      const message = err.message || err.response?.data?.message || 'Unable to send OTP';
+      setOtpError(message);
+      setErrors((prev) => ({ ...prev, mobileNumber: message }));
     } finally {
       setIsOtpLoading(false);
     }
@@ -271,33 +276,47 @@ function RegisterForm() {
   const handleVerifyOtp = async () => {
     const code = mobileOtp.join('');
     if (code.length < 6) {
-      setOtpError('Enter a 6-digit OTP');
+      setOtpError('Please enter a valid 6-digit OTP');
       return;
     }
     setIsOtpLoading(true);
+    setOtpError('');
     try {
-      const smsService = new SMSService();
       await smsService.verifyOtp(`${formData.countryCode || '+91'}${formData.mobileNumber}`, code, 'REGISTRATION');
       setIsMobileVerified(true);
       setShowOtpField(false);
       setErrors((prev) => ({ ...prev, mobileNumber: null }));
       setOtpError('');
     } catch (err) {
-      setOtpError(err.response?.data?.message || err.message || 'Invalid OTP');
+      const message = err.message || err.response?.data?.message || 'Invalid verification code';
+      setOtpError(message);
     } finally {
       setIsOtpLoading(false);
     }
   };
 
   const handleOtpChange = (index, value) => {
-    const numValue = value.replace(/[^0-9]/g, '');
-    if (numValue.length > 1) return;
+    const clean = value.replace(/[^0-9]/g, '');
+    if (!clean) {
+      const newOtp = [...mobileOtp];
+      newOtp[index] = '';
+      setMobileOtp(newOtp);
+      return;
+    }
+
+    // Support pasting full 6 digits
+    if (clean.length === 6) {
+      const digits = clean.split('');
+      setMobileOtp(digits);
+      mobileOtpRefs.current[5]?.focus();
+      return;
+    }
 
     const newOtp = [...mobileOtp];
-    newOtp[index] = numValue;
+    newOtp[index] = clean.slice(-1);
     setMobileOtp(newOtp);
 
-    if (numValue && index < 5) {
+    if (index < 5 && clean) {
       mobileOtpRefs.current[index + 1]?.focus();
     }
   };
@@ -319,9 +338,19 @@ function RegisterForm() {
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
-    <div className="auth-shell">
-      <div className="auth-screen">
-        <div className="auth-card registration-card multi-step-card">
+    <div className="auth-shell login-bg gm-beige-theme">
+      {/* Top Floating Promo Announcement Ticker */}
+      <AuthTopTicker />
+
+      <div className="auth-portal-layout">
+        {/* Left Column Promotional Ads */}
+        <aside aria-label="Special Offers" className="auth-ads-column auth-ads-left">
+          <AuthLeftAds />
+        </aside>
+
+        {/* Center Register Form Screen */}
+        <div className="auth-screen">
+          <div className="auth-card registration-card multi-step-card gm-beige-glass-card">
           
           <div className="multi-step-header">
             <button type="button" className="back-button" onClick={handlePrevStep}>
@@ -408,9 +437,40 @@ function RegisterForm() {
                     
                     {errors.mobileNumber && <span className="ce-error-text">{errors.mobileNumber}</span>}
 
+                    {isMobileVerified && (
+                      <div className="verified-success-banner" style={{ marginTop: '10px' }}>
+                        <AiOutlineCheckCircle size={16} color="#10b981" /> Mobile Verified: {formData.countryCode} {formData.mobileNumber}
+                      </div>
+                    )}
+
+                    {!isMobileVerified && !showOtpField && (
+                      <div style={{ marginTop: '10px' }}>
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={isOtpLoading || formData.mobileNumber.length < 10}
+                          className="gm-embossed-btn gm-btn-orange"
+                          style={{
+                            width: '100%',
+                            padding: '12px 16px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            borderRadius: '12px',
+                            cursor: formData.mobileNumber.length < 10 ? 'not-allowed' : 'pointer',
+                            opacity: formData.mobileNumber.length < 10 ? 0.6 : 1,
+                          }}
+                        >
+                          {isOtpLoading ? 'Dispatching OTP via Aqua SMS...' : 'Verify Mobile via SMS OTP'}
+                        </button>
+                      </div>
+                    )}
+
                     {showOtpField && !isMobileVerified && (
-                      <div className="otp-verification-box">
-                        <div className="otp-box-title">Enter 6-digit OTP</div>
+                      <div className="otp-verification-box" style={{ marginTop: '12px' }}>
+                        <div className="otp-box-title">Enter 6-Digit SMS Code</div>
+                        <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', margin: '4px 0 12px' }}>
+                          OTP sent via Aqua SMS to <strong>{formData.countryCode} {formData.mobileNumber}</strong>
+                        </p>
                         <div className="otp-row">
                           {mobileOtp.map((digit, i) => (
                             <input 
@@ -426,7 +486,7 @@ function RegisterForm() {
                             />
                           ))}
                         </div>
-                        {otpError && <div className="ce-error-text" style={{ marginTop: '8px', fontSize: '13px' }}>{otpError}</div>}
+                        {otpError && <div className="ce-error-text" style={{ marginTop: '8px', fontSize: '13px', textAlign: 'center' }}>{otpError}</div>}
                         
                         <div className="otp-actions-row">
                           <span className="timer-text">
@@ -438,8 +498,19 @@ function RegisterForm() {
                           </span>
                         </div>
 
-                        <button type="button" onClick={handleVerifyOtp} className="verify-btn">
-                          Confirm OTP
+                        <button 
+                          type="button" 
+                          onClick={handleVerifyOtp} 
+                          className="verify-btn gm-embossed-btn gm-btn-green"
+                          disabled={isOtpLoading || mobileOtp.join('').length < 6}
+                          style={{
+                            width: '100%',
+                            marginTop: '12px',
+                            padding: '12px',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          {isOtpLoading ? 'Verifying...' : 'Confirm OTP'}
                         </button>
                       </div>
                     )}
@@ -610,7 +681,16 @@ function RegisterForm() {
 
         </div>
       </div>
+
+      {/* Right Column Promotional Ads */}
+      <aside aria-label="Deals & Rewards" className="auth-ads-column auth-ads-right">
+        <AuthRightAds />
+      </aside>
     </div>
+
+    {/* Bottom Service Guarantees & Trust Bar */}
+    <AuthBottomBar />
+  </div>
   );
 }
 

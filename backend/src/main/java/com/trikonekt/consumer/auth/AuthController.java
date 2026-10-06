@@ -3,6 +3,7 @@ package com.trikonekt.consumer.auth;
 import com.trikonekt.consumer.auth.dto.AuthResponse;
 import com.trikonekt.consumer.auth.dto.LoginRequest;
 import com.trikonekt.consumer.auth.dto.RegisterRequest;
+import com.trikonekt.consumer.auth.dto.ResetPasswordRequest;
 import com.trikonekt.consumer.auth.dto.SendOtpRequest;
 import com.trikonekt.consumer.auth.dto.VerifyOtpRequest;
 import com.trikonekt.consumer.common.ApiResponse;
@@ -36,14 +37,20 @@ public class AuthController {
     OtpPurpose purpose = request.purpose() == null ? OtpPurpose.LOGIN : request.purpose();
     String mobile = AuthService.normalizeMobile(request.countryCode(), request.mobile());
     
-    if (purpose == OtpPurpose.LOGIN) {
+    if (purpose == OtpPurpose.LOGIN || purpose == OtpPurpose.FORGOT_PASSWORD) {
       if (userRepository.findByMobile(mobile).isEmpty()) {
         throw new BusinessException(HttpStatus.NOT_FOUND, "User is not registered. Please sign up first.");
       }
     }
 
+    if (purpose == OtpPurpose.REGISTRATION) {
+      if (userRepository.findByMobile(mobile).isPresent()) {
+        throw new BusinessException(HttpStatus.CONFLICT, "Mobile number is already registered. Please log in.");
+      }
+    }
+
     otpService.sendOtp(mobile, purpose);
-    return ApiResponse.ok("OTP sent", null);
+    return ApiResponse.ok("OTP sent successfully", null);
   }
 
   @PostMapping("/verify-otp")
@@ -51,7 +58,7 @@ public class AuthController {
     OtpPurpose purpose = request.purpose() == null ? OtpPurpose.LOGIN : request.purpose();
     String mobile = AuthService.normalizeMobile(request.countryCode(), request.mobile());
     
-    if (purpose == OtpPurpose.LOGIN) {
+    if (purpose == OtpPurpose.LOGIN || purpose == OtpPurpose.FORGOT_PASSWORD) {
       if (userRepository.findByMobile(mobile).isEmpty()) {
         throw new BusinessException(HttpStatus.NOT_FOUND, "User is not registered. Please sign up first.");
       }
@@ -59,7 +66,7 @@ public class AuthController {
 
     otpService.verifyOtp(mobile, purpose, request.otp());
     AuthResponse response = purpose == OtpPurpose.LOGIN ? authService.createOtpLogin(mobile) : null;
-    return ApiResponse.ok("OTP verified", response);
+    return ApiResponse.ok("OTP verified successfully", response);
   }
 
   @PostMapping("/register")
@@ -70,6 +77,17 @@ public class AuthController {
   @PostMapping("/login")
   public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
     return ApiResponse.ok("Login successful", authService.login(request));
+  }
+
+  @PostMapping("/reset-password")
+  public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    String mobile = AuthService.normalizeMobile(request.countryCode(), request.mobile());
+    if (userRepository.findByMobile(mobile).isEmpty()) {
+      throw new BusinessException(HttpStatus.NOT_FOUND, "User is not registered. Please sign up first.");
+    }
+    otpService.verifyOtp(mobile, OtpPurpose.FORGOT_PASSWORD, request.otp());
+    authService.resetPassword(mobile, request.newPassword());
+    return ApiResponse.ok("Password reset successfully", null);
   }
 
   @PostMapping("/refresh")

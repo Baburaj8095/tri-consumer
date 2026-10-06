@@ -18,6 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,7 +37,18 @@ public class DjangoAuthClient {
       ObjectMapper objectMapper,
       @Value("${app.django-api-base-url}") String baseUrl,
       @Value("${app.external-auth-shared-secret:}") String externalAuthSecret) {
-    this.restTemplate = builder.build();
+    CloseableHttpClient httpClient = HttpClients.custom()
+        .setConnectionReuseStrategy(org.apache.http.impl.NoConnectionReuseStrategy.INSTANCE)
+        .build();
+    HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+    factory.setConnectTimeout(10000);
+    factory.setReadTimeout(15000);
+
+    this.restTemplate = builder
+        .requestFactory(() -> factory)
+        .defaultHeader(HttpHeaders.CONNECTION, "close")
+        .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Trikonekt/1.0")
+        .build();
     this.objectMapper = objectMapper;
     this.baseUrl = stripTrailingSlash(baseUrl);
     this.externalAuthSecret = externalAuthSecret == null ? "" : externalAuthSecret.trim();
@@ -169,15 +184,28 @@ public class DjangoAuthClient {
   private JsonNode postJson(String path, Map<String, Object> payload) {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    try {
-      ResponseEntity<JsonNode> response = restTemplate.postForEntity(
-          baseUrl + path,
-          new HttpEntity<>(payload, headers),
-          JsonNode.class);
-      return response.getBody();
-    } catch (HttpStatusCodeException ex) {
-      throw djangoException(ex);
+    headers.set(HttpHeaders.CONNECTION, "close");
+
+    for (int attempt = 1; attempt <= 2; attempt++) {
+      try {
+        ResponseEntity<JsonNode> response = restTemplate.postForEntity(
+            baseUrl + path,
+            new HttpEntity<>(payload, headers),
+            JsonNode.class);
+        return response.getBody();
+      } catch (HttpStatusCodeException ex) {
+        throw djangoException(ex);
+      } catch (ResourceAccessException ex) {
+        if (attempt == 1) {
+          try {
+            Thread.sleep(300);
+          } catch (InterruptedException ignored) {}
+          continue;
+        }
+        throw new BusinessException(HttpStatus.BAD_GATEWAY, "Auth service connection failed: " + ex.getMostSpecificCause().getMessage());
+      }
     }
+    throw new BusinessException(HttpStatus.BAD_GATEWAY, "Auth service unreachable");
   }
 
   private BusinessException djangoException(HttpStatusCodeException ex) {
@@ -188,8 +216,19 @@ public class DjangoAuthClient {
         message = body.get("detail").asText();
       } else if (body.hasNonNull("message")) {
         message = body.get("message").asText();
-      } else if (body.size() > 0) {
-        message = body.toString();
+      } else if (body.isObject() && body.size() > 0) {
+        java.util.Iterator<String> fields = body.fieldNames();
+        if (fields.hasNext()) {
+          String field = fields.next();
+          JsonNode val = body.get(field);
+          if (val.isArray() && val.size() > 0) {
+            message = field + ": " + val.get(0).asText();
+          } else if (val.isTextual()) {
+            message = field + ": " + val.asText();
+          } else {
+            message = body.toString();
+          }
+        }
       }
     } catch (Exception ignored) {
       if (ex.getResponseBodyAsString() != null && !ex.getResponseBodyAsString().isBlank()) {

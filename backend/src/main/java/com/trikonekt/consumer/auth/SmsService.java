@@ -27,7 +27,12 @@ public class SmsService {
 
   public String sendOtp(String mobile, String otp, int minutes) {
     if (apiKey == null || apiKey.isBlank()) {
-      throw new IllegalStateException("AQUASMS_APIKEY is not configured");
+      throw new IllegalStateException("AQUASMS_APIKEY is not configured. Please ensure AQUASMS_APIKEY is set in your .env file.");
+    }
+
+    String cleanMobile = mobile == null ? "" : mobile.replaceAll("[^0-9]", "");
+    if (cleanMobile.isBlank() || cleanMobile.length() < 10) {
+      throw new IllegalArgumentException("Invalid mobile number format for SMS dispatch: " + mobile);
     }
 
     String message = "Dear Customer, your OTP for signup registration is %s. Valid for %d minutes. Please do not share it with anyone. - TOOZO (TRIKNOKET)"
@@ -38,25 +43,31 @@ public class SmsService {
         .queryParam("apikey", apiKey)
         .queryParam("sendername", senderName)
         .queryParam("smstype", smsType)
-        .queryParam("numbers", mobile)
+        .queryParam("numbers", cleanMobile)
         .queryParam("message", message)
         .build()
         .encode()
         .toUri();
 
-    log.info("AquaSMS request URL: {}", maskApiKey(uri.toString()));
+    log.info("AquaSMS dispatch request to {}: {}", cleanMobile, maskApiKey(uri.toString()));
     ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
     String body = response.getBody() == null ? "" : response.getBody();
     log.info("AquaSMS response status={}, body={}", response.getStatusCodeValue(), body);
     if (!response.getStatusCode().is2xxSuccessful() || !looksSuccessful(body)) {
-      throw new IllegalStateException("AquaSMS rejected OTP request: " + body);
+      throw new IllegalStateException("AquaSMS gateway rejected OTP delivery: " + body);
     }
     return body;
   }
 
   private boolean looksSuccessful(String body) {
+    if (body == null || body.isBlank()) {
+      return false;
+    }
     String normalized = body.toLowerCase();
-    return normalized.contains("success") || normalized.contains("\"status\":\"success\"");
+    if (normalized.contains("err:") || normalized.contains("\"status\":\"error\"") || normalized.contains("invalid") || normalized.contains("failure")) {
+      return false;
+    }
+    return normalized.contains("success") || normalized.contains("sent") || normalized.contains("msgid");
   }
 
   private String maskApiKey(String url) {

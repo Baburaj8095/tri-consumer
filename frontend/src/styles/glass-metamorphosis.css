@@ -1,0 +1,526 @@
+/* ==========================================================================
+   GLASS METAMORPHOSIS FULL COLOR DESIGN SYSTEM
+   Palette: Vibrant Orange, Crystalline White, Radiant Green, Deep Navy Blue
+   Features: Metamorphic Glass Layers, Embossed 3D Buttons, Animated Caustics
+   ========================================================================== */
+
+:root {
+  /* Color Tokens */
+  --gm-navy-deep: #050814;
+  --gm-navy-primary: #0A1128;
+  --gm-navy-surface: #101B3B;
+  --gm-navy-glow: rgba(10, 17, 40, 0.7);
+
+  --gm-orange-primary: #FF6B00;
+  --gm-orange-light: #FF8533;
+  --gm-orange-dark: #D95300;
+  --gm-orange-glow: rgba(255, 107, 0, 0.45);
+
+  --gm-green-primary: #00E599;
+  --gm-green-light: #33EBAD;
+  --gm-green-dark: #00B377;
+  --gm-green-glow: rgba(0, 229, 153, 0.45);
+
+  --gm-white-pure: #FFFFFF;
+  --gm-white-glass: rgba(255, 255, 255, 0.12);
+  --gm-white-specular: rgba(255, 255, 255, 0.35);
+
+  /* Glass Surface Tokens */
+  --gm-glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(16, 27, 59, 0.4) 100%);
+  --gm-glass-border: 1px solid rgba(255, 255, 255, 0.18);
+  --gm-glass-blur: blur(20px);
+  --gm-glass-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+
+  /* Embossed Shadows */
+  --gm-emboss-orange: 
+    0 10px 25px -4px rgba(255, 107, 0, 0.5),
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -3px 5px rgba(160, 40, 0, 0.6);
+
+  --gm-emboss-green: 
+    0 10px 25px -4px rgba(0, 229, 153, 0.5),
+    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+    inset 0 -3px 5px rgba(0, 140, 90, 0.6);
+
+  --gm-emboss-navy: 
+    0 10px 25px -4px rgba(10, 17, 40, 0.8),
+    inset 0 2px 2px rgba(255, 255, 255, 0.35),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.8);
+
+  --gm-emboss-white: 
+    0 10px 25px -4px rgba(0, 0, 0, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* ==========================================================================
+   METAMORPHIC ANIMATED BACKGROUND & CANVAS
+   ========================================================================== */
+
+body, html {
+  background-color: #F7F3E9 !important;
+  color: #0A192F !important;
+}
+
+/* Fluid chromatic morphing mesh with warm beige & matching colors */
+.gm-canvas-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: 
+    radial-gradient(circle at 18% 18%, rgba(255, 107, 0, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 82% 22%, rgba(0, 229, 153, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(30, 58, 138, 0.10) 0%, transparent 50%),
+    linear-gradient(135deg, #FAF6EE 0%, #F5EFEB 35%, #EFE5D5 70%, #E6D8C2 100%);
+}
+
+.gm-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  mix-blend-mode: normal;
+  will-change: transform, opacity;
+}
+
+.gm-orb-orange {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, #FF6B00 0%, #FF8533 40%, rgba(255, 107, 0, 0) 70%);
+  top: -100px;
+  left: 20%;
+  animation: gmOrbFloat1 18s ease-in-out infinite alternate;
+}
+
+.gm-orb-green {
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, #00E599 0%, #10B981 40%, rgba(0, 229, 153, 0) 70%);
+  bottom: -60px;
+  right: 15%;
+  animation: gmOrbFloat2 22s ease-in-out infinite alternate;
+}
+
+.gm-orb-navy {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #1E3A8A 0%, #0C1A3A 50%, rgba(10, 17, 40, 0) 70%);
+  top: 40%;
+  left: -120px;
+  animation: gmOrbFloat3 26s ease-in-out infinite alternate;
+}
+
+.gm-orb-beige {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, #F5EFEB 0%, #E8DFC8 50%, rgba(232, 223, 200, 0) 70%);
+  top: 15%;
+  left: 35%;
+  animation: gmOrbFloat4 20s ease-in-out infinite alternate;
+}
+
+.gm-orb-white {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.25) 40%, rgba(255, 255, 255, 0) 70%);
+  top: 30%;
+  right: 25%;
+  animation: gmOrbFloat4 16s ease-in-out infinite alternate;
+}
+
+/* Subtle Caustic Grid Overlay */
+.gm-caustic-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 107, 0, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px, 120px 120px;
+  opacity: 0.6;
+}
+
+@keyframes gmOrbFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, 80px) scale(1.12); }
+  100% { transform: translate(-40px, 50px) scale(0.95); }
+}
+
+@keyframes gmOrbFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-80px, -60px) scale(1.15); }
+  100% { transform: translate(50px, -40px) scale(0.9); }
+}
+
+@keyframes gmOrbFloat3 {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(70px, -50px) scale(1.08); }
+  100% { transform: translate(30px, 60px) scale(0.96); }
+}
+
+@keyframes gmOrbFloat4 {
+  0% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(-50px, 40px) scale(1.2); opacity: 0.7; }
+  100% { transform: translate(40px, -30px) scale(0.85); opacity: 0.35; }
+}
+
+/* ==========================================================================
+   GLASS METAMORPHOSIS CARDS & CONTAINERS
+   ========================================================================== */
+
+.gm-glass-card,
+.auth-card,
+.ce-card,
+.ce-header,
+.ce-bottom-nav,
+.ce-banner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(16, 27, 59, 0.5) 100%) !important;
+  backdrop-filter: blur(24px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 
+    0 16px 40px -8px rgba(0, 0, 0, 0.55),
+    inset 0 1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.25) !important;
+  color: #F8FAFC !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+
+.gm-glass-card:hover,
+.ce-card:hover {
+  border-color: rgba(255, 107, 0, 0.4) !important;
+  box-shadow: 
+    0 20px 48px -6px rgba(0, 0, 0, 0.6),
+    0 0 24px -4px rgba(255, 107, 0, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-4px);
+}
+
+/* Glass Header with Navy & Orange Specular */
+.ce-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Bottom Nav as a Metamorphic Floating Dock */
+.ce-bottom-nav {
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: linear-gradient(180deg, rgba(16, 27, 59, 0.85) 0%, rgba(6, 10, 24, 0.95) 100%) !important;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Inputs with Glass Frosted Look */
+input, select, textarea,
+.auth-input,
+.ce-search-bar input {
+  background: rgba(10, 17, 40, 0.6) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+input:focus, select:focus, textarea:focus,
+.auth-input:focus,
+.ce-search-bar input:focus {
+  border-color: var(--gm-orange-primary) !important;
+  box-shadow: 
+    0 0 0 3px rgba(255, 107, 0, 0.25),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(255, 107, 0, 0.2) !important;
+  outline: none !important;
+}
+
+/* ==========================================================================
+   3D EMBOSSED BUTTONS SYSTEM
+   Tactile beveled depth, dual-insets, glossy finish, and realistic press
+   ========================================================================== */
+
+/* Universal Embossed Base */
+.gm-embossed-btn,
+button.auth-btn,
+button.ce-btn,
+button.ce-primary-btn,
+.MuiButton-containedPrimary {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: none !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  overflow: hidden !important;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 1. EMBOSSED ORANGE BUTTON */
+.gm-btn-orange,
+button.auth-btn,
+button.ce-primary-btn,
+.MuiButton-containedPrimary {
+  background: linear-gradient(135deg, #FF8533 0%, #FF6B00 45%, #D95300 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 215, 180, 0.45) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: var(--gm-emboss-orange) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.gm-btn-orange:hover,
+button.auth-btn:hover,
+button.ce-primary-btn:hover {
+  background: linear-gradient(135deg, #FF994D 0%, #FF7714 45%, #E65A00 100%) !important;
+  box-shadow: 
+    0 14px 30px -3px rgba(255, 107, 0, 0.65),
+    inset 0 2px 3px rgba(255, 255, 255, 0.8),
+    inset 0 -3px 5px rgba(180, 45, 0, 0.65) !important;
+  transform: translateY(-2px);
+}
+
+.gm-btn-orange:active,
+button.auth-btn:active,
+button.ce-primary-btn:active {
+  transform: translateY(2px) scale(0.98) !important;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 3px 6px rgba(120, 30, 0, 0.7) !important;
+}
+
+/* 2. EMBOSSED GREEN BUTTON */
+.gm-btn-green,
+.ce-success-btn {
+  background: linear-gradient(135deg, #10B981 0%, #00E599 45%, #059669 100%) !important;
+  color: #032117 !important;
+  font-weight: 800 !important;
+  border: 1px solid rgba(167, 243, 208, 0.5) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: var(--gm-emboss-green) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.gm-btn-green:hover,
+.ce-success-btn:hover {
+  background: linear-gradient(135deg, #34D399 0%, #15F2A9 45%, #047857 100%) !important;
+  box-shadow: 
+    0 14px 30px -3px rgba(0, 229, 153, 0.65),
+    inset 0 2px 3px rgba(255, 255, 255, 0.85),
+    inset 0 -3px 5px rgba(0, 160, 100, 0.65) !important;
+  transform: translateY(-2px);
+}
+
+.gm-btn-green:active,
+.ce-success-btn:active {
+  transform: translateY(2px) scale(0.98) !important;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 3px 6px rgba(0, 100, 65, 0.7) !important;
+}
+
+/* 3. EMBOSSED NAVY BLUE BUTTON */
+.gm-btn-navy {
+  background: linear-gradient(135deg, #1E3A8A 0%, #0A1128 55%, #060B1C 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(96, 165, 250, 0.35) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: var(--gm-emboss-navy) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6) !important;
+}
+
+.gm-btn-navy:hover {
+  background: linear-gradient(135deg, #2563EB 0%, #0F172A 55%, #080D21 100%) !important;
+  box-shadow: 
+    0 14px 30px -3px rgba(10, 17, 40, 0.9),
+    0 0 20px rgba(59, 130, 246, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.6),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.9) !important;
+  transform: translateY(-2px);
+}
+
+.gm-btn-navy:active {
+  transform: translateY(2px) scale(0.98) !important;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    inset 0 3px 6px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* 4. EMBOSSED WHITE CRYSTAL GLASS BUTTON */
+.gm-btn-white,
+.ce-secondary-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+  color: #FFFFFF !important;
+  backdrop-filter: blur(18px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow: var(--gm-emboss-white) !important;
+}
+
+.gm-btn-white:hover,
+.ce-secondary-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.16) 100%) !important;
+  box-shadow: 
+    0 14px 30px -3px rgba(0, 0, 0, 0.4),
+    inset 0 2px 3px rgba(255, 255, 255, 0.95),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+.gm-btn-white:active,
+.ce-secondary-btn:active {
+  transform: translateY(2px) scale(0.98) !important;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Embossed Shimmer Glint Animation on Hover */
+.gm-embossed-btn::after,
+button.auth-btn::after,
+button.ce-primary-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-25deg);
+  transition: none;
+}
+
+.gm-embossed-btn:hover::after,
+button.auth-btn:hover::after,
+button.ce-primary-btn:hover::after {
+  animation: gmGlintSweep 1s ease-in-out forwards;
+}
+
+@keyframes gmGlintSweep {
+  0% { left: -120%; }
+  100% { left: 220%; }
+}
+
+/* ==========================================================================
+   METAMORPHIC PILLS, BADGES & GLOWING ACCENTS
+   ========================================================================== */
+
+.gm-badge-orange {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255, 107, 0, 0.18);
+  color: #FFA366;
+  border: 1px solid rgba(255, 107, 0, 0.4);
+  box-shadow: 0 0 16px rgba(255, 107, 0, 0.25);
+}
+
+.gm-badge-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 229, 153, 0.18);
+  color: #4DF0BA;
+  border: 1px solid rgba(0, 229, 153, 0.4);
+  box-shadow: 0 0 16px rgba(0, 229, 153, 0.25);
+}
+
+.gm-badge-navy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(30, 58, 138, 0.35);
+  color: #93C5FD;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 16px rgba(30, 58, 138, 0.3);
+}
+
+/* Pulsating Neon Glow Dots */
+.gm-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: gmPulse 2s infinite ease-in-out;
+}
+
+.gm-pulse-dot.orange { background: #FF6B00; box-shadow: 0 0 8px #FF6B00; }
+.gm-pulse-dot.green { background: #00E599; box-shadow: 0 0 8px #00E599; }
+.gm-pulse-dot.white { background: #FFFFFF; box-shadow: 0 0 8px #FFFFFF; }
+.gm-pulse-dot.navy { background: #3B82F6; box-shadow: 0 0 8px #3B82F6; }
+
+@keyframes gmPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.45); opacity: 0.6; }
+}
+
+/* Category Filter Pills (Metamorphic Glass Pills) */
+.ce-category-pill,
+.auth-chip {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #E2E8F0 !important;
+  border-radius: 9999px !important;
+  transition: all 0.2s ease !important;
+}
+
+.ce-category-pill.active,
+.ce-category-pill:hover,
+.auth-chip.active {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.3) 0%, rgba(255, 107, 0, 0.15) 100%) !important;
+  border-color: var(--gm-orange-primary) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 16px rgba(255, 107, 0, 0.35) !important;
+}
+
+/* Text Highlights */
+.ce-title, .auth-title, h1, h2, h3 {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.ce-muted, .auth-muted, p {
+  color: #94A3B8 !important;
+}
+
+/* Glass Metamorphosis Floating Action Button (FAB) */
+.ce-fab {
+  background: linear-gradient(135deg, #FF8533 0%, #FF6B00 50%, #D95300 100%) !important;
+  box-shadow: var(--gm-emboss-orange) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Custom Metamorphic Glass Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #050814;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 107, 0, 0.5) 0%, rgba(0, 229, 153, 0.5) 100%);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FF6B00 0%, #00E599 100%);
+}
+

@@ -29,11 +29,13 @@ import OrdersPage from "./pages/consumer-ecommerce/pages/OrdersPage";
 import OrderDetailsPage from "./pages/consumer-ecommerce/pages/OrderDetailsPage";
 import TrackOrderPage from "./pages/consumer-ecommerce/pages/TrackOrderPage";
 import ConsumerKYC from "./pages/consumer-ecommerce/pages/ConsumerKYC";
+import GlassMetamorphosisBackground from "./components/GlassMetamorphosisBackground";
 
 function App() {
   return (
     <LocationProvider>
       <BrowserRouter>
+        <GlassMetamorphosisBackground />
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/consumer-ecommerce" element={<ConsumerEcommerceDashboard />} />
